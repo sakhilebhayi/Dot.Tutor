@@ -80,6 +80,39 @@ php artisan test
 
 Feature tests use an in-memory SQLite connection (see `phpunit.xml`) and Laravel's `RefreshDatabase` trait — no shared Postgres instance required to run them. **This environment has no PHP/Composer available, so tests added in the Aug 2026 ecosystem-integration pass are written to the repo's existing standard but have not been executed here** — see `wiki.md` and `Dot.Brain/os/02-Engineering-Loop.md` §2.
 
+## Metrics for Dot.Analytics
+
+Once a day (03:00 UTC, `tutor:publish-metrics`) this app queues one signed snapshot per company to Dot.Analytics'
+server-to-server ingest (`POST /api/ingest/snapshots`) through `App\Services\Analytics\AnalyticsClient` and
+`App\Jobs\SendAnalyticsSnapshot`.
+
+**Which company.** Dot.Tutor is a user-scoped marketplace: sessions and tutor profiles have no team of their own.
+A company is a non-personal team linked to InfoDot (`teams.infodot_team_uuid`), and a session or tutor counts for
+the company that is its **tutor's current team** at the time of the run (the student's team is irrelevant, and a
+tutor who switches team takes their history with them). A tutor whose current team is personal or not linked
+belongs to no company and is not counted anywhere; there is no platform-wide fallback.
+
+What is sent, and nothing else (Dot.Analytics' `tutor` catalogue; counts only, never a name, email, note or row,
+and no money, so no `currency`). Windows are UTC, the 7 days ending when the command runs:
+
+| Key | Meaning |
+|---|---|
+| `sessions_7d` | sessions booked (created) in the last 7 days, whatever became of them since |
+| `completed_7d` | sessions that were marked completed in the last 7 days. There is no `completed_at` column; a completed session is never edited again, so its `updated_at` is the completion time |
+| `active_tutors` | approved tutor profiles right now |
+
+The snapshot is stamped `taken_at` = the start of the UTC day, so a retry or a second run the same day is the same
+snapshot upstream (Dot.Analytics keeps the first one it received for a day).
+
+Nothing is sent until `ANALYTICS_INGEST_URL` (the full URL ending `/api/ingest/snapshots`) **and**
+`ANALYTICS_INGEST_SECRET` are set; the secret is the same value as `ANALYTICS_INGEST_SECRET_TUTOR` in
+Dot.Analytics' `.env`, and `ANALYTICS_PLATFORM_KEY` defaults to `tutor`. Requests are HMAC-SHA256 signed over
+`"{timestamp}.{raw body}"` at send time, time out after 5 seconds, are retried up to 3 times with backoff, never
+throw into the app, and stop for 5 minutes (circuit breaker) after 5 failures in a row, so an Analytics outage or a
+wrong URL cannot affect Dot.Tutor. This needs the scheduler (`* * * * * php artisan schedule:run`) and a queue
+worker (`php artisan queue:work`). Try it safely with `php artisan tutor:publish-metrics --dry-run` (prints the
+payloads, sends nothing) and `--company=<uuid>`.
+
 ## Ecosystem
 
 **Dot.Tutor** is one of the platforms in the InfoDot ecosystem, connected via shared PostgreSQL and Sanctum SSO. Visit [InfoDot](https://github.com/sakhileb/InfoDot) to explore the full platform map.

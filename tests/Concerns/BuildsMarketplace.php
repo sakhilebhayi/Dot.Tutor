@@ -3,11 +3,13 @@
 namespace Tests\Concerns;
 
 use App\Models\Subject;
+use App\Models\Team;
 use App\Models\TutorAvailabilityWindow;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * Small, explicit builders for marketplace state. Nothing here is seeded
@@ -23,6 +25,36 @@ trait BuildsMarketplace
     protected function makeUser(string $name = 'Someone'): User
     {
         return User::factory()->withPersonalTeam()->create(['name' => $name]);
+    }
+
+    /** A company: a non-personal team linked to an InfoDot company uuid (what Analytics publishing is about). */
+    protected function makeCompany(array $attributes = []): Team
+    {
+        $owner = User::factory()->create();
+        $team = Team::factory()->create(array_merge(['user_id' => $owner->id, 'personal_team' => false], $attributes));
+        $owner->forceFill(['current_team_id' => $team->id])->save();
+        $team->forceFill(['infodot_team_uuid' => (string) Str::uuid()])->save();
+
+        return $team->fresh();
+    }
+
+    /** A tutor whose CURRENT team is $team (their sessions count for that company). */
+    protected function makeTutorIn(Team $team, array $profile = [], ?Subject $subject = null): TutorProfile
+    {
+        $user = User::factory()->create(['current_team_id' => $team->id]);
+        $subject ??= Subject::query()->first() ?? $this->makeSubject();
+
+        return $this->makeTutor($profile, $subject, $user);
+    }
+
+    /** Pin a session's created_at / updated_at without going through the model's timestamps. */
+    protected function stampSession(TutorSession $session, ?string $createdAt = null, ?string $updatedAt = null): TutorSession
+    {
+        \DB::table('tutor_sessions')->where('id', $session->id)->update(array_filter([
+            'created_at' => $createdAt, 'updated_at' => $updatedAt,
+        ]));
+
+        return $session->fresh();
     }
 
     protected function makeOperator(): User
