@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\SessionStatus;
 use App\Models\TutorSession;
 use App\Models\User;
 
@@ -22,7 +23,7 @@ class TutorSessionPolicy
     public function cancel(User $user, TutorSession $session): bool
     {
         return $this->view($user, $session)
-            && in_array($session->status, ['pending', 'confirmed'], true);
+            && in_array($session->status, SessionStatus::holdingTime(), true);
     }
 
     /**
@@ -32,18 +33,22 @@ class TutorSessionPolicy
     public function confirm(User $user, TutorSession $session): bool
     {
         return $session->tutorProfile->user_id === $user->id
-            && $session->status === 'pending';
+            && $session->tutorProfile->isApproved()
+            && $session->status === SessionStatus::Pending->value;
     }
 
     /**
      * Either party can mark a confirmed session completed, but only once
      * it has actually started -- prevents completing a session that
-     * hasn't happened yet.
+     * hasn't happened yet. Only while the tutor is still approved: a suspended
+     * tutor's sessions can be cancelled but not completed (which would also
+     * add to their total).
      */
     public function complete(User $user, TutorSession $session): bool
     {
         return $this->view($user, $session)
-            && $session->status === 'confirmed'
+            && $session->tutorProfile->isApproved()
+            && $session->status === SessionStatus::Confirmed->value
             && now()->gte($session->starts_at);
     }
 
@@ -57,7 +62,7 @@ class TutorSessionPolicy
     public function rate(User $user, TutorSession $session): bool
     {
         return $session->student_id === $user->id
-            && $session->status === 'completed'
+            && $session->status === SessionStatus::Completed->value
             && ! $session->rating()->exists();
     }
 
@@ -69,6 +74,6 @@ class TutorSessionPolicy
     public function uploadResource(User $user, TutorSession $session): bool
     {
         return $this->view($user, $session)
-            && in_array($session->status, ['confirmed', 'completed'], true);
+            && in_array($session->status, [SessionStatus::Confirmed->value, SessionStatus::Completed->value], true);
     }
 }

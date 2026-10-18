@@ -34,7 +34,7 @@
         font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0;
     }
     .tutor-name { font-family:'Syne',sans-serif; font-size: 0.95rem; font-weight: 700; color:#f4f4f5; }
-    .tutor-rate { font-size: 0.8rem; color: #a5b4fc; font-weight: 700; }
+    .tutor-rate { font-size: 0.8rem; color: #fbbf24; font-weight: 700; }
     .tutor-bio { font-size: 0.78rem; color: #a1a1aa; line-height: 1.5; }
     .subject-pill {
         display: inline-block; font-size: 0.65rem; font-weight: 600;
@@ -71,9 +71,12 @@
                 <div class="avatar-lg">{{ strtoupper(substr(optional($tutor->user)->name ?? '?', 0, 1)) }}</div>
                 <div>
                     <div class="tutor-name">{{ optional($tutor->user)->name ?? 'Unnamed tutor' }}</div>
-                    <div class="tutor-rate">${{ number_format($tutor->hourly_rate, 0) }}/hr</div>
+                    <div class="tutor-rate t-mono">{{ \App\Support\Money::format($tutor->hourly_rate, $tutor->currency, 0) }}/hr</div>
                 </div>
             </div>
+            @if($tutor->headline)
+            <div style="font-size:0.82rem;color:#e4e4e7;font-weight:600;">{{ $tutor->headline }}</div>
+            @endif
             @if($tutor->bio)
             <div class="tutor-bio">{{ Str::limit($tutor->bio, 120) }}</div>
             @endif
@@ -85,7 +88,14 @@
         </a>
         @empty
         <div class="panel" style="grid-column:span 3;padding:2.5rem;text-align:center;color:#71717a;font-size:0.85rem;">
-            No approved tutors match this filter yet.
+            @if($selectedSubjectId)
+                No approved tutor teaches this subject yet.
+            @else
+                No tutors are listed yet.
+            @endif
+            @if(! auth()->user()->tutorProfile)
+                <a href="{{ route('tutor.profile.edit') }}" style="color:#fbbf24;">Apply to teach</a>.
+            @endif
         </div>
         @endforelse
     </div>

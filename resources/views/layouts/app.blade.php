@@ -73,6 +73,50 @@
         .dot-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:100px; font-size:11px; font-weight:600; }
         .dot-badge-accent { background:rgba(251,191,36,0.12); color:#fbbf24; }
         select.dot-input option { background:#1a1a1f; }
+
+        /* Marketplace screens (tutor profile, hours, catalogue, review queue) */
+        .t-page { padding:2rem 2.5rem; max-width:1100px; }
+        .t-h1 { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:#f4f4f5; margin:0 0 .25rem; }
+        .t-lede { font-size:.82rem; color:#71717a; margin:0 0 1.5rem; max-width:62ch; }
+        .t-panel { background:#141416; border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:1.5rem; }
+        .t-panel + .t-panel { margin-top:1rem; }
+        .t-h2 { font-family:'Syne',sans-serif; font-size:.95rem; font-weight:700; color:#f4f4f5; margin:0 0 .25rem; }
+        .t-hint { font-size:.75rem; color:#71717a; margin:0 0 1rem; }
+        .t-label { display:block; font-size:.68rem; font-weight:700; color:#a1a1aa; text-transform:uppercase; letter-spacing:.08em; margin:0 0 .35rem; }
+        .t-field { width:100%; background:#0f0f11; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:.6rem .85rem; font-size:.85rem; color:#f4f4f5; font-family:'Inter',sans-serif; }
+        .t-field:focus, .t-btn:focus-visible, .t-chip input:focus-visible + span { outline:2px solid #fbbf24; outline-offset:2px; }
+        .t-row { margin-bottom:1rem; }
+        .t-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .t-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem 1.1rem; border-radius:8px; font-size:.8rem; font-weight:700; cursor:pointer; border:1px solid transparent; font-family:'Inter',sans-serif; text-decoration:none; }
+        .t-btn-primary { background:#fbbf24; color:#09090b; }
+        .t-btn-primary:hover { filter:brightness(1.08); }
+        .t-btn-quiet { background:transparent; color:#d4d4d8; border-color:rgba(255,255,255,0.16); }
+        .t-btn-quiet:hover { background:rgba(255,255,255,0.06); }
+        .t-btn-danger { background:transparent; color:#fca5a5; border-color:rgba(248,113,113,0.4); }
+        .t-btn-danger:hover { background:rgba(248,113,113,0.1); }
+        .t-err { color:#fca5a5; font-size:.75rem; margin-top:.3rem; }
+        .t-flash { margin:0 0 1.25rem; padding:.7rem 1rem; border-radius:8px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); color:#fcd34d; font-size:.82rem; max-width:62ch; }
+        .t-state { display:inline-block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; padding:.2rem .6rem; border-radius:999px; background:rgba(255,255,255,0.07); color:#d4d4d8; }
+        .t-state-approved { background:rgba(74,222,128,0.12); color:#86efac; }
+        .t-state-pending { background:rgba(251,191,36,0.12); color:#fcd34d; }
+        .t-state-rejected, .t-state-suspended { background:rgba(248,113,113,0.12); color:#fca5a5; }
+        .t-mono { font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+        .t-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+        .t-table th { text-align:left; font-size:.66rem; font-weight:700; color:#a1a1aa; text-transform:uppercase; letter-spacing:.08em; padding:.5rem .75rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .t-table td { padding:.65rem .75rem; border-bottom:1px solid rgba(255,255,255,0.06); color:#d4d4d8; vertical-align:middle; }
+        .t-table tr:last-child td { border-bottom:none; }
+        .t-chip { display:inline-block; cursor:pointer; position:relative; }
+        .t-chip input { position:absolute; opacity:0; pointer-events:none; }
+        .t-chip span { display:inline-block; padding:.4rem .8rem; border-radius:8px; font-size:.78rem; font-weight:600; color:#d4d4d8; border:1px solid rgba(255,255,255,0.16); background:#0f0f11; }
+        .t-chip input:checked + span { background:#fbbf24; color:#09090b; border-color:#fbbf24; }
+        .t-chip:hover span { border-color:rgba(251,191,36,0.6); }
+        @media (max-width: 900px) {
+            .sidebar { position:static; width:auto; height:auto; }
+            .topbar { position:static; }
+            .content-wrap { margin-left:0; padding-top:0; }
+            .t-page { padding:1.25rem 1rem; }
+            .t-grid2 { grid-template-columns:1fr; }
+        }
     </style>
     @livewireStyles
     <script defer src="https://unpkg.com/alpinejs@3.10.2/dist/cdn.min.js"></script>
@@ -101,6 +145,42 @@
                 <span class="material-symbols-rounded nav-icon">dashboard</span>
                 Dashboard
             </a>
+            <a href="{{ route('tutors.browse') }}" class="nav-item {{ request()->routeIs('tutors.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">search</span>
+                Find a tutor
+            </a>
+
+            @auth
+            <div class="nav-section-label">Teaching</div>
+            @if(Auth::user()->tutorProfile)
+            <a href="{{ route('tutor.profile.edit') }}" class="nav-item {{ request()->routeIs('tutor.profile.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">badge</span>
+                My tutor profile
+            </a>
+            <a href="{{ route('tutor.availability.index') }}" class="nav-item {{ request()->routeIs('tutor.availability.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">calendar_month</span>
+                My hours
+            </a>
+            @else
+            <a href="{{ route('tutor.profile.edit') }}" class="nav-item {{ request()->routeIs('tutor.profile.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">school</span>
+                Become a tutor
+            </a>
+            @endif
+
+            @if(Auth::user()->is_platform_operator)
+            <div class="nav-section-label">Operator</div>
+            <a href="{{ route('operator.tutor-profiles.index') }}" class="nav-item {{ request()->routeIs('operator.tutor-profiles.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">fact_check</span>
+                Tutor review
+            </a>
+            <a href="{{ route('operator.subjects.index') }}" class="nav-item {{ request()->routeIs('operator.subjects.*') ? 'active' : '' }}">
+                <span class="material-symbols-rounded nav-icon">menu_book</span>
+                Subjects
+            </a>
+            @endif
+            @endauth
+
             <div class="sidebar-divider" style="margin:10px 0;"></div>
             <a href="{{ route('profile.show') }}" class="nav-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
                 <span class="material-symbols-rounded nav-icon">manage_accounts</span>

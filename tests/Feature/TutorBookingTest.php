@@ -7,6 +7,7 @@ use App\Models\TutorProfile;
 use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\BuildsMarketplace;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,7 @@ use Tests\TestCase;
  */
 class TutorBookingTest extends TestCase
 {
+    use BuildsMarketplace;
     use RefreshDatabase;
 
     private function approvedTutor(string $tutorSubject = 'Algebra'): array
@@ -29,8 +31,10 @@ class TutorBookingTest extends TestCase
             'user_id' => $tutorUser->id,
             'hourly_rate' => 45,
             'status' => 'approved',
+            'timezone' => 'UTC',
         ]);
         $tutorProfile->subjects()->attach($subject->id);
+        $this->openWeek($tutorProfile);
 
         return [$tutorProfile, $subject];
     }
@@ -58,7 +62,7 @@ class TutorBookingTest extends TestCase
 
         $response = $this->actingAs($student)->post("/tutors/{$tutorProfile->id}/sessions", [
             'subject_id' => $subject->id,
-            'starts_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            'starts_at' => now()->addDays(2)->setTime(10, 0)->format('Y-m-d\TH:i'),
             'duration_minutes' => 60,
             'delivery' => 'online',
             'notes' => 'Need help with quadratics.',
@@ -79,7 +83,7 @@ class TutorBookingTest extends TestCase
 
         $response = $this->actingAs($tutorProfile->user)->post("/tutors/{$tutorProfile->id}/sessions", [
             'subject_id' => $subject->id,
-            'starts_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            'starts_at' => now()->addDays(2)->setTime(10, 0)->format('Y-m-d\TH:i'),
             'duration_minutes' => 60,
             'delivery' => 'online',
         ]);
@@ -96,12 +100,12 @@ class TutorBookingTest extends TestCase
 
         $response = $this->actingAs($student)->post("/tutors/{$tutorProfile->id}/sessions", [
             'subject_id' => $unrelatedSubject->id,
-            'starts_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+            'starts_at' => now()->addDays(2)->setTime(10, 0)->format('Y-m-d\TH:i'),
             'duration_minutes' => 60,
             'delivery' => 'online',
         ]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHasErrors('subject_id');
         $this->assertSame(0, TutorSession::count());
     }
 

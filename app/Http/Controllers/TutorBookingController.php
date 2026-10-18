@@ -2,31 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SessionStatus;
+use App\Enums\TutorProfileStatus;
 use App\Models\Subject;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
+use App\Services\Scheduling\BookingService;
+use App\Services\Scheduling\SlotFinder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class TutorBookingController extends Controller
 {
     /**
-     * Browse approved tutors, optionally filtered to one subject.
+     * Browse approved tutors, optionally filtered to one (active) subject.
      */
     public function browse(Request $request): View
     {
-        $subjects = Subject::orderBy('name')->get();
+        $subjects = Subject::active()->orderBy('name')->get();
 
         $selectedSubjectId = $request->integer('subject');
 
         $tutors = TutorProfile::query()
-            ->with(['user', 'subjects'])
-            ->where('status', 'approved')
+            ->with(['user', 'subjects' => fn ($q) => $q->where('subjects.is_active', true)])
+            ->where('status', TutorProfileStatus::Approved->value)
             ->when($selectedSubjectId, fn ($query) => $query->whereHas(
                 'subjects',
-                fn ($q) => $q->where('subjects.id', $selectedSubjectId),
+                fn ($q) => $q->where('subjects.id', $selectedSubjectId)->where('subjects.is_active', true),
             ))
             ->orderByDesc('rating')
             ->paginate(12);
@@ -39,13 +44,14 @@ class TutorBookingController extends Controller
     }
 
     /**
-     * One tutor's public profile plus the booking form.
+     * One tutor's public profile, their real open times for the next 14 days,
+     * and the booking form.
      */
-    public function show(TutorProfile $tutorProfile): View
+    public function show(Request $request, TutorProfile $tutorProfile, SlotFinder $slots): View
     {
-        abort_unless($tutorProfile->status === 'approved', 404);
+        abort_unless($tutorProfile->status === TutorProfileStatus::Approved->value, 404);
 
-        $tutorProfile->load(['user', 'subjects']);
+        $tutorProfile->load(['user', 'subjects' => fn ($q) => $q->where('subjects.is_active', true)]);
 
         $reviews = $tutorProfile->ratings()
             ->whereNotNull('review')
@@ -54,52 +60,48 @@ class TutorBookingController extends Controller
             ->limit(20)
             ->get();
 
+        $durations = (array) config('tutor.durations');
+        $duration = $request->integer('duration');
+        $duration = in_array($duration, $durations, true) ? $duration : (in_array(60, $durations, true) ? 60 : $durations[0]);
+
+        $days = $slots->forTutor($tutorProfile, $duration);
+
         return view('tutors.show', [
             'tutorProfile' => $tutorProfile,
             'reviews' => $reviews,
+            'days' => $days,
+            'hasSlots' => collect($days)->contains(fn ($d) => count($d['slots']) > 0),
+            'duration' => $duration,
+            'durations' => $durations,
+            'timezone' => $tutorProfile->scheduleTimezone(),
+            'horizonDays' => (int) config('tutor.booking_horizon_days'),
         ]);
     }
 
     /**
-     * Create a session booking. A student cannot book their own tutor
-     * profile, the chosen subject must actually be one this tutor teaches,
-     * and the requested time must be in the future — all real constraints
-     * from the schema and domain, not placeholder validation.
+     * Create a session booking. The slot must be one of the tutor's real open
+     * times: inside weekly hours, not on a blocked date, and not overlapping
+     * another pending/confirmed session of the tutor or of the student. All of
+     * that is checked under a row lock in BookingService.
      */
-    public function store(Request $request, TutorProfile $tutorProfile): RedirectResponse
+    public function store(Request $request, TutorProfile $tutorProfile, BookingService $booking): RedirectResponse
     {
-        abort_unless($tutorProfile->status === 'approved', 404);
+        abort_unless($tutorProfile->status === TutorProfileStatus::Approved->value, 404);
         abort_if($tutorProfile->user_id === $request->user()->id, 403, 'You cannot book a session with yourself.');
 
         $validated = $request->validate([
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'starts_at' => ['required', 'date', 'after:now'],
-            'duration_minutes' => ['required', 'integer', 'in:30,60,90,120'],
+            'duration_minutes' => ['required', 'integer', 'in:'.implode(',', (array) config('tutor.durations'))],
             'delivery' => ['required', 'in:online,in_person'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        abort_unless(
-            $tutorProfile->subjects()->where('subjects.id', $validated['subject_id'])->exists(),
-            422,
-            'This tutor does not teach the selected subject.',
-        );
-
-        $session = TutorSession::create([
-            'tutor_profile_id' => $tutorProfile->id,
-            'student_id' => $request->user()->id,
-            'subject_id' => $validated['subject_id'],
-            'status' => 'pending',
-            'delivery' => $validated['delivery'],
-            'starts_at' => $validated['starts_at'],
-            'duration_minutes' => $validated['duration_minutes'],
-            'rate' => $tutorProfile->hourly_rate,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $session = $booking->book($request->user(), $tutorProfile, $validated);
 
         return redirect()
             ->route('sessions.show', $session)
-            ->with('status', 'Session requested — the tutor will confirm shortly.');
+            ->with('status', 'Session requested. The tutor will confirm shortly.');
     }
 
     public function showSession(TutorSession $tutorSession): View
@@ -117,7 +119,7 @@ class TutorBookingController extends Controller
     {
         Gate::authorize('cancel', $tutorSession);
 
-        $tutorSession->update(['status' => 'cancelled']);
+        $tutorSession->update(['status' => SessionStatus::Cancelled->value]);
 
         return redirect()
             ->route('sessions.show', $tutorSession)
@@ -131,7 +133,7 @@ class TutorBookingController extends Controller
     {
         Gate::authorize('confirm', $tutorSession);
 
-        $tutorSession->update(['status' => 'confirmed']);
+        $tutorSession->update(['status' => SessionStatus::Confirmed->value]);
 
         return redirect()
             ->route('sessions.show', $tutorSession)
@@ -146,12 +148,23 @@ class TutorBookingController extends Controller
     {
         Gate::authorize('complete', $tutorSession);
 
-        $tutorSession->update(['status' => 'completed']);
+        // Re-check under a row lock: two quick clicks (or both parties at once)
+        // must count the session once, not twice.
+        $completed = DB::transaction(function () use ($tutorSession) {
+            $fresh = TutorSession::query()->whereKey($tutorSession->id)->lockForUpdate()->firstOrFail();
 
-        $tutorSession->tutorProfile->increment('total_sessions');
+            if ($fresh->status !== SessionStatus::Confirmed->value) {
+                return false;
+            }
+
+            $fresh->update(['status' => SessionStatus::Completed->value]);
+            $fresh->tutorProfile->increment('total_sessions');
+
+            return true;
+        });
 
         return redirect()
             ->route('sessions.show', $tutorSession)
-            ->with('status', 'Session marked complete.');
+            ->with('status', $completed ? 'Session marked complete.' : 'That session was already completed.');
     }
 }

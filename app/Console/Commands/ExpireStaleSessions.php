@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\SessionStatus;
 use App\Models\TutorSession;
 use Illuminate\Console\Command;
 
@@ -24,11 +25,11 @@ class ExpireStaleSessions extends Command
         $expired = 0;
 
         TutorSession::query()
-            ->where('status', 'pending')
+            ->where('status', SessionStatus::Pending->value)
             ->chunkById(100, function ($sessions) use (&$expired) {
                 foreach ($sessions as $session) {
                     if ($session->endsAt()->isPast()) {
-                        $session->update(['status' => 'no_show']);
+                        $session->update(['status' => SessionStatus::NoShow->value]);
                         $expired++;
                     }
                 }
