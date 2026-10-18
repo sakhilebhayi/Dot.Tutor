@@ -30,14 +30,14 @@ class DashboardKpiScopingTest extends TestCase
     {
         $subject = $this->makeSubject();
         $tutorA = $this->makeTutor(['hourly_rate' => 100], $subject, $this->makeUser('Tutor Alpha'));
-        $tutorB = $this->makeTutor(['hourly_rate' => 913], $subject, $this->makeUser('Tutor Bravo'));
+        $tutorB = $this->makeTutor(['hourly_rate' => 40731], $subject, $this->makeUser('Tutor Bravo'));
         $studentA = $this->makeUser('Student Alpha');
         $studentB = $this->makeUser('Student Bravo');
 
         // Student A <-> Tutor A: one completed 2h (200), one upcoming pending.
         $this->makeSession($tutorA, $studentA, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(3), 'duration_minutes' => 120]);
         $this->makeSession($tutorA, $studentA, $subject, ['status' => 'pending', 'starts_at' => now()->addDays(3)]);
-        // Student B <-> Tutor B: completed 1h at 913, and one more completed.
+        // Student B <-> Tutor B: completed 1h at 40731, and one more completed.
         $this->makeSession($tutorB, $studentB, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(4)]);
         $this->makeSession($tutorB, $studentB, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(5)]);
 
@@ -56,7 +56,7 @@ class DashboardKpiScopingTest extends TestCase
         $this->assertSame(1, $figures['sessions_completed']);
         $this->assertEquals(200, $figures['value_completed']);
         $this->assertCount(1, $response->viewData('metrics')['lenses']);
-        $response->assertDontSee('913')->assertDontSee('Student Bravo')->assertDontSee('Tutor Bravo');
+        $response->assertDontSee('40731')->assertDontSee('Student Bravo')->assertDontSee('Tutor Bravo');
     }
 
     public function test_a_tutor_sees_their_own_sessions_and_earnings(): void
@@ -69,7 +69,7 @@ class DashboardKpiScopingTest extends TestCase
         $this->assertSame(2, $figures['sessions_total']);
         $this->assertSame(1, $figures['sessions_completed']);
         $this->assertEquals(200, $figures['value_completed']);
-        $response->assertDontSee('913');
+        $response->assertDontSee('40731');
     }
 
     public function test_someone_who_is_both_tutor_and_student_gets_both_views(): void
@@ -81,7 +81,7 @@ class DashboardKpiScopingTest extends TestCase
         $response = $this->actingAs($tutorA->user)->get('/dashboard');
 
         $this->assertEquals(200, $this->figures($response, 'tutor')['value_completed']);
-        $this->assertEquals(913, $this->figures($response, 'student')['value_completed']);
+        $this->assertEquals(40731, $this->figures($response, 'student')['value_completed']);
     }
 
     public function test_an_operator_sees_platform_totals(): void
@@ -96,7 +96,7 @@ class DashboardKpiScopingTest extends TestCase
         $this->assertSame(3, $figures['sessions_completed']);
         $this->assertSame(2, $figures['tutors_approved']);
         $this->assertSame(1, $figures['applications_pending']);
-        $this->assertEquals(200 + 913 + 913, $figures['value_completed']);
+        $this->assertEquals(200 + 40731 + 40731, $figures['value_completed']);
     }
 
     public function test_a_brand_new_user_gets_zeroes_not_platform_figures(): void
