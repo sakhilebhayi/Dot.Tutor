@@ -1,18 +1,21 @@
 <?php
 
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LessonResourceController;
 use App\Http\Controllers\SessionRatingController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\TutorAvailabilityController;
 use App\Http\Controllers\TutorBookingController;
+use App\Http\Controllers\TutorProfileController;
 use App\Http\Controllers\TutorProfileReviewController;
-use App\Models\Subject;
-use App\Models\TutorProfile;
-use App\Models\TutorSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
 
-Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])->name('ecosystem.auth');
+Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+    ->middleware('throttle:10,1')
+    ->name('ecosystem.auth');
 Route::get('/', function () {
     return view('welcome');
 });
@@ -32,51 +35,25 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        $totalSessions = TutorSession::count();
-        $upcomingSessions = TutorSession::whereIn('status', ['pending', 'confirmed'])
-            ->where('starts_at', '>=', now())->count();
-        $completedSessions = TutorSession::where('status', 'completed')->count();
-        $totalTutors = TutorProfile::where('status', 'approved')->count();
-        $availableTutors = TutorProfile::where('status', 'approved')->count();
-        $totalRevenue = TutorSession::where('status', 'completed')
-            ->selectRaw('COALESCE(SUM(rate * duration_minutes / 60.0), 0) as rev')
-            ->value('rev') ?? 0;
-        $subjects = Subject::withCount('tutors')->orderBy('name')->get();
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::post('/notifications/read', [DashboardController::class, 'markNoticesRead'])->name('notifications.read');
 
-        // Scope the session lists to the signed-in user's own bookings (as student)
-        // or their own tutor profile's sessions (as tutor). The KPI counts above stay
-        // platform-wide aggregates (no PII), but per-session rows — tutor/student
-        // names, subjects, times, amounts — must not be visible to every logged-in
-        // user regardless of role; there is no admin/staff role in this schema yet
-        // to justify a system-wide view here.
-        $userId = auth()->id();
-        $scopeToOwnSessions = function ($query) use ($userId) {
-            $query->where('student_id', $userId)
-                ->orWhereHas('tutorProfile', fn ($q) => $q->where('user_id', $userId));
-        };
+    // Becoming a tutor: one application per user, editable afterwards.
+    Route::get('/tutor/profile', [TutorProfileController::class, 'edit'])->name('tutor.profile.edit');
+    Route::post('/tutor/profile', [TutorProfileController::class, 'store'])->name('tutor.profile.store');
+    Route::put('/tutor/profile', [TutorProfileController::class, 'update'])->name('tutor.profile.update');
 
-        $upcomingSessionsList = TutorSession::with(['tutorProfile.user', 'subject'])
-            ->where($scopeToOwnSessions)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->where('starts_at', '>=', now())
-            ->orderBy('starts_at')
-            ->limit(5)
-            ->get();
-        $recentSessions = TutorSession::with(['tutorProfile.user', 'subject'])
-            ->where($scopeToOwnSessions)
-            ->latest('starts_at')->limit(8)->get();
-
-        return view('dashboard', compact(
-            'totalSessions', 'upcomingSessions', 'completedSessions',
-            'totalTutors', 'availableTutors', 'totalRevenue',
-            'subjects', 'upcomingSessionsList', 'recentSessions'
-        ));
-    })->name('dashboard');
+    Route::get('/tutor/availability', [TutorAvailabilityController::class, 'index'])->name('tutor.availability.index');
+    Route::post('/tutor/availability/windows', [TutorAvailabilityController::class, 'storeWindow'])->name('tutor.availability.windows.store');
+    Route::delete('/tutor/availability/windows/{window}', [TutorAvailabilityController::class, 'destroyWindow'])->name('tutor.availability.windows.destroy');
+    Route::post('/tutor/availability/blocked-dates', [TutorAvailabilityController::class, 'storeBlockedDate'])->name('tutor.availability.blocked.store');
+    Route::delete('/tutor/availability/blocked-dates/{blockedDate}', [TutorAvailabilityController::class, 'destroyBlockedDate'])->name('tutor.availability.blocked.destroy');
 
     Route::get('/tutors', [TutorBookingController::class, 'browse'])->name('tutors.browse');
     Route::get('/tutors/{tutorProfile}', [TutorBookingController::class, 'show'])->name('tutors.show');
-    Route::post('/tutors/{tutorProfile}/sessions', [TutorBookingController::class, 'store'])->name('tutors.sessions.store');
+    Route::post('/tutors/{tutorProfile}/sessions', [TutorBookingController::class, 'store'])
+        ->middleware('throttle:bookings')
+        ->name('tutors.sessions.store');
 
     Route::get('/sessions/{tutorSession}', [TutorBookingController::class, 'showSession'])->name('sessions.show');
     Route::post('/sessions/{tutorSession}/cancel', [TutorBookingController::class, 'cancel'])->name('sessions.cancel');
@@ -84,7 +61,9 @@ Route::middleware([
     Route::post('/sessions/{tutorSession}/complete', [TutorBookingController::class, 'complete'])->name('sessions.complete');
     Route::post('/sessions/{tutorSession}/rating', [SessionRatingController::class, 'store'])->name('sessions.rating.store');
 
-    Route::post('/sessions/{tutorSession}/resources', [LessonResourceController::class, 'store'])->name('resources.store');
+    Route::post('/sessions/{tutorSession}/resources', [LessonResourceController::class, 'store'])
+        ->middleware('throttle:uploads')
+        ->name('resources.store');
     Route::get('/resources/{lessonResource}/download', [LessonResourceController::class, 'download'])->name('resources.download');
     Route::delete('/resources/{lessonResource}', [LessonResourceController::class, 'destroy'])->name('resources.destroy');
 
@@ -92,5 +71,13 @@ Route::middleware([
         Route::get('/tutor-profiles', [TutorProfileReviewController::class, 'index'])->name('tutor-profiles.index');
         Route::post('/tutor-profiles/{tutorProfile}/approve', [TutorProfileReviewController::class, 'approve'])->name('tutor-profiles.approve');
         Route::post('/tutor-profiles/{tutorProfile}/reject', [TutorProfileReviewController::class, 'reject'])->name('tutor-profiles.reject');
+        Route::post('/tutor-profiles/{tutorProfile}/suspend', [TutorProfileReviewController::class, 'suspend'])->name('tutor-profiles.suspend');
+        Route::post('/tutor-profiles/{tutorProfile}/reinstate', [TutorProfileReviewController::class, 'reinstate'])->name('tutor-profiles.reinstate');
+
+        Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
+        Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+        Route::put('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
+        Route::post('/subjects/{subject}/activate', [SubjectController::class, 'activate'])->name('subjects.activate');
+        Route::post('/subjects/{subject}/deactivate', [SubjectController::class, 'deactivate'])->name('subjects.deactivate');
     });
 });

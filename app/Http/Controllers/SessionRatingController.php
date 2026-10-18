@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SessionRating;
 use App\Models\TutorSession;
+use App\Services\RatingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,7 +15,7 @@ class SessionRatingController extends Controller
      * they booked. See TutorSessionPolicy::rate() for why only the student
      * (not the tutor) can do this.
      */
-    public function store(Request $request, TutorSession $tutorSession): RedirectResponse
+    public function store(Request $request, TutorSession $tutorSession, RatingService $ratings): RedirectResponse
     {
         Gate::authorize('rate', $tutorSession);
 
@@ -24,17 +24,15 @@ class SessionRatingController extends Controller
             'review' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        SessionRating::create([
-            'session_id' => $tutorSession->id,
-            'rated_by' => $request->user()->id,
-            'rating' => $validated['rating'],
-            'review' => $validated['review'] ?? null,
-        ]);
-
-        $tutorSession->tutorProfile->refreshRating();
+        $saved = $ratings->rate(
+            $tutorSession,
+            $request->user(),
+            (int) $validated['rating'],
+            $validated['review'] ?? null,
+        );
 
         return redirect()
             ->route('sessions.show', $tutorSession)
-            ->with('status', 'Thanks for your review!');
+            ->with('status', $saved ? 'Thanks for your review!' : 'This session has already been rated.');
     }
 }

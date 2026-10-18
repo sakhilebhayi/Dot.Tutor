@@ -71,11 +71,11 @@
 
         <div class="detail-row">
             <span class="detail-label">Tutor</span>
-            <span class="detail-value">{{ optional($session->tutorProfile->user)->name ?? '—' }}</span>
+            <span class="detail-value">{{ optional($session->tutorProfile->user)->name ?? 'Deleted account' }}</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Student</span>
-            <span class="detail-value">{{ optional($session->student)->name ?? '—' }}</span>
+            <span class="detail-value">{{ optional($session->student)->name ?? 'Deleted account' }}</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">When</span>
@@ -90,8 +90,12 @@
             <span class="detail-value">{{ ucfirst(str_replace('_',' ',$session->delivery)) }}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Amount</span>
-            <span class="detail-value">${{ number_format($session->rate * $session->duration_minutes / 60, 2) }}</span>
+            <span class="detail-label">Agreed value</span>
+            <span class="detail-value t-mono">{{ \App\Support\Money::format($session->amount(), $session->currency) }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Payment</span>
+            <span class="detail-value" style="font-weight:500;color:#d4d4d8;text-align:right;max-width:22rem;">Payment is arranged outside the platform for now. This is the rate agreed when the session was booked ({{ \App\Support\Money::format($session->rate, $session->currency) }}/hr); nothing is charged here.</span>
         </div>
 
         @if($session->notes)
@@ -116,7 +120,7 @@
         </form>
         @endcan
 
-        @if(in_array($session->status, ['pending', 'confirmed']))
+        @if($session->isOpen())
         <form method="POST" action="{{ route('sessions.cancel', $session) }}" onsubmit="return confirm('Cancel this session?');">
             @csrf
             <button type="submit" class="cancel-btn">Cancel session</button>
@@ -167,7 +171,7 @@
                 <div>
                     <div style="color:#f4f4f5;font-weight:600;">{{ $resource->title }}</div>
                     <div style="color:#71717a;font-size:0.72rem;">
-                        Uploaded by {{ optional($resource->uploader)->name ?? 'someone' }}
+                        Uploaded by {{ optional($resource->uploader)->name ?? 'a deleted account' }}
                         &middot; {{ $resource->created_at->format('M j, Y') }}
                     </div>
                 </div>

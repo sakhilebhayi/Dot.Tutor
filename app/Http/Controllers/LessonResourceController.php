@@ -69,8 +69,8 @@ class LessonResourceController extends Controller
     {
         Gate::authorize('delete', $lessonResource);
 
-        Storage::disk('lesson-resources')->delete($lessonResource->file_path);
         $session = $lessonResource->session;
+        // The model's deleted hook removes the file from the private disk.
         $lessonResource->delete();
 
         return redirect()

@@ -68,6 +68,19 @@ Source: `database/migrations/2026_06_27_000001_create_tutor_tables.php` and `app
 - Tutor earnings & payout tracking — the dashboard shows an aggregate `$totalRevenue` figure; there is no per-tutor earnings view, ledger, or payout table
 - `TutorProfilePolicy` (e.g. gating profile edits to the owning user) — only `TutorSessionPolicy` exists so far, scoped to what the new booking flow actually needed
 
+## 4a. Marketplace completion (2026-10-18, `feat/tutor-onboarding`)
+
+Owner decision 2026-10-18: Dot.Tutor **stays a tutor-booking marketplace** (no courses or assessments). This pass supplied what a fresh deploy was missing. Where it contradicts §4 above, this section is current.
+
+- **Becoming a tutor.** `GET/POST/PUT /tutor/profile`: one application per user (headline, bio, qualifications, hourly rate, timezone, subjects from the catalogue) -> `TutorProfile` in `pending`. Editable while pending/approved. A rejected or suspended tutor sees the operator's reason and may re-apply only after changing something. Rate is stored as `decimal(8,2)` in the currency in `config/tutor.php` (`TUTOR_CURRENCY`, default ZAR) and snapshotted, with its currency, onto each session at booking.
+- **Subject catalogue.** Operators manage it at `/operator/subjects` (create, rename, deactivate/reactivate; never delete). Deactivated subjects are hidden from new applications and bookings and kept on history. `SubjectCatalogueSeeder` gives a fresh deploy a starter list; it creates no tutors or sessions.
+- **Operator decisions** (`TutorModeration`): approve, reject, suspend, reinstate. Each notifies the applicant (database notification, shown on their dashboard). Suspending cancels the tutor's *pending* sessions in the same transaction.
+- **Availability.** A tutor sets weekly windows and blocked dates at `/tutor/availability`, in their profile timezone. `SlotFinder` computes the next 14 tutor-local days of real start times (30-minute grid, absolute-time arithmetic so DST is honest). `BookingService` re-validates under a row lock: inside a window, not on a blocked date, no overlap with the tutor's or the student's pending/confirmed sessions.
+- **Lifecycle.** Statuses live in `App\Enums\SessionStatus` / `TutorProfileStatus`. Only approved tutors can confirm or complete. Rating + tutor average commit in one transaction (`RatingService`); `refreshRating()` is idempotent. `session_ratings.rating` has a DB CHECK (PostgreSQL `NOT VALID`, MySQL CHECK, SQLite triggers).
+- **Dashboard KPIs** are scoped by role (`DashboardMetrics`): operator sees platform totals; tutors and students only their own sessions and value. "Value" is rate x time, not money collected.
+- **Deletion and cleanup.** Deleting a user no longer cascades through other people's history: person pointers (`student_id`, `rated_by`, `uploader_id`, `tutor_profiles.user_id`) are nullable `ON DELETE SET NULL`; `tutor_sessions.tutor_profile_id` and `subject_id` are `RESTRICT`. `DeleteUser` takes the tutor's profile off the market (kept, `suspended`) and cancels future open sessions on either side. Lesson files are removed when a session or resource is deleted. Booking and uploads are throttled (10/min per user, `config/tutor.php`). Indexes on `tutor_sessions`: `(tutor_profile_id, starts_at)`, `(student_id, status)`, `(status)`.
+- **Payments.** None; no provider has been chosen. Every price shows the stored rate and says payment is arranged outside the platform for now.
+
 ## 5. Events Emitted
 
 **None.** There are no Laravel event/listener classes and no domain events in this repository. Dot.Brain's ingested view (§7) may describe target-state events for this platform; this codebase does not fire any of them yet.
