@@ -111,20 +111,94 @@
         .t-chip input:checked + span { background:#fbbf24; color:#09090b; border-color:#fbbf24; }
         .t-chip:hover span { border-color:rgba(251,191,36,0.6); }
         @media (max-width: 900px) {
-            .sidebar { position:static; width:auto; height:auto; }
-            .topbar { position:static; }
-            .content-wrap { margin-left:0; padding-top:0; }
             .t-page { padding:1.25rem 1rem; }
             .t-grid2 { grid-template-columns:1fr; }
+        }
+
+        /* Responsive shell. At 860px and wider nothing below applies except the focus rings
+           and the team switcher. Under 860px the sidebar becomes an off-canvas drawer opened
+           from the top bar (script: layouts/partials/shell-script.blade.php). */
+        .shell-menu-btn, .shell-close, .shell-backdrop { display:none; }
+        .shell-menu-btn, .shell-close { align-items:center; justify-content:center; gap:6px; min-width:44px; min-height:44px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#d4d4d8; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:background .13s,border-color .13s; flex-shrink:0; }
+        .shell-menu-btn { padding:0 14px 0 10px; }
+        .shell-menu-btn:hover, .shell-close:hover { background:rgba(255,255,255,0.1); }
+        .shell-menu-btn .material-symbols-rounded, .shell-close .material-symbols-rounded { font-size:22px; }
+        .shell-menu-btn:focus-visible, .shell-close:focus-visible, .nav-item:focus-visible, .team-switch summary:focus-visible, .topbar-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+        /* Team switcher (sidebar footer) */
+        .team-switch { margin-top:2px; }
+        .team-switch summary { display:flex; align-items:center; gap:9px; padding:7.5px 6px; border-radius:8px; font-size:12px; font-weight:500; color:#71717a; cursor:pointer; list-style:none; }
+        .team-switch summary::-webkit-details-marker { display:none; }
+        .team-switch summary:hover { background:rgba(255,255,255,0.05); color:#d4d4d8; }
+        .team-switch summary .team-switch-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .team-switch[open] summary .team-switch-chevron { transform:rotate(180deg); }
+        .team-switch-list { padding:2px 0 4px; max-height:40vh; overflow-y:auto; }
+        .team-switch-list form { margin:0; }
+        .team-switch-list .nav-item { width:100%; border:none; background:none; cursor:pointer; font-family:'Inter',sans-serif; text-align:left; }
+        .team-switch-list .nav-item.active { background:rgba(var(--accent-rgb),0.1); color:var(--accent); }
+        .team-switch-list .nav-section-label { padding:8px 10px 4px; }
+
+        /* Notification bell panel */
+        .topbar-bell { position:relative; }
+        .notif-panel { position:absolute; top:calc(100% + 8px); right:0; width:320px; max-height:420px; overflow-y:auto; background:#141416; border:1px solid rgba(255,255,255,0.09); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,0.45); z-index:50; }
+
+        @media (max-width: 859.98px) {
+            html.shell-open, html.shell-open body { overflow:hidden; }
+            .shell-menu-btn { display:inline-flex; }
+            .shell-close { display:inline-flex; margin-left:auto; }
+
+            .sidebar { top:0; bottom:0; height:auto; width:min(300px, 86vw); z-index:60; transform:translateX(-100%); visibility:hidden; overscroll-behavior:contain; transition:transform .22s ease, visibility 0s linear .22s; }
+            html.shell-open .sidebar { transform:none; visibility:visible; box-shadow:0 0 48px rgba(0,0,0,0.7); transition:transform .22s ease, visibility 0s; }
+            .sidebar-footer { max-height:55%; overflow-y:auto; }
+            .nav-item { min-height:44px; }
+            .team-switch summary { min-height:44px; }
+            .shell-backdrop { display:block; position:fixed; inset:0; z-index:50; background:rgba(0,0,0,0.62); opacity:0; visibility:hidden; transition:opacity .22s ease, visibility 0s linear .22s; }
+            html.shell-open .shell-backdrop { opacity:1; visibility:visible; transition:opacity .22s ease, visibility 0s; }
+
+            .topbar { left:0; padding:0 10px; gap:8px; }
+            .topbar-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .topbar-title h1, .topbar-title h2 { font-size:1rem; line-height:1.3; margin:0; }
+            .topbar-team { display:none; }
+            .topbar-btn { width:44px; height:44px; border-radius:10px; }
+            .topbar-btn .material-symbols-rounded { font-size:20px; }
+            .topbar-profile { display:none; }
+            .content-wrap { margin-left:0; min-width:0; }
+            .shell-legacy-nav { display:none; }
+
+            /* Page content written with inline styles: keep it inside the phone viewport */
+            main [style*="padding:2rem 2.5rem"], main [style*="padding: 2rem 2.5rem"] { padding:1.25rem 1rem 2rem !important; }
+            main { min-width:0; }
+            /* Touch: 44px targets, and 16px text in fields so iOS Safari does not zoom the page on focus */
+            main .dot-btn, main .t-btn, main button[type="submit"] { min-height:44px; }
+            main a.dot-badge { min-height:44px; display:inline-flex; align-items:center; padding:0 .9rem; }
+            main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), main select, main textarea { min-height:44px; font-size:16px !important; }
+            .topbar .dot-btn { min-height:44px; }
+
+            .notif-panel { position:absolute; left:8px; right:8px; width:auto; top:calc(100% + 6px); max-height:calc(100vh - 80px); }
+            .topbar-bell { position:static; }
+        }
+        @media (max-width: 639.98px) {
+            main [style*="grid-template-columns"] { grid-template-columns:minmax(0,1fr) !important; }
+            main [style*="grid-template-columns"] > [style*="grid-column"] { grid-column:1 / -1 !important; }
+            .table-scroll > .data-table, .table-scroll > .t-table { min-width:max-content; }
+            main .t-chip span, main .filter-chip { min-height:44px; display:inline-flex; align-items:center; }
+        }
+        .table-scroll { overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+        .table-scroll:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+        @media (min-width: 640px) and (max-width: 859.98px) {
+            .topbar-team { display:block; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar, .shell-backdrop, .nav-item, .shell-menu-btn, .shell-close, .topbar-btn { transition:none !important; }
+            .live-dot, .dot-spin { animation:none !important; }
+            .team-switch[open] summary .team-switch-chevron { transform:none; }
         }
     </style>
     @livewireStyles
     <script defer src="https://unpkg.com/alpinejs@3.10.2/dist/cdn.min.js"></script>
 </head>
 <body>
-    <x-banner />
-
-    <aside class="sidebar">
+    <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
         <div class="sidebar-brand">
             <div class="brand-icon" style="background:transparent;border:none;padding:0;">
                 <img src="{{ asset('images/mark.png') }}" alt="Dot.Tutor" style="width:32px;height:32px;object-fit:contain;">
@@ -136,6 +210,9 @@
                     <span class="brand-subtitle">Tutoring Platform</span>
                 </div>
             </div>
+            <button type="button" class="shell-close" data-shell-close aria-label="Close menu">
+                <span class="material-symbols-rounded" aria-hidden="true">close</span>
+            </button>
         </div>
 
         <div class="sidebar-divider"></div>
@@ -196,12 +273,50 @@
                     <div class="user-name">{{ Auth::user()->name }}</div>
                     <div class="user-team">{{ Auth::user()->currentTeam->name ?? 'Personal' }}</div>
                 </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="topbar-btn" title="Sign out" aria-label="Sign out">
+                        <span class="material-symbols-rounded" aria-hidden="true">logout</span>
+                    </button>
+                </form>
             </div>
+            @if (Laravel\Jetstream\Jetstream::hasTeamFeatures() && Auth::user()->currentTeam)
+            <details class="team-switch">
+                <summary>
+                    <span class="material-symbols-rounded nav-icon" aria-hidden="true">groups</span>
+                    <span class="team-switch-name">Teams</span>
+                    <span class="material-symbols-rounded team-switch-chevron" aria-hidden="true" style="font-size:18px;">expand_more</span>
+                </summary>
+                <div class="team-switch-list">
+                    <a href="{{ route('teams.show', Auth::user()->currentTeam->id) }}" class="nav-item {{ request()->routeIs('teams.show') ? 'active' : '' }}">Team settings</a>
+                    @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
+                    <a href="{{ route('teams.create') }}" class="nav-item {{ request()->routeIs('teams.create') ? 'active' : '' }}">Create new team</a>
+                    @endcan
+                    @if (Auth::user()->allTeams()->count() > 1)
+                    <div class="nav-section-label">Switch teams</div>
+                    @foreach (Auth::user()->allTeams() as $switchTeam)
+                    <form method="POST" action="{{ route('current-team.update') }}">
+                        @method('PUT')
+                        @csrf
+                        <input type="hidden" name="team_id" value="{{ $switchTeam->id }}">
+                        <button type="submit" class="nav-item {{ Auth::user()->isCurrentTeam($switchTeam) ? 'active' : '' }}" @if (Auth::user()->isCurrentTeam($switchTeam)) aria-current="true" @endif>{{ $switchTeam->name }}</button>
+                    </form>
+                    @endforeach
+                    @endif
+                </div>
+            </details>
+            @endif
         </div>
         @endauth
     </aside>
 
-    <header class="topbar">
+    <div class="shell-backdrop" data-shell-close aria-hidden="true"></div>
+
+    <header class="topbar" data-shell-behind>
+        <button type="button" class="shell-menu-btn" data-shell-open aria-controls="app-sidebar" aria-expanded="false">
+            <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+            <span>Menu</span>
+        </button>
         <div class="topbar-title">
             @isset($header){{ $header }}@else Dot.Tutor
             @endisset
@@ -209,18 +324,22 @@
         @auth
         <span class="topbar-team">{{ Auth::user()->currentTeam->name ?? 'Personal' }}</span>
         @endauth
-        <a href="{{ route('profile.show') }}" class="topbar-btn" title="Profile">
+        <a href="{{ route('profile.show') }}" class="topbar-btn topbar-profile" title="Profile" aria-label="Profile">
             <span class="material-symbols-rounded">account_circle</span>
         </a>
     </header>
 
-    @livewire('navigation-menu')
+    <div class="shell-legacy-nav">
+        @livewire('navigation-menu')
+    </div>
 
-    <div class="content-wrap">
-        <main>{{ $slot }}</main>
+    <div class="content-wrap" data-shell-behind>
+        <x-banner />
+        <main id="main-content">{{ $slot }}</main>
     </div>
 
     @stack('modals')
+    @include('layouts.partials.shell-script')
     @livewireScripts
 </body>
 </html>
