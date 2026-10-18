@@ -9,7 +9,7 @@
     @if(session('status'))<div class="t-flash" role="status">{{ session('status') }}</div>@endif
 
     <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:1rem;align-items:start;">
-        <div class="t-panel" style="padding:0;overflow-x:auto;">
+        <div class="t-panel table-scroll" style="padding:0;overflow-x:auto;" role="region" aria-label="Subjects" tabindex="0">
             <table class="t-table">
                 <thead><tr><th>Subject</th><th>Level</th><th style="text-align:right;">Tutors</th><th>State</th><th></th></tr></thead>
                 <tbody>

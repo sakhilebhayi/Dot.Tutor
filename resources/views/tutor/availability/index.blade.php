@@ -29,6 +29,7 @@
                 @endif
             </p>
 
+            <div class="table-scroll" role="region" aria-label="Weekly windows" tabindex="0">
             <table class="t-table">
                 <thead><tr><th>Day</th><th>Open</th><th></th></tr></thead>
                 <tbody>
@@ -50,6 +51,7 @@
                 @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div>

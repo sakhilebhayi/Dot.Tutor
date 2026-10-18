@@ -50,6 +50,13 @@
     .subject-line { display:flex; justify-content:space-between; gap:1rem; padding:.55rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.05); font-size:.82rem; color:#d4d4d8; }
     .subject-line:last-child { border-bottom:none; }
     @media (max-width: 900px) { .dash-two { grid-template-columns:1fr !important; } }
+    @media (max-width: 640px) {
+        .session-row { flex-wrap:wrap; gap:.5rem .75rem; padding:.9rem 1rem; }
+        .session-row > div:nth-child(2) { flex:1 1 calc(100% - 3rem) !important; }
+        .session-row > div:nth-child(3) { text-align:left !important; margin-left:2.75rem; }
+        .session-row .status-badge { margin-left:auto; }
+        .panel-header, .subject-line { padding-left:1rem; padding-right:1rem; }
+    }
 </style>
 
 <div class="t-page" style="max-width:1400px;">
@@ -188,7 +195,7 @@
             <span class="panel-title">Recent sessions</span>
             <span class="panel-count">{{ $recentSessions->count() }}</span>
         </div>
-        <div style="overflow-x:auto;">
+        <div class="table-scroll" style="overflow-x:auto;" role="region" aria-label="Recent sessions" tabindex="0">
             <table class="data-table">
                 <thead>
                     <tr>
