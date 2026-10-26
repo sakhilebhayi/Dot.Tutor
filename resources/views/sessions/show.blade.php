@@ -146,7 +146,7 @@
             <form method="POST" action="{{ route('sessions.rating.store', $session) }}">
                 @csrf
                 <div style="margin-bottom:0.75rem;">
-                    <select name="rating" class="field-input" style="width:auto;">
+                    <select aria-label="Rating" name="rating" class="field-input" style="width:auto;">
                         <option value="">Select a rating…</option>
                         @for($i = 5; $i >= 1; $i--)
                             <option value="{{ $i }}" @selected(old('rating') == $i)>{{ $i }} star{{ $i > 1 ? 's' : '' }}</option>
@@ -155,7 +155,7 @@
                     @error('rating')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
                 <div style="margin-bottom:0.75rem;">
-                    <textarea name="review" rows="3" placeholder="Optional review…" class="field-input">{{ old('review') }}</textarea>
+                    <textarea aria-label="Optional review" name="review" rows="3" placeholder="Optional review…" class="field-input">{{ old('review') }}</textarea>
                     @error('review')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="confirm-btn">Submit review</button>
@@ -194,11 +194,11 @@
             <form method="POST" action="{{ route('resources.store', $session) }}" enctype="multipart/form-data" style="margin-top:1rem;">
                 @csrf
                 <div style="margin-bottom:0.75rem;">
-                    <input type="text" name="title" placeholder="Title (e.g. Practice worksheet)" class="field-input" value="{{ old('title') }}">
+                    <input aria-label="Title" type="text" name="title" placeholder="Title (e.g. Practice worksheet)" class="field-input" value="{{ old('title') }}">
                     @error('title')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
                 <div style="margin-bottom:0.75rem;">
-                    <input type="file" name="file" class="field-input">
+                    <input aria-label="File" type="file" name="file" class="field-input">
                     @error('file')<div class="error-text">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="complete-btn">Upload resource</button>
