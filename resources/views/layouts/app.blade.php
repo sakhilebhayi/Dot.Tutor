@@ -189,6 +189,7 @@
             .topbar-team { display:block; max-width:160px; overflow:hidden; text-overflow:ellipsis; }
         }
         @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
             .sidebar, .shell-backdrop, .nav-item, .shell-menu-btn, .shell-close, .topbar-btn { transition:none !important; }
             .live-dot, .dot-spin { animation:none !important; }
             .team-switch[open] summary .team-switch-chevron { transform:none; }
