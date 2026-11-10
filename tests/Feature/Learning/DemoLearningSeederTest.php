@@ -27,6 +27,6 @@ class DemoLearningSeederTest extends TestCase
     {
         $this->app['env'] = 'production';
         $this->expectException(RuntimeException::class);
-        $this->seed(DemoLearningSeeder::class);
+        (new DemoLearningSeeder)->run();
     }
 }
