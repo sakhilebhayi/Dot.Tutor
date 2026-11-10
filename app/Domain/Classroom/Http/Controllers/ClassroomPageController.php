@@ -7,6 +7,7 @@ use App\Domain\Classroom\Contracts\SummaryDrafter;
 use App\Domain\Classroom\Models\Classroom;
 use App\Domain\Classroom\Services\AfterLesson;
 use App\Domain\Classroom\Services\ClassroomAccess;
+use App\Domain\Classroom\Services\ClassroomChat;
 use App\Domain\Classroom\Services\ClassroomService;
 use App\Domain\Classroom\Services\IceConfig;
 use App\Domain\Classroom\Services\LessonFiles;
@@ -81,6 +82,7 @@ class ClassroomPageController extends Controller
             'admission' => $admission,
             'approvals' => $this->access->approvals($tutorSession, $classroom),
             'people' => $this->people($classroom),
+            'minorInLesson' => app(ClassroomChat::class)->minorInLesson($classroom),
             'relay' => $iceInfo['relay'],
             'stun' => $iceInfo['stun'],
             'title' => $this->title($tutorSession),

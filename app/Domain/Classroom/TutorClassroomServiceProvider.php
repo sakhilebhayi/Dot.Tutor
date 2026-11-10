@@ -10,6 +10,7 @@ use App\Domain\Classroom\Seams\NullSummaryDrafter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +31,7 @@ class TutorClassroomServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/resources/views', 'classroom');
+        Blade::anonymousComponentPath(__DIR__.'/resources/views/components', 'classroom');
 
         // Per person, never per address: a family on one connection must not share a budget.
         $by = fn (Request $request) => $request->user()?->id ?: $request->ip();
