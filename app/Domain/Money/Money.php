@@ -210,7 +210,7 @@ final readonly class Money implements JsonSerializable
     {
         $decimal = ltrim($this->toDecimalString(), '-');
         [$whole, $fraction] = array_pad(explode('.', $decimal, 2), 2, null);
-        $grouped = ltrim(strrev(implode(self::NNBSP, str_split(strrev($whole), 3))));
+        $grouped = implode(self::NNBSP, array_map('strrev', array_reverse(str_split(strrev($whole), 3))));
         $symbol = self::SYMBOLS[$this->currency] ?? $this->currency;
 
         return ($this->minor < 0 ? '-' : '').$symbol.self::NNBSP.$grouped.($fraction === null ? '' : '.'.$fraction);

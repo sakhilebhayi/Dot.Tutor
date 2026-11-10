@@ -40,7 +40,7 @@ class BookingPurchasable implements Purchasable
     {
         $currency = strtoupper((string) ($this->session->currency ?: Money::defaultCurrency()));
         $rateMinor = $this->session->getAttribute('rate_minor');
-        $hourly = is_numeric($rateMinor) ? Money::of((int) $rateMinor, $currency) : Money::fromDecimal((string) $this->session->getRawOriginal('rate'), $currency);
+        $hourly = is_numeric($rateMinor) ? Money::of((int) $rateMinor, $currency) : Money::fromDecimal((string) $this->session->rate, $currency);
 
         return $hourly->ratio((int) $this->session->duration_minutes, 60);
     }
