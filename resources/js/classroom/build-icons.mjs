@@ -9,7 +9,7 @@ export const ICONS = [
     'mic', 'mic-off', 'video', 'video-off', 'monitor-up', 'monitor-x', 'sliders-horizontal', 'phone-off', 'pen-line',
     'eraser', 'minus', 'square', 'circle', 'type', 'plus', 'image-down', 'send', 'flag', 'user-x', 'volume-x', 'wifi',
     'wifi-off', 'external-link', 'users', 'message-square', 'notebook-pen', 'file', 'upload', 'download', 'presentation',
-    'trash-2', 'chevron-left', 'chevron-right', 'x', 'check', 'triangle-alert', 'info', 'refresh-cw', 'lock',
+    'trash-2', 'chevron-left', 'chevron-right', 'chevron-down', 'x', 'check', 'triangle-alert', 'info', 'refresh-cw', 'lock',
 ];
 
 const lucide = process.argv[2];

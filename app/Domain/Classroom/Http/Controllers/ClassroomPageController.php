@@ -19,6 +19,7 @@ use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -64,7 +65,7 @@ class ClassroomPageController extends Controller
     }
 
     /** The lesson's room: who may come in, the pre-join check, then the call (driven by the room script). */
-    public function show(Request $request, TutorSession $tutorSession, IceConfig $ice): View
+    public function show(Request $request, TutorSession $tutorSession, IceConfig $ice): Response
     {
         $user = $request->user();
         $classroom = $this->rooms->for($tutorSession);
@@ -75,7 +76,9 @@ class ClassroomPageController extends Controller
         $tutorSession->loadMissing(['subject', 'tutorProfile.user', 'student']);
         $iceInfo = $ice->forUser($user->id);
 
-        return view('classroom::room', [
+        // The app-wide Permissions-Policy denies camera and microphone; this page is the one place that needs them
+        // (and screen capture), for this origin only. SecurityHeaders leaves a header the route set alone.
+        return response()->view('classroom::room', [
             'session' => $tutorSession,
             'classroom' => $classroom,
             'role' => $role,
@@ -110,7 +113,7 @@ class ClassroomPageController extends Controller
                     'after' => route('classroom.after', $tutorSession),
                 ],
             ],
-        ]);
+        ])->header('Permissions-Policy', 'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()');
     }
 
     public function after(Request $request, TutorSession $tutorSession, AfterLesson $after, LessonFiles $files, FollowUpAssigner $followUps, SummaryDrafter $drafter): View

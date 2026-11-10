@@ -1,7 +1,7 @@
 {{-- After the lesson: attendance from real joins, the summary, files, and for the tutor their private notes, follow-up
      work and completing the lesson through the marketplace. --}}
 @php
-    $tz = config('app.timezone');
+    $tz = $session->tutorProfile?->timezone ?: config('app.timezone');
     $starts = $session->starts_at->copy()->timezone($tz);
     $fmt = fn (?string $iso) => $iso ? \Illuminate\Support\Carbon::parse($iso)->timezone($tz)->format('H:i') : null;
     $published = $classroom->summary_published_at !== null;
@@ -9,7 +9,7 @@
 <x-dynamic-component :component="'layouts::'.$shell" :title="'After: '.$title">
     <x-td.page-head :title="$title" :lede="$starts->format('l j F Y, H:i').' ('.$tz.'). Lesson status: '.$statusLabel.'.'">
         <x-slot:actions>
-            @if (in_array($session->statusEnum()->value, ['confirmed', 'in_progress'], true))
+            @if (in_array($session->statusEnum()->value, ['confirmed', 'in_progress'], true) && ($role === 'tutor' || ! $classroom->isEnded()))
                 <x-td.button :href="route('classroom.show', $session)" icon="video">Back to the classroom</x-td.button>
             @endif
         </x-slot:actions>
@@ -81,7 +81,7 @@
                             <x-td.button type="submit" variant="primary" icon="circle-check">Mark the lesson completed</x-td.button>
                         </form>
                     @else
-                        <p class="cr-muted">{{ $session->statusEnum()->value === 'completed' ? 'This lesson is completed.' : 'A lesson can be completed once it has started.' }}</p>
+                        <p class="cr-muted">{{ $session->statusEnum()->value === 'completed' ? 'This lesson is completed.' : 'A lesson can be marked completed from its start time.' }}</p>
                     @endif
                 </x-td.panel>
 

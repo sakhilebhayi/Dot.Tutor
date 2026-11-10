@@ -2,7 +2,7 @@
      then the call itself, driven by the classroom script. Rendered in the tutor workspace for the tutor and in the
      learner shell for learners and guardians. --}}
 @php
-    $tz = config('app.timezone');
+    $tz = $session->tutorProfile?->timezone ?: config('app.timezone');
     $starts = $session->starts_at->copy()->timezone($tz);
     $ends = $session->endsAt()->copy()->timezone($tz);
     $tutorName = $session->tutorProfile?->user?->name ?? 'the tutor';
@@ -83,14 +83,14 @@
                 <div class="cr-lobby__form">
                     <h2 class="cr-h2" id="cr-lobby-h">Check your camera and microphone</h2>
                     <p class="cr-muted">Only you see this preview. Nobody sees or hears you until you join.</p>
-                    <div class="td-field"><label class="td-label" for="cr-sel-cam">Camera</label><span class="td-select-wrap"><select class="td-select" id="cr-sel-cam"><option>Looking for cameras</option></select></span></div>
+                    <div class="td-field"><label class="td-label" for="cr-sel-cam">Camera</label><span class="td-select-wrap"><select class="td-select" id="cr-sel-cam"><option>Looking for cameras</option></select><x-td.icon name="chevron-down" /></span></div>
                     <div class="td-field">
                         <label class="td-label" for="cr-sel-mic">Microphone</label>
-                        <span class="td-select-wrap"><select class="td-select" id="cr-sel-mic"><option>Looking for microphones</option></select></span>
+                        <span class="td-select-wrap"><select class="td-select" id="cr-sel-mic"><option>Looking for microphones</option></select><x-td.icon name="chevron-down" /></span>
                         <div class="cr-level" role="meter" aria-label="Microphone level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="cr-level"><i id="cr-level-fill"></i></div>
                         <p class="td-hint" id="cr-level-hint">Say something: the bar moves when your microphone hears you.</p>
                     </div>
-                    <div class="td-field" id="cr-spk-wrap" hidden><label class="td-label" for="cr-sel-spk">Speaker</label><span class="td-select-wrap"><select class="td-select" id="cr-sel-spk"></select></span></div>
+                    <div class="td-field" id="cr-spk-wrap" hidden><label class="td-label" for="cr-sel-spk">Speaker</label><span class="td-select-wrap"><select class="td-select" id="cr-sel-spk"></select><x-td.icon name="chevron-down" /></span></div>
                     <dl class="cr-checks" id="cr-checks" aria-label="Checks before you join">
                         <div><dt>Browser</dt><dd id="cr-check-browser">Checking</dd></div>
                         <div><dt>Camera</dt><dd id="cr-check-cam">Checking</dd></div>
@@ -150,6 +150,20 @@
                                 <p id="cr-board-text" class="cr-muted cr-board__alt">Nothing on this page yet.</p>
                             </div>
                         </x-td.tab-panel>
+                        <div id="cr-controls" class="cr-controls" role="toolbar" aria-label="Lesson controls">
+                            <button type="button" id="cr-mic" class="cr-ctl" aria-pressed="true" aria-label="Microphone on" title="Mute (m)"><x-classroom::icon name="mic" /></button>
+                            <button type="button" id="cr-cam" class="cr-ctl" aria-pressed="true" aria-label="Camera on" title="Turn camera off (v)"><x-classroom::icon name="video" /></button>
+                            <button type="button" id="cr-share" class="cr-ctl" aria-pressed="false" aria-label="Share your screen" title="Share your screen"><x-classroom::icon name="monitor-up" /></button>
+                            <details class="cr-menu" id="cr-devices">
+                                <summary class="cr-ctl" aria-label="Camera, microphone and speaker" title="Devices"><x-classroom::icon name="sliders-horizontal" /></summary>
+                                <div class="cr-menu__panel" id="cr-devices-panel"></div>
+                            </details>
+                            <span class="cr-controls__gap"></span>
+                            <button type="button" id="cr-leave" class="cr-ctl cr-ctl--leave" aria-label="Leave the lesson" title="Leave"><x-classroom::icon name="phone-off" /></button>
+                            @if ($role === 'tutor')
+                                <x-td.button id="cr-end" variant="danger" size="sm">End the lesson</x-td.button>
+                            @endif
+                        </div>
                     </div>
 
                     <aside class="cr-side" aria-label="Lesson panel">
@@ -188,20 +202,6 @@
                     </aside>
                 </div>
 
-                <div id="cr-controls" class="cr-controls" role="toolbar" aria-label="Lesson controls">
-                    <button type="button" id="cr-mic" class="cr-ctl" aria-pressed="true" aria-label="Microphone on" title="Mute (m)"><x-classroom::icon name="mic" /></button>
-                    <button type="button" id="cr-cam" class="cr-ctl" aria-pressed="true" aria-label="Camera on" title="Turn camera off (v)"><x-classroom::icon name="video" /></button>
-                    <button type="button" id="cr-share" class="cr-ctl" aria-pressed="false" aria-label="Share your screen" title="Share your screen"><x-classroom::icon name="monitor-up" /></button>
-                    <details class="cr-menu" id="cr-devices">
-                        <summary class="cr-ctl" aria-label="Camera, microphone and speaker" title="Devices"><x-classroom::icon name="sliders-horizontal" /></summary>
-                        <div class="cr-menu__panel" id="cr-devices-panel"></div>
-                    </details>
-                    <span class="cr-controls__gap"></span>
-                    <button type="button" id="cr-leave" class="cr-ctl cr-ctl--leave" aria-label="Leave the lesson" title="Leave"><x-classroom::icon name="phone-off" /></button>
-                    @if ($role === 'tutor')
-                        <x-td.button id="cr-end" variant="danger" size="sm">End the lesson</x-td.button>
-                    @endif
-                </div>
             </section>
 
             <section id="cr-notice" class="cr-notice" hidden aria-live="assertive"></section>
@@ -221,7 +221,7 @@
 
             <section aria-labelledby="cr-fallback-h">
                 <h2 class="cr-h2" id="cr-fallback-h">If the classroom cannot connect</h2>
-                <p>Browsers connect to each other directly. No relay server is set up yet, so a few networks (some schools, offices and mobile carriers) block the connection. When that happens the room says so and offers {{ $role === 'tutor' ? 'your' : "the tutor's" }} own meeting link.</p>
+                <p>Browsers connect to each other directly. @if ($relay)When that fails, a relay server carries the lesson; if even that cannot reach someone, @else No relay server is set up yet, so a few networks (some schools, offices and mobile carriers) block the connection. When that happens @endif the room says so and offers {{ $role === 'tutor' ? 'your' : "the tutor's" }} own meeting link.</p>
                 @if ($role === 'tutor')
                     <form method="POST" action="{{ route('classroom.link', $session) }}" class="cr-inline-form">
                         @csrf

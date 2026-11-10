@@ -191,6 +191,9 @@ class ClassroomAccessTest extends TestCase
 
         $this->actingAs($tutor)->get(route('classroom.show', $session))->assertOk()
             ->assertSee('This lesson is not recorded.')
-            ->assertSee('No relay server is set up');
+            ->assertSee('No relay server is set up')
+            ->assertHeader('Permissions-Policy', 'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()');
+        // Everywhere else the app-wide policy still denies camera and microphone.
+        $this->actingAs($tutor)->get(route('classroom.after', $session))->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
     }
 }
