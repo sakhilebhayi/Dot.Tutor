@@ -142,3 +142,15 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Machine translation | Academic `Translations` store ready, no producer; course, resource and tutor profile not registered | P | Brief section 10 | Machine translation with model, unreviewed status, notation check, side-by-side page, review |
 | Need parsing | Deterministic parser only | I | Free text it cannot read was a dead end | Optional AI rewording, parser re-match, confirmation step |
 | Dot.Agents/Brain/Memory | Not integrated | F (correctly absent) | No supported learning API exists | Recorded, not called (D-916) |
+
+### Community domain (community agent, 2026-11-10)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Academic learning rooms (brief 5) | Nothing: no rooms, no subject spaces | M | The defining feature did not exist | Subject rooms per offering and audience, stage hubs, profile landing, browsing (docs/R47_COMMUNITY.md) |
+| Q&A and discussions | None | M | No way to ask or answer | Questions, answers, accepted answer, resolved state, discussions, explanations, revision techniques, replies, edit history |
+| Study material in rooms | Library existed (learning), not linked to any space | P | Material had no room | Material posts link published library items; the room lists library material for its subject and level |
+| Study groups and tutor rooms (brief 11) | None | M | No group learning, no tutor-run rooms | Groups with join rules and caps, sessions with calendar files, attendance, revision lists, tasks; free and paid tutor rooms through money |
+| Room safety (brief 15) | Safety rules for rooms existed, `RoomDirectory` bound to a null | P | Room conversations answered 404 | Rooms are `AgeGatedSpace`s; `RoomDirectory` bound; age gates, pre-moderation, redaction, reports and holds enforced server side |
+| Engagement mechanics | None | F (correctly absent) | Brief: no likes or popularity | Indicators only: questions resolved, answers accepted, resources contributed, sessions attended, milestones |
+| Freshness | None | M | No way to see new activity | Versioned activity endpoint with ETag/304 and a polling notice |
