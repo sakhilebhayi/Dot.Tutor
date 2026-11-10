@@ -2,6 +2,7 @@
 
 namespace App\Domain\Academic\Http\Controllers;
 
+use App\Domain\Academic\Http\Controllers\Concerns\ValidatesJson;
 use App\Domain\Academic\Translations;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -17,9 +18,14 @@ use Illuminate\Validation\Rule;
  */
 class TranslationController extends Controller
 {
+    use ValidatesJson;
+
     public function show(Request $request, Translations $translations, string $type, int $id, string $field): JsonResponse
     {
-        $data = $request->validate(['locale' => ['required', 'string', 'max:16', Rule::exists('languages', 'code')]]);
+        $data = $this->validateJson($request, ['locale' => ['required', 'string', 'max:16', Rule::exists('languages', 'code')]]);
+        if ($data instanceof JsonResponse) {
+            return $data;
+        }
 
         if (! $translations->isTranslatableField($type, $field)) {
             return response()->json(['error' => 'not_translatable', 'message' => 'That content cannot be translated.'], 404);
