@@ -174,7 +174,8 @@ return [
     ],
 
     // Types that stay in the inbox only (no push, email or SMS copies).
-    'in_app_only_types' => [],
+    // course_enrolled: the learner enrolled themselves; an inbox entry is enough.
+    'in_app_only_types' => ['course_enrolled'],
 
     'push' => [
         // Base64url raw keys; `php artisan comms:vapid-keys` prints a pair. Without both, push is off everywhere.
