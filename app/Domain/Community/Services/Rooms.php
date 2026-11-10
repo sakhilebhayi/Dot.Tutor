@@ -104,7 +104,7 @@ class Rooms
             }
         }
 
-        $joined = Room::query()->with(['subject', 'level.stage', 'curriculum', 'owner'])
+        $joined = Room::query()->with(['subject', 'level.stage', 'curriculum', 'owner', 'members' => fn ($q) => $q->where('user_id', $user->id)])
             ->whereIn('id', RoomMember::query()->where('user_id', $user->id)
                 ->whereIn('status', [RoomMember::ACTIVE, RoomMember::PENDING, RoomMember::AWAITING_GUARDIAN, RoomMember::AWAITING_PAYMENT])
                 ->select('room_id'))
