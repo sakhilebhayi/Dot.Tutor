@@ -28,6 +28,7 @@ final readonly class Refusal
         'no_candidates' => 'The library has no published resources for this subject and level yet, so there is nothing to suggest.',
         'not_your_bank' => 'You can only draft questions into your own question banks.',
         'not_your_course' => 'You can only ask about your own courses.',
+        'too_long' => 'This text is too long to translate in one go.',
         'nothing_to_translate' => 'There is no text in that field to translate.',
         'same_language' => 'The text is already in that language.',
         'refused_by_model' => 'The assistant declined to answer this request. A tutor can help instead.',
