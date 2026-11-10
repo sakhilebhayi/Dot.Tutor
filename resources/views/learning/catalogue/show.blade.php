@@ -41,7 +41,7 @@
                     </ul>
                 @endforeach
             </div>
-            <aside class="panel">
+            <aside class="panel first-on-mobile">
                 @if ($viewer['enrolled'])
                     <p><strong>You are enrolled.</strong> {{ $viewer['progress']['completed'] }} of {{ $viewer['progress']['total'] }} lessons complete.</p>
                     <a class="btn" href="{{ route('learning.learn', $course) }}">{{ $viewer['progress']['completed'] > 0 ? 'Resume' : 'Start' }}</a>

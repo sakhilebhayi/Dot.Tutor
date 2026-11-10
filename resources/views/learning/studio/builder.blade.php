@@ -1,7 +1,8 @@
 <x-app-layout>
     <x-slot name="header">Course studio</x-slot>
     @include('learning.partials.styles')
-    @php($canPublish = $draft['publish_problems'] === [])
+    @php($unchanged = $draft['versions'] !== [] && ! $draft['has_unpublished_changes'])
+    @php($canPublish = $draft['publish_problems'] === [] && ! $unchanged)
     <div class="ln">
         <p><a href="{{ route('learning.studio.courses.index') }}">All your courses</a></p>
         <h1>{{ $draft['title'] }}</h1>
@@ -144,7 +145,9 @@
             <aside>
                 <section class="panel" aria-labelledby="publish">
                     <h2 id="publish" style="margin-top:0">Publish</h2>
-                    @if ($canPublish)
+                    @if ($unchanged && $draft['publish_problems'] === [])
+                        <p>Nothing has changed since version {{ last($draft['versions'])['number'] }}. Edit the draft, then publish an update.</p>
+                    @elseif ($canPublish)
                         <p>Ready. Learners already enrolled stay on their version until they choose to move to the new one.</p>
                     @else
                         <p>Before this course can publish:</p>

@@ -63,6 +63,16 @@ class CourseAuthoringTest extends TestCase
             ->assertJsonPath('data.0.outline.0.lessons.0.title', 'What is a force?');
     }
 
+    public function test_publishing_again_without_changes_is_refused(): void
+    {
+        $tutor = $this->approvedTutor();
+        $course = $this->publishedCourse($tutor);
+
+        $this->actingAs($tutor)->postJson("/api/tutor/learning/studio/courses/{$course->id}/publish")
+            ->assertUnprocessable()->assertJsonPath('errors.course.0', 'Nothing has changed since the last published version.');
+        $this->assertSame(1, $course->versions()->count());
+    }
+
     public function test_only_an_approved_tutor_can_publish(): void
     {
         $notTutor = $this->learner('Not Yet Tutor');

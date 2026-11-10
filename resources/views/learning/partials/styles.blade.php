@@ -8,6 +8,7 @@
     .ln .muted { color: #a1a1aa; }
     .ln .grid { display: grid; gap: 1.5rem; }
     @media (min-width: 900px) { .ln .grid.two { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+    @media (max-width: 899px) { .ln .grid.two > aside.first-on-mobile { order: -1; } }
     .ln .panel { background: #121215; border: 1px solid #27272a; border-radius: 10px; padding: 1.25rem; }
     .ln .row { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
     .ln label { display: block; font-size: .8rem; font-weight: 600; color: #d4d4d8; margin: .9rem 0 .3rem; }
@@ -15,6 +16,7 @@
         width: 100%; background: #0b0b0d; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 8px; padding: .55rem .7rem; font: inherit; font-size: .9rem; }
     .ln textarea { min-height: 7rem; }
     .ln input:focus-visible, .ln select:focus-visible, .ln textarea:focus-visible, .ln a:focus-visible, .ln button:focus-visible, .ln summary:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+    .ln label.choice { font-size: .95rem; font-weight: 400; color: #e4e4e7; display: flex; gap: .5rem; align-items: center; padding: .25rem 0; }
     .ln .hint { font-size: .78rem; color: #a1a1aa; margin-top: .25rem; }
     .ln .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1rem; border-radius: 8px; border: 1px solid #fbbf24; background: #fbbf24; color: #09090b; font-weight: 700; font-size: .85rem; cursor: pointer; text-decoration: none; }
     .ln .btn.ghost { background: transparent; color: #fde68a; border-color: #52525b; }

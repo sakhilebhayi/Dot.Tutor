@@ -95,6 +95,9 @@ class CoursePublisher
     public function publish(Course $course, User $publisher): CourseVersion
     {
         $problems = $this->problems($course, $publisher);
+        if ($problems === [] && $course->current_version_id !== null && ! $this->hasUnpublishedChanges($course)) {
+            $problems[] = 'Nothing has changed since the last published version.';
+        }
         if ($problems !== []) {
             throw ValidationException::withMessages(['course' => $problems]);
         }

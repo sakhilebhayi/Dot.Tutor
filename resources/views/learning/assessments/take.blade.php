@@ -4,7 +4,7 @@
     <div class="ln" style="max-width:48rem">
         <h1>{{ $assessment->title }}</h1>
         <p class="row muted">
-            <span>{{ $assessment->kind->value === 'practice' ? 'Practice: does not count as an assessed result' : 'Assessed: marked against your tutor\'s answer key' }}</span>
+            <span>{{ $assessment->kind->value === 'practice' ? 'Practice: your answers count toward topic progress, not as an assessed result' : 'Assessed: marked against your tutor\'s answer key' }}</span>
             <span>Pass mark {{ $assessment->pass_percent }}%</span>
             @if ($assessment->time_limit_minutes) <span>Time limit {{ $assessment->time_limit_minutes }} minutes</span> @endif
             @if ($assessment->max_attempts) <span>{{ $assessment->max_attempts }} {{ \Illuminate\Support\Str::plural('attempt', $assessment->max_attempts) }} allowed</span> @endif
@@ -34,13 +34,13 @@
                         @switch($question['type'])
                             @case('single_choice')
                                 @foreach ($question['options'] as $option)
-                                    <label style="font-weight:400"><input type="radio" name="answers[{{ $question['id'] }}]" value="{{ $option['key'] }}"> {{ $option['text'] }}</label>
+                                    <label class="choice"><input type="radio" name="answers[{{ $question['id'] }}]" value="{{ $option['key'] }}"> {{ $option['text'] }}</label>
                                 @endforeach
                                 @break
                             @case('multi_select')
                                 <p class="hint">Choose every correct answer. Marks are given only for the exact set.</p>
                                 @foreach ($question['options'] as $option)
-                                    <label style="font-weight:400"><input type="checkbox" name="answers[{{ $question['id'] }}][]" value="{{ $option['key'] }}"> {{ $option['text'] }}</label>
+                                    <label class="choice"><input type="checkbox" name="answers[{{ $question['id'] }}][]" value="{{ $option['key'] }}"> {{ $option['text'] }}</label>
                                 @endforeach
                                 @break
                             @case('numeric')
