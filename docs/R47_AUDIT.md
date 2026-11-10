@@ -54,7 +54,7 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Frontend build | P | `@tailwindcss/vite` 4 installed but unused; Tailwind 3 via PostCSS for guest pages and cdn.tailwindcss.com at runtime for signed-in pages | Tailwind 4.3.1 built by Vite for every page; no runtime CDN |
 | Fonts and icons | I | Google Fonts on every layout; Material Symbols icon font from Google | Self-hosted OFL fonts in public/fonts; Lucide SVG sprite in public/icons |
 | Alpine | I | unpkg Alpine on the landing (Livewire already bundles Alpine) | Removed; the landing needs no Alpine |
-| Component kit | M | Jetstream defaults plus per-page inline styles and `t-*` classes in the layout | 30 `x-td.*` components with states and accessibility built in; Jetstream components restyled |
+| Component kit | M | Jetstream defaults plus per-page inline styles and `t-*` classes in the layout | 31 `x-td.*` components with states and accessibility built in; Jetstream components restyled |
 | Shells | P | One app layout (sidebar drawer, good a11y contract) for everyone | Public, learner (phone bottom bar), tutor workspace, operations shells on one frame; navigation as data, only built routes linked |
 | Young learners | M | No difference between a Grade 1 learner and an operator | Young, standard and dense steps in one system |
 | Landing | I | A brochure for a booking tool with an Unsplash hotlink and unpkg Alpine | Rebuilt around plain-words requests, explained matches, rooms by level, tutors' practice and languages; real content and credited open-licence photographs |
