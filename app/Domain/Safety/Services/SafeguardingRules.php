@@ -325,7 +325,7 @@ class SafeguardingRules implements SafeguardingGate
         $ids = match (true) {
             $subject instanceof User => [$subject->id],
             $subject instanceof TutorProfile => [$subject->user_id],
-            $subject instanceof TutorSession => [$subject->student_id, $subject->tutorProfile?->user_id],
+            $subject instanceof TutorSession => [$subject->student_id, TutorProfile::query()->whereKey($subject->tutor_profile_id)->value('user_id')],
             $subject instanceof Conversation => $subject->memberIds(),
             $subject instanceof InvolvesPeople => $subject->safetyParticipantIds(),
             $subject instanceof AgeGatedSpace => $subject->safetyMemberIds(),

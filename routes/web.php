@@ -111,3 +111,5 @@ Route::middleware([
 if (! Features::enabled(Features::registration())) {
     Route::redirect('/register', '/login')->name('register');
 }
+
+require __DIR__.'/tutor/safety.php';
