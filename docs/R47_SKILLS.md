@@ -39,6 +39,11 @@ Invoked and applied, in this order:
 - **design-md**: DESIGN.md in Google format from the shipped tokens; `npx @google/design.md lint DESIGN.md`: 0 errors, 0 warnings.
 
 Not used: awesome-design-md and open-design (no brand reference needed), gsap-* and scroll-world (no scroll choreography by direction), react-bits and canvas-ui (no React or WebGL), dataviz (no charts in this scope; the progress meter and stat strip follow its stat-tile rules). `ui-ux-pro-max` and `emil-design-eng` are dangling symlinks on this machine and were not used.
+## ai agent (wave 2, 2026-11-10)
+- `claude-api` invoked before any Claude code: official PHP SDK (`anthropic-ai/sdk`), `claude-opus-5-5` default, effort as the depth control, structured outputs for drafts, translations and need fields, server-side refusal fallback, typed exception chain, no sampling parameters. Choices and costs in docs/R47_AI.md section 2.
+- `impeccable` invoked before writing the six screens; `impeccable context` loaded PRODUCT.md and DESIGN.md (ds). Treated as Operate-mode screens inside the ds world, no new direction; read the craft floor and applied it: kit components only, honest states (not configured, empty, refused), AI guidance labelled on every answer, controls named by their action, measure capped, no eyebrows or card grids. `impeccable detect --json resources/views/ai`: no findings.
+- Checked with Playwright CLI (the shared browser pane refused the local host) at 1440 px and 390 px on the assistant, an answer, the teaching assistant, describe-your-need and the operator log: no horizontal overflow; fixed from the check: duplicated "AI guidance" wording in the disclaimer, an empty stat cell in the operator strip.
+- Not used: hallmark (no new page world), `ui-ux-pro-max` and `emil-design-eng` (dangling symlinks).
 
 ## comms agent (wave 2, 2026-11-10)
 
