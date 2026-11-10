@@ -152,7 +152,8 @@ class LifecycleIntegrityTest extends TestCase
 
         foreach ([0, 6, 99] as $i => $bad) {
             try {
-                DB::table('session_ratings')->insert(['session_id' => $sessions[$i]->id, 'rated_by' => $student->id, 'rating' => $bad, 'created_at' => now(), 'updated_at' => now()]);
+                // In a nested transaction (a savepoint), so on PostgreSQL the refused insert does not abort the test's transaction.
+                DB::transaction(fn () => DB::table('session_ratings')->insert(['session_id' => $sessions[$i]->id, 'rated_by' => $student->id, 'rating' => $bad, 'created_at' => now(), 'updated_at' => now()]));
                 $this->fail("rating {$bad} was accepted by the database");
             } catch (QueryException) {
                 $this->assertTrue(true);

@@ -171,7 +171,9 @@ class LearnerProfileTest extends TestCase
         $this->actingAs($this->learner)->put(route('academic.profile.update'), $this->payload());
         $profile = LearnerProfile::query()->firstOrFail();
 
-        $this->assertNull(app(LearnerProfiles::class)->ageBand($profile), 'Unknown until the safety domain is bound');
+        // Bound by the integration provider (R-47 D-1400): the safety rule bands the conservative birth date.
+        $expected = \App\Domain\Safety\Enums\AgeBand::fromBirthDate($profile->ageBandBirthDate())->value;
+        $this->assertSame($expected, app(LearnerProfiles::class)->ageBand($profile));
         $this->assertSame($profile->ageBandBirthDate()->toDateString(), app(LearnerProfiles::class)->birthDateFor($this->learner)->toDateString());
         $this->assertNull(app(LearnerProfiles::class)->birthDateFor(User::factory()->create()));
 

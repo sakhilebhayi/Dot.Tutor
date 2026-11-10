@@ -55,7 +55,7 @@ class Idempotency
                     'request_hash' => $hash,
                 ]);
                 $resource = $create();
-                $record->update(['resource_type' => $resource::class, 'resource_id' => $resource->getKey()]);
+                $record->update(['resource_type' => class_basename($resource), 'resource_id' => $resource->getKey()]);
 
                 return [$resource, false];
             });

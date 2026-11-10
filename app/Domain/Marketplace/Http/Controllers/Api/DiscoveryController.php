@@ -46,8 +46,8 @@ class DiscoveryController extends Controller
             ->when(($data['format'] ?? null) === 'in_person', fn ($q) => $q->where('teaches_in_person', true))
             ->when($data['verification_level'] ?? null, fn ($q, $level) => $q->where('verification_level', $level))
             ->when($data['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w
-                ->where('headline', 'like', '%'.addcslashes($term, '%_\\').'%')
-                ->orWhereHas('user', fn ($u) => $u->where('name', 'like', '%'.addcslashes($term, '%_\\').'%'))));
+                ->whereLike('headline', '%'.addcslashes($term, '%_\\').'%')
+                ->orWhereHas('user', fn ($u) => $u->whereLike('name', '%'.addcslashes($term, '%_\\').'%'))));
 
         $total = (clone $query)->count();
         $perPage = 20;

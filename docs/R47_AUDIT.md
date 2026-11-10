@@ -142,3 +142,16 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Machine translation | Academic `Translations` store ready, no producer; course, resource and tutor profile not registered | P | Brief section 10 | Machine translation with model, unreviewed status, notation check, side-by-side page, review |
 | Need parsing | Deterministic parser only | I | Free text it cannot read was a dead end | Optional AI rewording, parser re-match, confirmation step |
 | Dot.Agents/Brain/Memory | Not integrated | F (correctly absent) | No supported learning API exists | Recorded, not called (D-916) |
+### Integration (integ agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Every cross-domain port bound to a null default | integration | Matching ignored levels and languages, payments answered 503, guardians could never approve, audit went to logs | All 22 ports bound to owners (R47_INTEGRATION.md section 1) |
+| Marketplace asked the gate about the offering | safety bug | `peopleIn(TutorOffering)` is empty, so a minor's booking of an unscreened tutor was only caught by the safety model backstop (generic error) | The adapter asks about the offering's tutor; priced offerings published count as selling |
+| Money's booking adapter refused `awaiting_payment` and priced by rate | money/marketplace bug | A v2 booking could not be paid at all | `MarketplaceBookingPurchasable` |
+| Checkout without Paystack created an order anyway | money/learning | The open order then blocked quotes ("already in an unpaid order") | No order when payments are off; open orders reused |
+| Search used `like` | PostgreSQL bug | Case-sensitive on PostgreSQL | `whereLike` |
+| Idempotency stored the full class name in a 40-char column | PostgreSQL bug | Seat, package and series requests failed on PostgreSQL | Class basename |
+| JSON errors had four renderers with different codes | consistency | `access_denied_http_exception` vs `forbidden`, redirects for JSON calls outside `api/*` | One policy (D-1404) |
+| Academic ids without keys | data integrity | Orphans possible | Keys added (D-1406) |
+| Suite memory | CI | Fails at 128 MB on trunk | 512M (D-1405) |

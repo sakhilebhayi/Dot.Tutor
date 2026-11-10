@@ -22,19 +22,12 @@ use App\Domain\Marketplace\Seams\NullLearnerAge;
 use App\Domain\Marketplace\Seams\NullReportSink;
 use App\Domain\Marketplace\Seams\NullSafeguarding;
 use App\Domain\Marketplace\Services\EloquentTutorDirectory;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * R-47 marketplace domain. Binds every seam with an honest null default
@@ -74,7 +67,7 @@ class TutorMarketplaceServiceProvider extends ServiceProvider
         $this->registerJsonErrors();
     }
 
-    /** /api/tutor/* answers {error, message} (architecture section 2). */
+    /** MarketplaceException answers {error, message} under /api/tutor/* and a form error elsewhere. */
     private function registerJsonErrors(): void
     {
         $handler = $this->app->make(ExceptionHandler::class);
@@ -82,7 +75,7 @@ class TutorMarketplaceServiceProvider extends ServiceProvider
             return;
         }
 
-        $isApi = fn (Request $request) => $request->is('api/tutor', 'api/tutor/*');
+        $isApi = fn (Request $request) => $request->is('api/tutor', 'api/tutor/*') || $request->expectsJson();
 
         $handler->renderable(function (MarketplaceException $e, Request $request) use ($isApi) {
             if ($isApi($request)) {
@@ -91,27 +84,7 @@ class TutorMarketplaceServiceProvider extends ServiceProvider
 
             return back()->withErrors(['marketplace' => $e->getMessage()])->withInput();
         });
-        $handler->renderable(function (ValidationException $e, Request $request) use ($isApi) {
-            if ($isApi($request)) {
-                return response()->json(['error' => 'validation_failed', 'message' => $e->getMessage(), 'errors' => $e->errors()], $e->status);
-            }
-
-            return null;
-        });
-        $handler->renderable(function (AuthenticationException $e, Request $request) use ($isApi) {
-            return $isApi($request) ? response()->json(['error' => 'unauthenticated', 'message' => 'Sign in first.'], 401) : null;
-        });
-        $handler->renderable(function (AuthorizationException $e, Request $request) use ($isApi) {
-            return $isApi($request) ? response()->json(['error' => 'forbidden', 'message' => $e->getMessage() ?: 'You are not allowed to do this.'], 403) : null;
-        });
-        $handler->renderable(function (NotFoundHttpException|ModelNotFoundException $e, Request $request) use ($isApi) {
-            return $isApi($request) ? response()->json(['error' => 'not_found', 'message' => 'Not found.'], 404) : null;
-        });
-        $handler->renderable(function (ThrottleRequestsException $e, Request $request) use ($isApi) {
-            return $isApi($request) ? response()->json(['error' => 'too_many_requests', 'message' => 'Too many requests. Wait a minute and try again.'], 429, $e->getHeaders()) : null;
-        });
-        $handler->renderable(function (HttpExceptionInterface $e, Request $request) use ($isApi) {
-            return $isApi($request) ? response()->json(['error' => 'http_'.$e->getStatusCode(), 'message' => $e->getMessage() ?: 'Request refused.'], $e->getStatusCode(), $e->getHeaders()) : null;
-        });
+        // Framework exceptions (validation, authentication, authorisation, not found, throttling, HTTP errors)
+        // are rendered as {error, message} app-wide by bootstrap/app.php (R-47 D-1404).
     }
 }

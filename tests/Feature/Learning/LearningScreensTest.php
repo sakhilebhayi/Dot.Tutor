@@ -77,7 +77,8 @@ class LearningScreensTest extends TestCase
 
         $this->get("/learning/courses/{$course->id}")->assertOk()->assertSee('ZAR 249.00')->assertSee('Refunds within 7 days if under 20% complete.')->assertSee('Buy course');
         $this->post("/learning/courses/{$course->id}/checkout", ['idempotency_key' => 'abc'])->assertRedirect()
-            ->assertSessionHasErrors(['checkout' => 'Payments are not switched on yet, so paid content cannot be bought.']);
+            // Money says so itself now that checkout is bound to it (D-1400); no Paystack key in tests.
+            ->assertSessionHasErrors(['checkout' => 'Online payment is not enabled on this environment. Paid items cannot be checked out.']);
     }
 
     public function test_library_screens_and_quiz_screens_render(): void

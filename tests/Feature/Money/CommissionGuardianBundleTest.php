@@ -79,6 +79,7 @@ class CommissionGuardianBundleTest extends TestCase
 
     public function test_a_minor_is_held_for_a_guardian_and_cannot_pay_until_approved(): void
     {
+        $this->useMoneysOwnApprovalRule();
         $this->app->instance(BuyerAge::class, new class implements BuyerAge
         {
             public function bandFor(User $user): ?string
@@ -99,6 +100,7 @@ class CommissionGuardianBundleTest extends TestCase
 
     public function test_a_guardian_refusal_closes_the_order(): void
     {
+        $this->useMoneysOwnApprovalRule();
         config(['money.guardian.hold_unknown_age' => true]);
         [$session, $learner] = $this->lesson();
         $uuid = $this->placeOrder($learner, [$this->bookingItem($session)])->assertJsonPath('order.status', 'awaiting_guardian')->json('order.id');
@@ -162,5 +164,11 @@ class CommissionGuardianBundleTest extends TestCase
         $this->actingAs($learner)->getJson('/api/tutor/money/entitlements/check?type=course&id='.$free->id)->assertOk()->assertJsonPath('owns', true)->assertJsonPath('source', 'free');
         $this->assertSame(0, $this->paystack->calls('initialize'));
         $this->assertLedgerHealthy();
+    }
+
+    /** Money's default rule (age band only). The integration provider binds the safety-backed rule (D-1400). */
+    private function useMoneysOwnApprovalRule(): void
+    {
+        $this->app->bind(\App\Domain\Money\Contracts\PurchaseApprovals::class, \App\Domain\Money\Seams\AgeBandPurchaseApprovals::class);
     }
 }

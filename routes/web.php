@@ -117,4 +117,5 @@ require __DIR__.'/tutor/money.php';
 require __DIR__.'/tutor/learning.php';
 require __DIR__.'/tutor/academic.php';
 require __DIR__.'/tutor/marketplace.php';
+require __DIR__.'/tutor/integration.php';
 require __DIR__.'/tutor/ai.php';

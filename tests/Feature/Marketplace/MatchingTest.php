@@ -2,7 +2,11 @@
 
 namespace Tests\Feature\Marketplace;
 
+use App\Domain\Marketplace\Contracts\AcademicScopePort;
+use App\Domain\Marketplace\Contracts\LanguageProfilePort;
 use App\Domain\Marketplace\Models\TutorTeachingScope;
+use App\Domain\Marketplace\Seams\NullAcademicScope;
+use App\Domain\Marketplace\Seams\NullLanguageProfile;
 use App\Domain\Marketplace\Services\MatchingService;
 use App\Domain\Marketplace\Support\LearningNeed;
 use App\Models\SessionRating;
@@ -37,6 +41,7 @@ class MatchingTest extends TestCase
 
     private function scope(TutorProfile $tutor, ?int $min, ?int $max, ?int $curriculum = 1): void
     {
+        $this->stubAcademicIds($curriculum, [$min, $max]);
         TutorTeachingScope::create(['tutor_profile_id' => $tutor->id, 'subject_id' => $this->maths->id, 'curriculum_id' => $curriculum, 'level_min_id' => $min, 'level_max_id' => $max]);
     }
 
@@ -145,6 +150,9 @@ class MatchingTest extends TestCase
 
     public function test_without_language_or_academic_data_the_result_says_so(): void
     {
+        // The marketplace's null defaults (the integration provider binds the real academic seams over them).
+        $this->app->bind(LanguageProfilePort::class, NullLanguageProfile::class);
+        $this->app->bind(AcademicScopePort::class, NullAcademicScope::class);
         $this->tutor('Anyone');
 
         $result = $this->match(['languages' => ['xh'], 'level_id' => 11]);
