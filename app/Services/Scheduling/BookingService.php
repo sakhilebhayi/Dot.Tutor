@@ -2,6 +2,8 @@
 
 namespace App\Services\Scheduling;
 
+use App\Domain\Marketplace\Enums\SeatStatus;
+use App\Domain\Marketplace\Services\BookingStateMachine;
 use App\Enums\SessionStatus;
 use App\Models\Subject;
 use App\Models\TutorProfile;
@@ -31,13 +33,12 @@ class BookingService
     {
         $duration = (int) $data['duration_minutes'];
         $start = Carbon::parse($data['starts_at'], $profile->scheduleTimezone())->utc()->startOfMinute();
-        $end = $start->copy()->addMinutes($duration);
 
-        return DB::transaction(function () use ($student, $profile, $data, $duration, $start, $end) {
+        return DB::transaction(function () use ($student, $profile, $data, $duration, $start) {
             // Fixed order (student, then tutor) so two bookings can never deadlock each other.
             User::query()->whereKey($student->id)->lockForUpdate()->first();
 
-            return $profile->withLock(function (TutorProfile $locked) use ($student, $data, $duration, $start, $end) {
+            return $profile->withLock(function (TutorProfile $locked) use ($student, $data, $duration, $start) {
                 abort_unless($locked->isApproved(), 404);
 
                 $subject = $locked->subjects()->where('subjects.id', $data['subject_id'])->first();
@@ -48,23 +49,9 @@ class BookingService
                     throw ValidationException::withMessages(['subject_id' => 'That subject is no longer offered for new bookings.']);
                 }
 
-                $name = optional($locked->user)->name ?? 'This tutor';
-                $reason = $this->slots->refusalReason($locked, $start, $duration);
-                if ($reason === 'blocked') {
-                    throw ValidationException::withMessages(['starts_at' => "{$name} is not teaching on that date."]);
-                }
-                if ($reason === 'outside_hours') {
-                    throw ValidationException::withMessages(['starts_at' => "That time is outside {$name}'s open hours (times are shown in {$locked->scheduleTimezone()}). Pick one of the listed times."]);
-                }
+                $this->assertSlotFree($locked, $student, $start, $duration);
 
-                if ($this->overlapping(TutorSession::query()->where('tutor_profile_id', $locked->id), $start, $end)) {
-                    throw ValidationException::withMessages(['starts_at' => 'That time was just taken. Pick another.']);
-                }
-                if ($this->overlapping(TutorSession::query()->where('student_id', $student->id), $start, $end)) {
-                    throw ValidationException::withMessages(['starts_at' => 'You already have a session at that time.']);
-                }
-
-                return TutorSession::create([
+                $session = TutorSession::create([
                     'tutor_profile_id' => $locked->id,
                     'student_id' => $student->id,
                     'subject_id' => $subject->id,
@@ -77,8 +64,57 @@ class BookingService
                     'currency' => $locked->currency ?: config('tutor.currency'),
                     'notes' => $data['notes'] ?? null,
                 ]);
+
+                // R-47: every booking path writes the append-only history.
+                app(BookingStateMachine::class)->record($session, 'requested', $student, null, $session->status, null, ['source' => 'legacy_form']);
+
+                return $session;
             });
         });
+    }
+
+    /**
+     * The checks every booking path shares: the start falls inside the tutor's
+     * open hours and not on a blocked date, and neither the tutor nor the
+     * learner (when given) already holds that time. Call it while holding the
+     * tutor profile's row lock (and the learner's, when given).
+     *
+     * @throws ValidationException
+     */
+    public function assertSlotFree(TutorProfile $locked, ?User $student, Carbon $start, int $duration): void
+    {
+        $end = $start->copy()->addMinutes($duration);
+        $name = optional($locked->user)->name ?? 'This tutor';
+        $reason = $this->slots->refusalReason($locked, $start, $duration);
+        if ($reason === 'blocked') {
+            throw ValidationException::withMessages(['starts_at' => "{$name} is not teaching on that date."]);
+        }
+        if ($reason === 'outside_hours') {
+            throw ValidationException::withMessages(['starts_at' => "That time is outside {$name}'s open hours (times are shown in {$locked->scheduleTimezone()}). Pick one of the listed times."]);
+        }
+
+        if ($this->overlapping(TutorSession::query()->where('tutor_profile_id', $locked->id), $start, $end)) {
+            throw ValidationException::withMessages(['starts_at' => 'That time was just taken. Pick another.']);
+        }
+        if ($student !== null && $this->learnerBusy($student, $start, $end)) {
+            throw ValidationException::withMessages(['starts_at' => 'You already have a session at that time.']);
+        }
+    }
+
+    /** Is the learner already in a one-to-one booking or a group seat that overlaps [$start, $end)? */
+    public function learnerBusy(User $student, Carbon $start, Carbon $end): bool
+    {
+        if ($this->overlapping(TutorSession::query()->where('student_id', $student->id), $start, $end)) {
+            return true;
+        }
+
+        return $this->overlapping(
+            TutorSession::query()->whereHas('participants', fn ($q) => $q
+                ->where('learner_id', $student->id)
+                ->whereIn('status', SeatStatus::holding())),
+            $start,
+            $end,
+        );
     }
 
     /**
@@ -89,9 +125,9 @@ class BookingService
      *
      * @param  Builder<TutorSession>  $query
      */
-    private function overlapping($query, Carbon $start, Carbon $end): bool
+    public function overlapping($query, Carbon $start, Carbon $end): bool
     {
-        $longest = max((array) config('tutor.durations', [120]));
+        $longest = TutorSession::longestDurationMinutes();
 
         return $query
             ->whereIn('status', SessionStatus::holdingTime())

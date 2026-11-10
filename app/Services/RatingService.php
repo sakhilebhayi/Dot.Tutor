@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Domain\Marketplace\Contracts\ReportSinkPort;
+use App\Domain\Marketplace\Enums\ReviewStatus;
+use App\Domain\Marketplace\Services\ReviewService;
 use App\Models\SessionRating;
 use App\Models\TutorSession;
 use App\Models\User;
@@ -20,12 +23,20 @@ class RatingService
     {
         try {
             DB::transaction(function () use ($session, $rater, $rating, $review) {
-                SessionRating::create([
+                $created = SessionRating::create([
                     'session_id' => $session->id,
                     'rated_by' => $rater->id,
                     'rating' => $rating,
                     'review' => $review,
                 ]);
+
+                // R-47: the same screen as the v2 review API. A review carrying contact
+                // details is held for moderation and does not count until published.
+                $held = app(ReviewService::class)->screen($review);
+                if ($held !== null) {
+                    $created->forceFill(['status' => ReviewStatus::Held->value, 'held_reason' => $held])->save();
+                    app(ReportSinkPort::class)->report($created, null, $held, ['source' => 'automatic_screen']);
+                }
 
                 $session->tutorProfile->refreshRating();
             });

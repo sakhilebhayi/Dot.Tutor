@@ -12,4 +12,5 @@ return [
     App\Domain\Money\TutorMoneyServiceProvider::class,
     App\Domain\Learning\Providers\TutorLearningServiceProvider::class,
     App\Domain\Academic\TutorAcademicServiceProvider::class,
+    App\Domain\Marketplace\Providers\TutorMarketplaceServiceProvider::class,
 ];

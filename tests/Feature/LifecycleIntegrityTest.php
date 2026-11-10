@@ -21,14 +21,15 @@ class LifecycleIntegrityTest extends TestCase
     public function test_every_status_in_use_is_declared_in_one_place(): void
     {
         $this->assertEqualsCanonicalizing(
-            ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'],
+            // R-47 booking v2 added awaiting_guardian, awaiting_payment, in_progress and disputed (decision D-310).
+            ['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'disputed'],
             SessionStatus::values(),
         );
         $this->assertEqualsCanonicalizing(
             ['pending', 'approved', 'rejected', 'suspended'],
             TutorProfileStatus::values(),
         );
-        $this->assertSame(['pending', 'confirmed'], SessionStatus::holdingTime());
+        $this->assertSame(['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress'], SessionStatus::holdingTime());
     }
 
     public function test_the_stale_session_command_writes_the_declared_no_show_status(): void
