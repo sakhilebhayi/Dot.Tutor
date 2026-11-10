@@ -69,6 +69,7 @@ return new class extends Migration
         Schema::table('session_ratings', function (Blueprint $table) {
             $table->dropColumn(['status', 'held_reason', 'tutor_reply', 'tutor_replied_at', 'moderated_at']);
         });
+        $this->restoreSqliteRatingTriggers();
     }
 
     private function restoreSqliteRatingTriggers(): void

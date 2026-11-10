@@ -2,9 +2,12 @@
 
 namespace Tests\Feature\Marketplace;
 
+use App\Domain\Marketplace\Contracts\SafeguardingPort;
 use App\Domain\Marketplace\Models\TutorSessionEvent;
 use App\Domain\Marketplace\Services\BookingFlow;
+use App\Domain\Marketplace\Support\GateDecision;
 use App\Models\TutorSession;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LogicException;
 use Tests\Concerns\BuildsOfferings;
@@ -294,11 +297,11 @@ class BookingFlowTest extends TestCase
 
     public function test_safeguarding_can_refuse_a_booking(): void
     {
-        $this->app->instance(\App\Domain\Marketplace\Contracts\SafeguardingPort::class, new class implements \App\Domain\Marketplace\Contracts\SafeguardingPort
+        $this->app->instance(SafeguardingPort::class, new class implements SafeguardingPort
         {
-            public function allows(\App\Models\User $actor, string $ability, mixed $subject = null): \App\Domain\Marketplace\Support\GateDecision
+            public function allows(User $actor, string $ability, mixed $subject = null): GateDecision
             {
-                return \App\Domain\Marketplace\Support\GateDecision::deny('account restricted');
+                return GateDecision::deny('account restricted');
             }
         });
         [$tutor, $subject, $offering] = $this->bookableTutor();
