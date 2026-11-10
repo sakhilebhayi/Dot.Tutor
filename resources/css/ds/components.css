@@ -359,6 +359,13 @@
         color: var(--td-primary-ink);
     }
 
+    button.td-chip[aria-pressed='true'] .td-chip__code,
+    button.td-chip[aria-pressed='true'] .td-chip__role,
+    .td-chip--match .td-chip__code,
+    .td-chip--match .td-chip__role {
+        color: inherit;
+    }
+
     /* Level and subject pills (x-td.pill). A level pill wears its stage's binding colour. */
     .td-pill {
         display: inline-flex;
@@ -417,7 +424,8 @@
         font-size: var(--td-text-sm);
         font-weight: 600;
         line-height: 1.2;
-        white-space: nowrap;
+        max-width: 100%;
+        padding-block: 0.25rem;
         border: 1px solid transparent;
     }
 
@@ -518,6 +526,7 @@
     }
 
     .td-state__body {
+        justify-self: stretch;
         margin: 0;
         max-width: var(--td-measure);
         color: var(--td-ink-2);
@@ -901,7 +910,11 @@
     }
 
     .td-stats .td-stats__hint {
+        font-family: var(--td-font-text);
+        font-stretch: 100%;
+        font-weight: 400;
         font-size: var(--td-text-sm);
+        line-height: 1.4;
         color: var(--td-ink-2);
     }
 
@@ -1096,6 +1109,7 @@
 
     .td-panels {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: 1px;
         background: var(--td-line);
         border: 1px solid var(--td-line);

@@ -336,9 +336,11 @@
     white-space: nowrap;
 }
 
-.td-top__title h2 {
+.td-top__title h2,
+.td-top__title h2 * {
     margin: 0;
     font: inherit;
+    color: var(--td-ink);
 }
 
 .td-top__actions {
