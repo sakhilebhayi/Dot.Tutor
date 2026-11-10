@@ -3,6 +3,8 @@
 namespace App\Domain\Integration\Adapters\Marketplace;
 
 use App\Domain\Marketplace\Contracts\SafeguardingPort;
+use App\Domain\Marketplace\Models\TutorBookingSeries;
+use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Support\GateDecision;
 use App\Domain\Safety\Contracts\SafeguardingGate;
 use App\Models\User;
@@ -18,6 +20,15 @@ class SafetySafeguardingPort implements SafeguardingPort
 
     public function allows(User $actor, string $ability, mixed $subject = null, array $context = []): GateDecision
     {
+        // The gate knows people, not offerings: booking an offering is booking its tutor (so screening applies), and
+        // publishing a priced offering is selling.
+        if ($subject instanceof TutorOffering || $subject instanceof TutorBookingSeries) {
+            if ($ability === 'publish' && $subject instanceof TutorOffering) {
+                $context += ['commercial' => (int) $subject->price_minor > 0, 'audience' => 'public'];
+            }
+            $subject = $subject->tutorProfile()->first() ?? $subject;
+        }
+
         $decision = $this->gate->allows($actor, $ability, $subject, $context);
         $messages = array_column($decision->reasons, 'message');
 
