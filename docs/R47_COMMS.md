@@ -83,7 +83,7 @@ Scheduler: `comms:deliver` every minute, `comms:reminders` every five minutes, `
 
 ## 9. Verification
 
-- PHP: 669 tests before (662 pass, 7 skipped, after merging the ds trunk); after: see the final report (`tests/Feature/Comms`: 59 tests, `tests/Unit/Comms`: 3). JS: `node --test tests/js/comms.test.mjs` (2).
+- PHP: 669 tests before (662 pass, 7 skipped, trunk with ds). After merging the latest trunk (with ai): 767 tests, 758 pass, 7 skipped, 2 fail, both in `tests/Feature/Ai/AiDriverTest` and reproduced with the comms provider removed (not comms; reported to the coordinator). Comms adds 62 (`tests/Feature/Comms`: 59, `tests/Unit/Comms`: 3); no existing test was changed. JS: `node --test tests/js/*.test.mjs` (2). `config:cache`, `route:cache`, `view:cache` pass.
 - `npm run build`, `php artisan view:cache` pass. `impeccable detect` on `resources/views/comms`: none.
 - Browser (local server 8709, a local demo user, notifications written through the real router): inbox and settings at 1440 and 390 in the dark theme, no horizontal overflow; a choice saved from the form persisted and the toast confirmed.
 
