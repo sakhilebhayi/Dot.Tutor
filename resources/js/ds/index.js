@@ -6,6 +6,7 @@ import { initDialogs } from './dialog.js';
 import { initToasts } from './toast.js';
 import { initComboboxes } from './combobox.js';
 import { initFilePickers } from './file-picker.js';
+import { initShelf } from './shelf.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -14,6 +15,7 @@ function boot(root = document) {
     initToasts(root);
     initComboboxes(root);
     initFilePickers(root);
+    initShelf(root);
 }
 
 if (document.readyState === 'loading') {
