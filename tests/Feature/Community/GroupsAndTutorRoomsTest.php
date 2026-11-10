@@ -198,7 +198,7 @@ class GroupsAndTutorRoomsTest extends TestCase
         $this->assertSame(1, Room::find($room['id'])->seats_taken);
     }
 
-    public function test_a_minor_needs_a_guardians_approval_before_paying_for_a_room(): void
+    public function test_a_minor_needs_a_guardians_approval_before_paying_for_a_room_and_the_guardian_is_asked_once(): void
     {
         $this->setUpPaystack();
         $tutor = $this->approvedTutor('Screened Tutor', screened: true);
@@ -208,13 +208,21 @@ class GroupsAndTutorRoomsTest extends TestCase
 
         $this->actingAs($teen)->withHeader('Idempotency-Key', 'teen-room-1')->postJson(route('community.api.enrol', $room['id']))
             ->assertStatus(202)->assertJsonPath('status', 'awaiting_guardian');
-        $approval = GuardianApproval::query()->where('learner_id', $teen->id)->where('kind', 'paid_room')->firstOrFail();
-        $this->assertSame(0, Order::count());
+        $this->assertSame(1, GuardianApproval::query()->where('learner_id', $teen->id)->count(), 'one request to the guardian');
+        $this->assertSame(Order::AWAITING_GUARDIAN, Order::query()->firstOrFail()->status);
+        $this->actingAs($teen)->getJson(route('community.api.show', $room['id']))->assertJsonPath('can_read', false);
 
+        // Asking again before the guardian answers does not ask twice.
+        $this->actingAs($teen)->withHeader('Idempotency-Key', 'teen-room-2')->postJson(route('community.api.enrol', $room['id']))
+            ->assertStatus(202)->assertJsonPath('status', 'awaiting_guardian');
+        $this->assertSame(1, GuardianApproval::query()->where('learner_id', $teen->id)->count());
+
+        $approval = GuardianApproval::query()->where('learner_id', $teen->id)->firstOrFail();
         app(DatabaseGuardianApprovals::class)->decide($approval, User::find($link->guardian_id), true);
 
-        $this->actingAs($teen)->withHeader('Idempotency-Key', 'teen-room-2')->postJson(route('community.api.enrol', $room['id']))
-            ->assertStatus(202)->assertJsonPath('status', 'awaiting_payment');
-        $this->assertSame(1, Order::count());
+        $this->actingAs($teen)->withHeader('Idempotency-Key', 'teen-room-3')->postJson(route('community.api.enrol', $room['id']))
+            ->assertStatus(202)->assertJsonPath('status', 'awaiting_payment')->assertJsonPath('checkout.status', 'redirect');
+        $this->assertSame(1, Order::count(), 'the same order is paid once the guardian approved it');
+        $this->assertSame(1, GuardianApproval::query()->where('learner_id', $teen->id)->count());
     }
 }

@@ -24,7 +24,7 @@
                     <x-td.notice tone="info">Your request is with the tutor.</x-td.notice>
                 @elseif ($member?->status === RoomMember::AWAITING_GUARDIAN)
                     <x-td.notice tone="info" title="Waiting for a parent or guardian">
-                        @if ($approval === 'approved') They approved. Continue to payment below. @elseif ($approval === 'declined') They did not approve this room. @else We asked them to approve this paid room. @endif
+                        We asked them to approve this paid room. Once they have, continue below.
                     </x-td.notice>
                 @elseif ($member?->status === RoomMember::AWAITING_PAYMENT)
                     <x-td.notice tone="info">Your place opens as soon as the payment is confirmed. If you closed the payment page, you can continue below.</x-td.notice>
@@ -32,7 +32,7 @@
                     <x-td.notice tone="warning">The tutor removed you from this room.</x-td.notice>
                 @endif
 
-                @if ($member?->status !== RoomMember::REMOVED && ! ($member?->status === RoomMember::AWAITING_GUARDIAN && $approval !== 'approved') && $member?->status !== RoomMember::PENDING)
+                @if ($member?->status !== RoomMember::REMOVED && $member?->status !== RoomMember::PENDING)
                     @if ($errors->has('community') || $errors->has('safety'))
                         <x-td.notice tone="danger">{{ $errors->first('community') ?: $errors->first('safety') }}</x-td.notice>
                     @endif
@@ -44,7 +44,7 @@
                         @endif
                         <div>
                             <x-td.button type="submit" variant="primary">
-                                {{ $room->isPaid() ? 'Pay and join' : ($room->join_rule === Room::APPROVAL ? 'Ask to join' : 'Join this room') }}
+                                {{ $member?->status === RoomMember::AWAITING_GUARDIAN ? 'Check and continue' : ($room->isPaid() ? 'Pay and join' : ($room->join_rule === Room::APPROVAL ? 'Ask to join' : 'Join this room')) }}
                             </x-td.button>
                         </div>
                         @if ($room->isPaid())

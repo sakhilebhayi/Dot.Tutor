@@ -18,7 +18,6 @@ use App\Domain\Community\Services\Indicators;
 use App\Domain\Community\Services\Recommendations;
 use App\Domain\Community\Services\RoomAccess;
 use App\Domain\Community\Services\Rooms;
-use App\Domain\Safety\Contracts\GuardianApprovals;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -113,14 +112,14 @@ class RoomController extends Controller
             : redirect()->route('rooms.show', $room);
     }
 
-    public function show(Request $request, Room $room, Recommendations $recommendations, GuardianApprovals $approvals): View|JsonResponse
+    public function show(Request $request, Room $room, Recommendations $recommendations): View|JsonResponse
     {
         $user = $request->user();
         $room->loadMissing(['subject', 'level.stage', 'curriculum', 'owner']);
 
         if (! $this->access->canRead($user, $room)) {
             if ($room->isTutorRoom() && $this->access->canSeeListing($user, $room)) {
-                return $this->listing($request, $room, $approvals);
+                return $this->listing($request, $room);
             }
             $this->rooms->authorizeEntry($user, $room);
             abort(404);
@@ -253,17 +252,15 @@ class RoomController extends Controller
     }
 
     /** A tutor room the viewer may enrol in but cannot read yet: its listing and the way in. */
-    private function listing(Request $request, Room $room, GuardianApprovals $approvals): View|JsonResponse
+    private function listing(Request $request, Room $room): View|JsonResponse
     {
         $user = $request->user();
         $member = $this->access->membership($user, $room);
-        $approval = $member?->status === RoomMember::AWAITING_GUARDIAN ? $approvals->status($user, 'paid_room', $room) : null;
 
         if ($this->wantsJson($request)) {
             return response()->json([
                 'room' => $this->roomJson($room),
                 'membership' => $member ? ['role' => $member->role, 'status' => $member->status] : null,
-                'guardian_approval' => $approval,
                 'can_read' => false,
             ]);
         }
@@ -271,7 +268,6 @@ class RoomController extends Controller
         return view('community.listing', [
             'room' => $room,
             'member' => $member,
-            'approval' => $approval,
             'step' => $this->access->band($user) === 'child' ? 'young' : 'standard',
         ]);
     }

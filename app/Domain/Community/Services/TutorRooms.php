@@ -9,9 +9,11 @@ use App\Domain\Community\Support\CommunityRefusal;
 use App\Domain\Money\CheckoutStart;
 use App\Domain\Money\Contracts\Checkout;
 use App\Domain\Money\Exceptions\CheckoutRefused;
+use App\Domain\Money\Models\Order;
 use App\Domain\Safety\Audit;
 use App\Domain\Safety\Contracts\GuardianApprovals;
 use App\Domain\Safety\Contracts\SafeguardingGate;
+use App\Domain\Safety\Models\GuardianApproval;
 use App\Domain\Safety\Support\SafeguardingDenied;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -211,30 +213,41 @@ class TutorRooms
             return ['status' => 'active', 'member' => $active, 'message' => 'Your payment is confirmed. Welcome to the room.'];
         }
 
-        if ($needsGuardian) {
-            $this->approvals->request($user, 'paid_room', $room, [
-                'title' => $room->displayName(),
-                'price_minor' => $room->price_minor,
-                'currency' => $room->currency,
-            ]);
-            $member = $this->upsert($room, $user, RoomMember::AWAITING_GUARDIAN);
-
-            return ['status' => 'awaiting_guardian', 'member' => $member, 'message' => 'A parent or guardian must approve this paid room first. We have asked them.'];
-        }
-
         if ($idempotencyKey === null || $idempotencyKey === '') {
             throw CommunityRefusal::because('idempotency_key_required', 'Send an Idempotency-Key header with a paid enrolment.', 400);
         }
 
+        $order = $this->orderFor($user, $room, $idempotencyKey);
+
+        // The guardian is asked once. With the integration bindings money holds a minor's order and asks the
+        // guardian to approve that purchase (naming the room and the total). If money did not hold it (no safety
+        // binding), safety is asked here for a paid-room approval and no payment starts until it is given. Money
+        // re-assesses a held order on every start, so a guardian's later answer is picked up on the next try.
+        if ($needsGuardian && $order->status !== Order::AWAITING_GUARDIAN && $order->guardian_status !== 'approved' && ! $this->approvals->isApproved($user, 'paid_room', $room)) {
+            if ($this->approvals->status($user, 'paid_room', $room) !== GuardianApproval::PENDING) {
+                $this->approvals->request($user, 'paid_room', $room, [
+                    'summary' => mb_substr('Paid room: '.$room->displayName(), 0, 255),
+                    'amount_minor' => $room->price_minor,
+                    'currency' => $room->currency,
+                ]);
+            }
+            $member = $this->upsert($room, $user, RoomMember::AWAITING_GUARDIAN);
+
+            return ['status' => 'awaiting_guardian', 'member' => $member, 'message' => 'A parent or guardian must approve this paid room first. We have asked them; come back here once they have.'];
+        }
+
         try {
-            $order = $this->checkout->createOrder($user, [['type' => 'room', 'id' => $room->id]], $idempotencyKey);
             $start = $this->checkout->startPayment($order, $user, route('rooms.show', $room));
         } catch (CheckoutRefused $refused) {
             throw CommunityRefusal::because('checkout_refused', $refused->getMessage(), 409);
         }
 
-        $member = $this->upsert($room, $user, RoomMember::AWAITING_PAYMENT);
+        $member = $this->upsert($room, $user, $start->status === CheckoutStart::HELD ? RoomMember::AWAITING_GUARDIAN : RoomMember::AWAITING_PAYMENT);
         Audit::record($user, 'community.tutor_room.checkout_started', $room, ['order' => $order->uuid ?? null, 'status' => $start->status]);
+
+        if ($start->status === CheckoutStart::HELD) {
+            return ['status' => 'awaiting_guardian', 'member' => $member, 'checkout' => $start, 'message' => 'A parent or guardian must approve this paid room first. We have asked them; come back here once they have.'];
+        }
 
         if ($start->status === CheckoutStart::SETTLED) {
             $member = $this->access->activateIfPaid($member, $room) ?? $member;
@@ -250,6 +263,21 @@ class TutorRooms
                 default => 'Payment started.',
             },
         ];
+    }
+
+    /** The order for this room: a new one, or the buyer's open order for it (a retry after a guardian answered). */
+    private function orderFor(User $user, Room $room, string $idempotencyKey): Order
+    {
+        try {
+            return $this->checkout->createOrder($user, [['type' => 'room', 'id' => $room->id]], $idempotencyKey);
+        } catch (CheckoutRefused $refused) {
+            $open = $refused->reason === 'already_in_open_order' ? Order::query()->where('uuid', $refused->context['order_id'] ?? '')->where('buyer_id', $user->id)->first() : null;
+            if ($open === null) {
+                throw CommunityRefusal::because('checkout_refused', $refused->getMessage(), $refused->reason === 'already_purchased' ? 409 : 422);
+            }
+
+            return $open;
+        }
     }
 
     private function upsert(Room $room, User $user, string $status, bool $seat = false): RoomMember

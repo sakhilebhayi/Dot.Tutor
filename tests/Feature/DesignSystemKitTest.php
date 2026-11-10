@@ -69,11 +69,11 @@ class DesignSystemKitTest extends TestCase
         $nav = app(ShellNavigation::class);
         $items = collect($nav->for('learner'))->flatMap(fn (array $section) => $section['items']);
 
-        $this->assertSame(['Home', 'Find a tutor', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
+        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
         $this->assertSame(route('dashboard'), $items->firstWhere('label', 'Home')['href'], 'falls back to the next candidate route');
-        $this->assertCount(2, $nav->bottomBar('learner'));
+        $this->assertCount(3, $nav->bottomBar('learner'));
 
         $operations = collect($nav->for('operations', 'dense'))->flatMap(fn (array $section) => $section['items'])->pluck('href')->all();
         $this->assertContains(route('operator.tutor-profiles.index'), $operations);
