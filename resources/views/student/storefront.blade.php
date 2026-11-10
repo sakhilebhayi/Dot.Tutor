@@ -75,7 +75,7 @@
                 @else
                     <div class="st-chipset">
                         @foreach ($tutor['languages'] as $lang)
-                            <x-td.language-chip :code="$lang->code" :name="$lang->nameEn" :endonym="$languageNames[$lang->code] ?? $lang->nameEn" role="teaches" :verified="$lang->verified" />
+                            <x-td.language-chip :code="$lang['code']" :name="$lang['name']" :endonym="$languageNames[$lang['code']] ?? $lang['name']" role="teaches" :verified="$lang['verified']" />
                         @endforeach
                     </div>
                     <p class="st-small" style="margin:var(--td-space-3) 0 0">Languages are self-declared. A check mark means Dot.Tutor reviewed that the tutor can teach in it.</p>
