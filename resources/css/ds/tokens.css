@@ -109,6 +109,16 @@
     --td-radius: 0.25rem;
     --td-radius-pill: 999px;
 
+    /* Scrim behind dialogs and the drawer. */
+    --td-scrim: oklch(20% 0.02 165 / 0.55);
+
+    /* The FET binding colour lifted for text on the night ground. */
+    --td-stage-fet-text: var(--td-stage-fet);
+
+    /* Inverse button on a dark binding colour (the landing's tutor sheet). */
+    --td-inverse-hover: oklch(88% 0.02 170);
+    --td-inverse-press: oklch(82% 0.02 170);
+
     /* Elevation: only what floats (menus, dialogs, toasts) carries a shadow. */
     --td-shadow-float: 0 12px 32px -8px oklch(23% 0.026 165 / 0.28), 0 2px 6px oklch(23% 0.026 165 / 0.12);
 
@@ -191,6 +201,7 @@
         --td-info-soft: oklch(29% 0.05 255);
         --td-info-ink: oklch(86% 0.06 255);
         --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
+        --td-stage-fet-text: oklch(74% 0.11 262);
     }
 }
 
@@ -228,4 +239,5 @@
     --td-info-soft: oklch(29% 0.05 255);
     --td-info-ink: oklch(86% 0.06 255);
     --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
+    --td-stage-fet-text: oklch(74% 0.11 262);
 }

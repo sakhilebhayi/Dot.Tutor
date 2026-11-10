@@ -368,7 +368,7 @@
     position: fixed;
     inset: 0;
     z-index: calc(var(--td-z-drawer) - 1);
-    background: oklch(20% 0.02 165 / 0.5);
+    background: var(--td-scrim);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--td-dur-short) var(--td-ease-out);
@@ -394,7 +394,20 @@
         display: inline-flex;
     }
 
-    .td-rail {
+    /* Without script the rail stays in the page flow above the content, so navigation never depends on JS. */
+    :root:not(.js) .td-rail {
+        position: static;
+        width: auto;
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--td-line);
+    }
+
+    :root:not(.js) .td-top__menu,
+    :root:not(.js) .td-rail__close {
+        display: none;
+    }
+
+    .js .td-rail {
         width: min(20rem, 86vw);
         transform: translateX(-100%);
         visibility: hidden;
@@ -588,7 +601,7 @@
 .err__shelf {
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
-    gap: 3px;
+    gap: var(--td-space-1);
     height: clamp(10rem, 30vw, 20rem);
     align-items: end;
 }

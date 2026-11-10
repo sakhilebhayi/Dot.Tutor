@@ -662,7 +662,7 @@
     }
 
     .td-dialog::backdrop {
-        background: oklch(20% 0.02 165 / 0.55);
+        background: var(--td-scrim);
     }
 
     .td-dialog[open] {
