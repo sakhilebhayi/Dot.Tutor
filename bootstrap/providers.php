@@ -14,4 +14,5 @@ return [
     App\Domain\Academic\TutorAcademicServiceProvider::class,
     App\Domain\Marketplace\Providers\TutorMarketplaceServiceProvider::class,
     App\Providers\TutorDesignServiceProvider::class,
+    App\Domain\Ai\TutorAiServiceProvider::class,
 ];
