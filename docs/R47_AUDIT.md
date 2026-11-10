@@ -45,3 +45,20 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 
 ## Domain audits
 (appended by the wave-1 agents)
+
+### Safety domain (safety agent, 2026-11-10)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Age and minors | No date of birth, no age band; every user an adult | M | Brief section 15: "do not assume every user is an adult" | `AgeBand`, `AgeResolver` (verified, guardian, self-declared via seam), limited minor accounts, unknown-age policy switch (D-402) |
+| Guardians | None | M | No guardian role, consent or oversight | Signed invitation, InfoDot sign-in, consent with version and hash, revocation, guardian dashboard data, recording consent |
+| Guardian approvals | None | M | Minors could book and (later) pay alone | `GuardianApprovals` for booking, purchase, paid room, live lesson with expiry; backstop on the existing booking model |
+| Safeguarding gate | None | M | No server-side check before talking, meeting, paying, publishing | `SafeguardingGate` with eight abilities and structured reasons; Laravel abilities `safety.*` |
+| Messaging | None (session notes only) | M | No messages, so no restrictions either | Context-bound conversations, guardians copied, contact redaction, private attachments, read state, rate limits, reporting |
+| Reporting and moderation | None | M | No way to report anything | `ReportSink` for any model, categories and priorities, child-safety fast path, queue, hide/restore/warn/suspend/escalate/dismiss |
+| Incidents | None | M | No escalation procedure | Incidents with response timers, cron escalation, timeline, outside-referral record |
+| Tutor screening | Operator approves a profile as a whole | P | No screening for work with minors | Operator-recorded checks with evidence, four-eyes review, required kinds |
+| Academic integrity | None | M | No policy or records | Policy (R47_SAFETY.md section 9), integrity cases and sanctions |
+| Audit trail | None | M | Moderation and admin actions untracked | Append-only, hash-chained `Audit::record()` used by every domain |
+| Account deletion | Cascades or restricts per table | I | Safeguarding evidence must survive deletion | Evidence rows restrict deletion of named people (D-416) |
+
