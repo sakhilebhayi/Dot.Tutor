@@ -24,6 +24,9 @@ return new class extends Migration
             $table->unsignedBigInteger('price_minor')->nullable();
             $table->string('kind', 20)->default('one_to_one');
             $table->unsignedSmallInteger('capacity')->nullable();
+            // Group seats held right now. Only ever changed by a conditional UPDATE
+            // (seats_taken < capacity), so two learners cannot both take the last seat.
+            $table->unsignedSmallInteger('seats_taken')->default(0);
             $table->string('payment_status', 20)->default('not_required');
             $table->string('order_reference', 120)->nullable();
             $table->string('guardian_status', 20)->default('not_required');
@@ -113,7 +116,7 @@ return new class extends Migration
         });
         Schema::table('tutor_sessions', function (Blueprint $table) {
             $table->dropColumn([
-                'rate_minor', 'price_minor', 'kind', 'capacity', 'payment_status', 'order_reference',
+                'rate_minor', 'price_minor', 'kind', 'capacity', 'seats_taken', 'payment_status', 'order_reference',
                 'guardian_status', 'decision_reason', 'cancelled_at', 'location_note', 'started_at',
                 'ended_at', 'hold_expires_at',
             ]);

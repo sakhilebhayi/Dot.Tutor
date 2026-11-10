@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\SessionStatus;
+use App\Domain\Marketplace\Services\BookingFlow;
 use App\Enums\TutorProfileStatus;
 use App\Models\Subject;
 use App\Models\TutorProfile;
@@ -11,7 +11,6 @@ use App\Services\Scheduling\BookingService;
 use App\Services\Scheduling\SlotFinder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -115,11 +114,12 @@ class TutorBookingController extends Controller
         ]);
     }
 
-    public function cancel(TutorSession $tutorSession): RedirectResponse
+    public function cancel(Request $request, TutorSession $tutorSession, BookingFlow $flow): RedirectResponse
     {
         Gate::authorize('cancel', $tutorSession);
 
-        $tutorSession->update(['status' => SessionStatus::Cancelled->value]);
+        // R-47: through the booking state machine (row lock, event, refund terms).
+        $flow->cancel($tutorSession, $request->user());
 
         return redirect()
             ->route('sessions.show', $tutorSession)
@@ -129,39 +129,29 @@ class TutorBookingController extends Controller
     /**
      * The tutor accepts a pending booking request.
      */
-    public function confirm(TutorSession $tutorSession): RedirectResponse
+    public function confirm(Request $request, TutorSession $tutorSession, BookingFlow $flow): RedirectResponse
     {
         Gate::authorize('confirm', $tutorSession);
 
-        $tutorSession->update(['status' => SessionStatus::Confirmed->value]);
+        // R-47: a paid v2 booking moves to awaiting payment; a legacy or free one is confirmed.
+        $session = $flow->accept($tutorSession, $request->user());
 
         return redirect()
             ->route('sessions.show', $tutorSession)
-            ->with('status', 'Session confirmed.');
+            ->with('status', $session->status === 'awaiting_payment' ? 'Accepted. The learner has been asked to pay to confirm it.' : 'Session confirmed.');
     }
 
     /**
      * Either party marks a confirmed session as having happened. This is
      * what makes leaving a rating/review possible — see SessionRatingController.
      */
-    public function complete(TutorSession $tutorSession): RedirectResponse
+    public function complete(Request $request, TutorSession $tutorSession, BookingFlow $flow): RedirectResponse
     {
         Gate::authorize('complete', $tutorSession);
 
-        // Re-check under a row lock: two quick clicks (or both parties at once)
-        // must count the session once, not twice.
-        $completed = DB::transaction(function () use ($tutorSession) {
-            $fresh = TutorSession::query()->whereKey($tutorSession->id)->lockForUpdate()->firstOrFail();
-
-            if ($fresh->status !== SessionStatus::Confirmed->value) {
-                return false;
-            }
-
-            $fresh->update(['status' => SessionStatus::Completed->value]);
-            $fresh->tutorProfile->increment('total_sessions');
-
-            return true;
-        });
+        // Under a row lock in the state machine: two quick clicks (or both
+        // parties at once) count the session once, not twice.
+        $completed = $flow->complete($tutorSession, $request->user());
 
         return redirect()
             ->route('sessions.show', $tutorSession)

@@ -34,6 +34,7 @@ class TutorSession extends Model
         'rate_minor' => 'integer',
         'price_minor' => 'integer',
         'capacity' => 'integer',
+        'seats_taken' => 'integer',
         'cancelled_at' => 'datetime',
         'started_at' => 'datetime',
         'ended_at' => 'datetime',

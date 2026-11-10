@@ -23,8 +23,11 @@ return [
     'package_lessons_max' => 40,
     'recurring_weeks_max' => 26,
 
-    // A seat or booking waiting on payment holds its place this long, then is released.
+    // A group seat waiting on payment holds its place this long, then is released.
     'payment_hold_minutes' => 30,
+
+    // An accepted one-to-one booking waiting on payment is held this long (never past its start), then cancelled.
+    'payment_window_hours' => 48,
 
     // Completed lessons can be disputed for this many days.
     'dispute_window_days' => 7,
