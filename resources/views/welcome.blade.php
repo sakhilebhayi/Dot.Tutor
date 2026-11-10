@@ -151,6 +151,11 @@
                 <span class="lp-how__line is-faint">in isiZulu</span>
                 <span class="lp-how__line is-faint">after school</span>
             </div>
+            <div class="lp-how__text">
+                <h2 id="how-title" class="lp-h2">Matches that explain themselves</h2>
+                <p>Write your request the way you would say it. Dot.Tutor checks subject, level, curriculum, language, times and budget, and tells you which ones fit and which do not.</p>
+                <p>Language is matched on what a tutor can actually teach in, never on the language of your screen.</p>
+            </div>
             <div class="lp-how__card" data-ui>
                 <p class="lp-how__card-head">How a match explains itself <span>(example)</span></p>
                 <x-td.match-reasons label="Example match reasons" :reasons="[
@@ -164,11 +169,6 @@
                     <x-td.verify-badge status="verified" level="qualified" />
                     <x-td.language-chip code="zu" name="Zulu" endonym="isiZulu" role="teaches" verified match />
                 </div>
-            </div>
-            <div class="lp-how__text">
-                <h2 id="how-title" class="lp-h2">Matches that explain themselves</h2>
-                <p>Write your request the way you would say it. Dot.Tutor checks subject, level, curriculum, language, times and budget, and tells you which ones fit and which do not.</p>
-                <p>Language is matched on what a tutor can actually teach in, never on the language of your screen.</p>
             </div>
         </div>
     </section>

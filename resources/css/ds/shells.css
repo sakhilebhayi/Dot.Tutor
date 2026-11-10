@@ -113,8 +113,8 @@
 }
 
 .td-public-foot {
-    background: var(--td-stage-doctoral);
-    color: var(--td-stage-doctoral-ink);
+    background: var(--td-deep);
+    color: var(--td-deep-ink);
 }
 
 .td-public-foot a {
@@ -171,13 +171,13 @@
     justify-content: space-between;
     gap: var(--td-space-3);
     padding-block: var(--td-space-4) var(--td-space-5);
-    border-top: 1px solid color-mix(in oklch, var(--td-stage-doctoral-ink) 22%, transparent);
+    border-top: 1px solid color-mix(in oklch, var(--td-deep-ink) 22%, transparent);
     font-size: var(--td-text-sm);
 }
 
 .td-public-foot :focus-visible {
-    outline-color: var(--td-stage-doctoral-ink);
-    box-shadow: 0 0 0 2px var(--td-stage-doctoral);
+    outline-color: var(--td-deep-ink);
+    box-shadow: 0 0 0 2px var(--td-deep);
 }
 
 /* ---------- Signed-in shells ---------- */

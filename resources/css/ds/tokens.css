@@ -109,6 +109,10 @@
     --td-radius: 0.25rem;
     --td-radius-pill: 999px;
 
+    /* Deep reading-room green: the footer and inverse bands. Dark in both themes. */
+    --td-deep: oklch(26% 0.035 165);
+    --td-deep-ink: oklch(96% 0.01 165);
+
     /* Scrim behind dialogs and the drawer. */
     --td-scrim: oklch(20% 0.02 165 / 0.55);
 
@@ -202,6 +206,7 @@
         --td-info-ink: oklch(86% 0.06 255);
         --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
         --td-stage-fet-text: oklch(74% 0.11 262);
+        --td-deep: oklch(13.5% 0.012 165);
     }
 }
 
@@ -240,4 +245,5 @@
     --td-info-ink: oklch(86% 0.06 255);
     --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
     --td-stage-fet-text: oklch(74% 0.11 262);
+    --td-deep: oklch(13.5% 0.012 165);
 }
