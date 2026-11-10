@@ -10,6 +10,7 @@ use App\Domain\Academic\Models\Country;
 use App\Domain\Academic\Models\Curriculum;
 use App\Domain\Academic\Models\Institution;
 use App\Domain\Academic\Models\LearnerProfile;
+use App\Domain\Academic\Models\SubjectOffering;
 use App\Domain\Academic\Services\LearnerProfiles;
 use App\Models\User;
 use Carbon\CarbonInterface;
@@ -199,7 +200,7 @@ class LearnerProfileTest extends TestCase
         $this->actingAs($this->learner)->getJson(route('academic.offerings', $this->level('za-caps', 'grade-12')))
             ->assertOk()->assertJsonFragment(['name' => 'Mathematics']);
 
-        $offering = \App\Domain\Academic\Models\SubjectOffering::query()->where('academic_level_id', $this->level('za-caps', 'grade-10')->id)
+        $offering = SubjectOffering::query()->where('academic_level_id', $this->level('za-caps', 'grade-10')->id)
             ->where('subject_id', $this->subject('physical-sciences')->id)->firstOrFail();
         $this->actingAs($this->learner)->getJson(route('academic.topics', $offering))
             ->assertOk()->assertJsonPath('data.3.name', 'Mechanics')->assertJsonPath('data.3.children.0.name', 'Vectors and scalars');

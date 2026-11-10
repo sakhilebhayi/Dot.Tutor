@@ -21,11 +21,9 @@ final class NotationGuard
                     return false;
                 }
                 // A decimal comma and a decimal point are both correct, depending on the language (3.5 / 3,5).
-                if (preg_match('/^\d+[.,]\d+$/', $token)) {
-                    return ! str_contains($translation, strtr($token, ['.' => ',', ',' => '.']));
-                }
+                $swapped = preg_replace_callback('/(\d)([.,])(\d)/', fn (array $m) => $m[1].($m[2] === '.' ? ',' : '.').$m[3], $token);
 
-                return true;
+                return $swapped === $token || ! str_contains($translation, (string) $swapped);
             },
         ));
     }
@@ -42,9 +40,14 @@ final class NotationGuard
             $text = str_replace($segment, ' ', $text);
         }
 
-        // Expressions with an operator, e.g. x^2, 2x+3=7, f(x)=x^2-1
-        preg_match_all('/[A-Za-z0-9().]*[A-Za-z0-9)]\s?[\^=+*\/<>]\s?[A-Za-z0-9(][A-Za-z0-9().\^=+*\/<>-]*/', $text, $expressions);
+        // Expressions with an operator, e.g. x^2, 2x+3=7, f(x)=x^2-1, a^2 + b^2 = c^2. A run must hold
+        // "=" or "^", or a digit and an operator, so "well-known" and "and/or" are not formulas.
+        preg_match_all('/(?:[A-Za-z0-9().,^]+\s*[=+\-*\/<>^]\s*)+[A-Za-z0-9().,^]+/', $text, $expressions);
         foreach ($expressions[0] as $expression) {
+            $expression = rtrim($expression, '.,');
+            if (! preg_match('/[=^]/', $expression) && ! (preg_match('/\d/', $expression) && preg_match('/[+*\/<>]|\d\s*-\s*\d/', $expression))) {
+                continue;
+            }
             $tokens[] = $expression;
             $text = str_replace($expression, ' ', $text);
         }

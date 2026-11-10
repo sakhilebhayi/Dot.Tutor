@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Academic;
 
+use App\Domain\Academic\Models\AcademicLevel;
+use App\Domain\Academic\Models\Curriculum;
+use App\Domain\Academic\Models\Subject;
 use App\Domain\Academic\Services\NeedParser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,9 +51,9 @@ class NeedParserTest extends TestCase
     {
         $result = app(NeedParser::class)->parse($text);
 
-        $levelCodes = array_values(array_unique(array_map(fn ($l) => \App\Domain\Academic\Models\AcademicLevel::find($l['id'])->code, $result['levels'])));
+        $levelCodes = array_values(array_unique(array_map(fn ($l) => AcademicLevel::find($l['id'])->code, $result['levels'])));
         $this->assertSame($levels, $levelCodes, 'levels');
-        $this->assertSame($subjects, array_map(fn ($s) => \App\Domain\Academic\Models\Subject::find($s['id'])->slug, $result['subjects']), 'subjects');
+        $this->assertSame($subjects, array_map(fn ($s) => Subject::find($s['id'])->slug, $result['subjects']), 'subjects');
         $this->assertSame($languages, array_map(fn ($l) => $l['code'].':'.$l['certainty'], $result['teaching_languages']), 'languages');
         $this->assertNotEmpty($result['offerings']);
     }
@@ -59,7 +62,7 @@ class NeedParserTest extends TestCase
     {
         $result = app(NeedParser::class)->parse('help with Afrikaans grade 9');
 
-        $slugs = array_map(fn ($s) => \App\Domain\Academic\Models\Subject::find($s['id'])->slug, $result['subjects']);
+        $slugs = array_map(fn ($s) => Subject::find($s['id'])->slug, $result['subjects']);
         $this->assertContains('af-home-language', $slugs);
         $this->assertContains('af-first-additional-language', $slugs);
         $this->assertSame([['code' => 'af', 'certainty' => 'possible']], array_map(fn ($l) => ['code' => $l['code'], 'certainty' => $l['certainty']], $result['teaching_languages']));
@@ -79,13 +82,13 @@ class NeedParserTest extends TestCase
         $result = app(NeedParser::class)->parse('I want a professional tutor who can master it and help with art of patience');
 
         $this->assertSame([], $result['levels']);
-        $this->assertSame(['visual-arts'], array_map(fn ($s) => \App\Domain\Academic\Models\Subject::find($s['id'])->slug, $result['subjects']));
+        $this->assertSame(['visual-arts'], array_map(fn ($s) => Subject::find($s['id'])->slug, $result['subjects']));
         $this->assertContains(['key' => 'no_level'], $result['notes']);
     }
 
     public function test_the_learners_curriculum_is_preferred(): void
     {
-        $ieb = \App\Domain\Academic\Models\Curriculum::query()->where('code', 'za-ieb')->value('id');
+        $ieb = Curriculum::query()->where('code', 'za-ieb')->value('id');
         $result = app(NeedParser::class)->parse('grade 10 maths', $ieb);
 
         $this->assertSame('za-ieb', $result['levels'][0]['curriculum_code']);
