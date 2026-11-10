@@ -535,3 +535,106 @@
 .td-theme-switch:not([data-mode]) .td-icon--system {
     display: block;
 }
+
+/* Error pages (resources/views/errors). A shelf with one book missing stands beside the message. */
+.err {
+    padding-block: var(--td-space-8) var(--td-space-9);
+}
+
+.err__grid {
+    display: grid;
+    gap: var(--td-space-7);
+    align-items: end;
+}
+
+@media (min-width: 56rem) {
+    .err__grid {
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+}
+
+.err__code {
+    margin: 0 0 var(--td-space-3);
+    font-weight: 700;
+    color: var(--td-ink-2);
+}
+
+.err__title {
+    margin: 0;
+    font-family: var(--td-font-display);
+    font-stretch: var(--td-display-stretch);
+    font-weight: 780;
+    font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    max-width: 16ch;
+}
+
+.err__message {
+    margin: var(--td-space-5) 0 0;
+    max-width: 52ch;
+    font-size: var(--td-text-md);
+}
+
+.err__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--td-space-3);
+    margin-top: var(--td-space-6);
+}
+
+.err__shelf {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
+    height: clamp(10rem, 30vw, 20rem);
+    align-items: end;
+}
+
+.err__shelf span {
+    height: 100%;
+}
+
+.err__shelf span:nth-child(1) { background: var(--td-stage-foundation); height: 86%; }
+.err__shelf span:nth-child(2) { background: var(--td-stage-intermediate); height: 94%; }
+.err__shelf span:nth-child(4) { background: var(--td-stage-fet); height: 90%; }
+.err__shelf span:nth-child(5) { background: var(--td-stage-undergraduate); }
+.err__shelf span:nth-child(6) { background: var(--td-stage-postgraduate); height: 88%; }
+.err__shelf span:nth-child(7) { background: var(--td-stage-doctoral); height: 96%; }
+.err__shelf span:nth-child(8) { background: var(--td-stage-professional); height: 84%; }
+
+.err__shelf .is-gap {
+    border: 2px dashed var(--td-edge);
+    border-bottom: 0;
+    height: 92%;
+}
+
+.err__eco {
+    margin-top: var(--td-space-9);
+    padding-top: var(--td-space-5);
+    border-top: 1px solid var(--td-line);
+}
+
+.err__eco-title {
+    margin: 0 0 var(--td-space-4);
+    font-size: var(--td-text-base);
+    font-weight: 700;
+}
+
+.err__eco ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--td-space-2);
+}
+
+.err__eco .td-chip {
+    min-height: 2.75rem;
+    text-decoration: none;
+}
+
+.err__eco .td-chip:hover {
+    background: var(--td-sunken);
+}
