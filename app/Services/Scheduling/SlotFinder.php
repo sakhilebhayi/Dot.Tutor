@@ -130,7 +130,7 @@ class SlotFinder
      */
     private function busyIntervals(TutorProfile $profile, int $fromTs, int $toTs): Collection
     {
-        $longest = max((array) config('tutor.durations', [120]));
+        $longest = TutorSession::longestDurationMinutes();
 
         return TutorSession::query()
             ->where('tutor_profile_id', $profile->id)

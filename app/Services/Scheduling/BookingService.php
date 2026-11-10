@@ -91,7 +91,7 @@ class BookingService
      */
     private function overlapping($query, Carbon $start, Carbon $end): bool
     {
-        $longest = max((array) config('tutor.durations', [120]));
+        $longest = TutorSession::longestDurationMinutes();
 
         return $query
             ->whereIn('status', SessionStatus::holdingTime())
