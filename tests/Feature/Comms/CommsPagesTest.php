@@ -84,4 +84,16 @@ class CommsPagesTest extends TestCase
         $this->actingAs($user)->get('/comms/preferences')->assertSee('data-comms-push', false)->assertSee('Turn on push here');
         $this->actingAs($user)->getJson('/comms/push/key')->assertJsonPath('configured', true);
     }
+
+    public function test_the_bell_shows_the_unread_count_per_subject(): void
+    {
+        $user = $this->adult('Learner');
+        $this->actingAs($user);
+        $this->assertStringContainsString('Notifications, none unread', \Illuminate\Support\Facades\Blade::render('<x-comms::bell />'));
+
+        foreach (range(1, 3) as $i) {
+            app(NotificationRouter::class)->send(new CommsMessage($user, 'lesson_changed', 'bell'.$i, 'T', 'B', null, 'booking-1'));
+        }
+        $this->assertStringContainsString('Notifications, 1 unread', \Illuminate\Support\Facades\Blade::render('<x-comms::bell />'));
+    }
 }

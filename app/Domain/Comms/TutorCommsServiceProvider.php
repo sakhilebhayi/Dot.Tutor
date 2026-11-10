@@ -36,6 +36,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
@@ -67,6 +68,7 @@ class TutorCommsServiceProvider extends ServiceProvider
     {
         // Views live under resources/views/comms so Tailwind's @source sees them.
         $this->loadViewsFrom(resource_path('views/comms'), 'comms');
+        Blade::anonymousComponentPath(resource_path('views/comms/components'), 'comms');
 
         RateLimiter::for('comms', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('comms-push-test', fn (Request $request) => Limit::perMinute(3)->by($request->user()?->id ?: $request->ip()));
