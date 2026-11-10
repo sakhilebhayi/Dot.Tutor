@@ -2,7 +2,7 @@
 <x-safety::frame>
     <p><a href="{{ route('safety.conversations.index') }}">All messages</a></p>
     <h1>{{ $conversation['subject'] ?: ucfirst($conversation['context']).' conversation' }}</h1>
-    <p class="muted">With {{ collect($conversation['people'])->map(fn ($p) => $p['name'].($p['role'] === 'guardian' ? ' (guardian)' : ($p['role'] === 'operator' ? ' (Dot.Tutor)' : '')))->join(', ') }}</p>
+    <p class="muted">In this conversation: {{ collect($conversation['people'])->map(fn ($p) => $p['name'].($p['role'] === 'guardian' ? ' (guardian)' : ($p['role'] === 'operator' ? ' (Dot.Tutor)' : '')))->join(', ') }}</p>
 
     @if ($conversation['notice'])<div class="notice" role="note">{{ $conversation['notice'] }}</div>@endif
 
