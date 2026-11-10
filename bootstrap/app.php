@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Integration\Support\JsonErrors;
 use App\Http\Middleware\EnsurePlatformOperator;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -23,7 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
-        );
+        // One policy (R-47 D-1404): JSON with {error, message} whenever the request is under api/* or expects JSON.
+        $exceptions->shouldRenderJsonWhen(fn (Request $request) => JsonErrors::wantsJson($request));
+        $exceptions->render(fn (Throwable $e, Request $request) => JsonErrors::render($e, $request));
+        $exceptions->respond(fn ($response, Throwable $e, Request $request) => JsonErrors::finish($response, $request));
     })->create();

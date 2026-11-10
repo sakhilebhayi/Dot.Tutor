@@ -55,16 +55,16 @@ class LibraryController extends LearningController
             $query->where('status', ResourceStatus::Published->value);
         }
         $query
-            ->when($filters['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w->where('title', 'like', '%'.$term.'%')->orWhere('description', 'like', '%'.$term.'%')->orWhere('topic', 'like', '%'.$term.'%')))
+            ->when($filters['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w->whereLike('title', '%'.$term.'%')->orWhereLike('description', '%'.$term.'%')->orWhereLike('topic', '%'.$term.'%')))
             ->when($filters['type'] ?? null, fn ($q, $v) => $q->where('type', $v))
             ->when($filters['country_code'] ?? null, fn ($q, $v) => $q->where('country_code', strtoupper($v)))
             ->when($filters['curriculum_id'] ?? null, fn ($q, $v) => $q->where('curriculum_id', $v))
             ->when($filters['level_id'] ?? null, fn ($q, $v) => $q->where('level_id', $v))
             ->when($filters['subject_id'] ?? null, fn ($q, $v) => $q->where('subject_id', $v))
-            ->when($filters['topic'] ?? null, fn ($q, $v) => $q->where('topic', 'like', '%'.$v.'%'))
+            ->when($filters['topic'] ?? null, fn ($q, $v) => $q->whereLike('topic', '%'.$v.'%'))
             ->when($filters['language'] ?? null, fn ($q, $v) => $q->where('language', $v))
             ->when($filters['difficulty'] ?? null, fn ($q, $v) => $q->where('difficulty', $v))
-            ->when($filters['institution'] ?? null, fn ($q, $v) => $q->where('institution', 'like', '%'.$v.'%'))
+            ->when($filters['institution'] ?? null, fn ($q, $v) => $q->whereLike('institution', '%'.$v.'%'))
             ->when($filters['licence'] ?? null, fn ($q, $v) => $q->where('licence', $v))
             ->when($filters['tier'] ?? null, fn ($q, $v) => $q->where('quality_tier', $v))
             ->when(array_key_exists('free', $filters) && $filters['free'] !== null, fn ($q) => $q->where('is_free', (bool) $filters['free']));

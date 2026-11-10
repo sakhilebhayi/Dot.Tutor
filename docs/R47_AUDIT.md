@@ -142,6 +142,33 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Machine translation | Academic `Translations` store ready, no producer; course, resource and tutor profile not registered | P | Brief section 10 | Machine translation with model, unreviewed status, notation check, side-by-side page, review |
 | Need parsing | Deterministic parser only | I | Free text it cannot read was a dead end | Optional AI rewording, parser re-match, confirmation step |
 | Dot.Agents/Brain/Memory | Not integrated | F (correctly absent) | No supported learning API exists | Recorded, not called (D-916) |
+### Integration (integ agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Every cross-domain port bound to a null default | integration | Matching ignored levels and languages, payments answered 503, guardians could never approve, audit went to logs | All 22 ports bound to owners (R47_INTEGRATION.md section 1) |
+| Marketplace asked the gate about the offering | safety bug | `peopleIn(TutorOffering)` is empty, so a minor's booking of an unscreened tutor was only caught by the safety model backstop (generic error) | The adapter asks about the offering's tutor; priced offerings published count as selling |
+| Money's booking adapter refused `awaiting_payment` and priced by rate | money/marketplace bug | A v2 booking could not be paid at all | `MarketplaceBookingPurchasable` |
+| Checkout without Paystack created an order anyway | money/learning | The open order then blocked quotes ("already in an unpaid order") | No order when payments are off; open orders reused |
+| Search used `like` | PostgreSQL bug | Case-sensitive on PostgreSQL | `whereLike` |
+| Idempotency stored the full class name in a 40-char column | PostgreSQL bug | Seat, package and series requests failed on PostgreSQL | Class basename |
+| JSON errors had four renderers with different codes | consistency | `access_denied_http_exception` vs `forbidden`, redirects for JSON calls outside `api/*` | One policy (D-1404) |
+| Academic ids without keys | data integrity | Orphans possible | Keys added (D-1406) |
+| Suite memory | CI | Fails at 128 MB on trunk | 512M (D-1405) |
+### Notifications and communication (comms agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| In-app notifications | P | Database notifications for tutor profile decisions and moderation cancellations, a dashboard list, mark read; safety added approval, warning and incident notices | One inbox (`/comms/inbox`, JSON too) for every notification, with type, category, title and subject key; read state; unread count one per subject; badge capped at 9+; `<x-comms::bell />` for the shells |
+| Email | P | Only safety's guardian invitation and approval-request mails; host `MAIL_MAILER=log` | Email copy of every notification the person's choices allow, from the queued delivery worker; on a log mailer each row says "not delivered"; lesson emails carry a calendar file |
+| Push | M | None | Web Push (RFC 8030/8291/8292) on PHP openssl, adapted from Dot.Ehail; off until VAPID keys are set; per-device subscribe, test, revoke on 404/410 |
+| SMS | M | None | Adapter interface with an honest "not configured" default; no numbers collected |
+| Booking notifications | M | No booking confirmations, changes or reminders | Every booking state change notifies the other party (and a minor's guardians); 24 h and 1 h reminders by cron, idempotent |
+| Payments, payouts, learning, verification, reports | M | None (money and learning raise few or no notifications) | Listeners on OrderPaid/OrderRefunded and thin after-commit observers on payments, payouts, enrolments, assignments, resource reviews and take-downs, verification decisions and reports |
+| Preferences | M | None | Per category and channel, defaults, mandatory categories (safety, payments, guardian approvals) shown as facts, quiet hours for push and SMS |
+| Minors | M | Every user treated as an adult | Guardian copies of a minor's lessons, purchases and safety notices; children get in-app only; no marketing to minors; tutors see a minor's first name only |
+| Dot.Notify | M | Not called | Client for Notify's documented ingest contract, off by default; adults only, ids and titles only |
+| Calendar | M | None | `.ics` per lesson (download and email attachment) in the lesson's time zone with a VTIMEZONE |
 
 ### Community domain (community agent, 2026-11-10)
 

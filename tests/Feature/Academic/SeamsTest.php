@@ -34,8 +34,10 @@ class SeamsTest extends TestCase
     {
         $this->assertInstanceOf(DatabaseAcademicScope::class, app(AcademicScope::class));
         $this->assertInstanceOf(DatabaseLanguageProfile::class, app(LanguageProfile::class));
-        $this->assertInstanceOf(UnknownAgeBand::class, app(AgeBandResolver::class));
-        $this->assertNull(app(AgeBandResolver::class)->bandFor(now()->subYears(10)));
+        // The honest default answers "unknown"; the integration provider binds the safety rule over it (D-1400).
+        $this->assertNull((new UnknownAgeBand)->bandFor(now()->subYears(10)));
+        $this->assertSame('child', app(AgeBandResolver::class)->bandFor(now()->subYears(10)));
+        $this->assertNull(app(AgeBandResolver::class)->bandFor(null));
     }
 
     public function test_teaching_scope_validation_names_the_reason_for_each_pair(): void

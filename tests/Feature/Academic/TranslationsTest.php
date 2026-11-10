@@ -125,7 +125,7 @@ class TranslationsTest extends TestCase
         $this->translations->put($subject, 'name', 'af', 'Wiskunde', TranslationProvenance::Machine, machineModel: 'm');
         $url = fn (string $type, int $id, string $field, ?string $locale = 'af') => route('academic.translations.show', [$type, $id, $field]).($locale ? "?locale={$locale}" : '');
 
-        $this->getJson($url('academic.subject', $subject->id, 'name'))->assertRedirect('/login');
+        $this->getJson($url('academic.subject', $subject->id, 'name'))->assertUnauthorized()->assertJsonPath('error', 'unauthenticated'); // one JSON error policy (D-1404)
 
         $user = User::factory()->create();
         $this->actingAs($user)->getJson($url('academic.subject', $subject->id, 'name'))
