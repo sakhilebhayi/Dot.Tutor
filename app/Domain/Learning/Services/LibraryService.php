@@ -18,6 +18,7 @@ use App\Domain\Learning\Models\ResourceReview;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -96,7 +97,7 @@ class LibraryService
             ->whereHas('reports', fn ($q) => $q->where('kind', 'copyright')->where('status', 'upheld'))
             ->exists();
         if ($blocked) {
-            \Illuminate\Support\Facades\Storage::disk('learning')->delete($stored->path);
+            Storage::disk('learning')->delete($stored->path);
             throw ValidationException::withMessages(['file' => 'This file was taken down after a copyright complaint and cannot be uploaded again.']);
         }
 

@@ -8,6 +8,7 @@ use App\Domain\Learning\Models\AttemptAnswer;
 use App\Domain\Learning\Models\Certificate;
 use App\Domain\Learning\Models\LessonProgress;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 /** The ProgressFeed seam, read from recorded activity. */
 class DatabaseProgressFeed implements ProgressFeed
@@ -81,7 +82,7 @@ class DatabaseProgressFeed implements ProgressFeed
             'based_on' => [
                 'answers' => (clone $answers)->count(),
                 'attempts' => (clone $answers)->distinct()->count('attempt_id'),
-                'last_answer_at' => optional((clone $answers)->max('answered_at'), fn ($at) => \Illuminate\Support\Carbon::parse($at)->toIso8601String()),
+                'last_answer_at' => optional((clone $answers)->max('answered_at'), fn ($at) => Carbon::parse($at)->toIso8601String()),
             ],
             'sentences' => $this->writer->sentences($rows),
         ];

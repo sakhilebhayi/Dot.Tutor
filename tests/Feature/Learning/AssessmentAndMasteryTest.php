@@ -6,6 +6,7 @@ use App\Domain\Learning\Models\Assessment;
 use App\Domain\Learning\Models\Attempt;
 use App\Domain\Learning\Models\AttemptAnswer;
 use App\Domain\Learning\Models\Question;
+use App\Domain\Learning\Models\QuestionBank;
 use App\Domain\Learning\Services\Marker;
 use App\Models\Subject;
 use App\Models\TutorSession;
@@ -244,7 +245,7 @@ class AssessmentAndMasteryTest extends TestCase
     private function answers(User $learner, Subject $subject, string $strand, string $topic, array $results): void
     {
         $owner = $this->learner('Bank owner '.$topic);
-        $bank = \App\Domain\Learning\Models\QuestionBank::create(['owner_id' => $owner->id, 'title' => $topic, 'subject_id' => $subject->id, 'strand' => $strand, 'topic' => $topic]);
+        $bank = QuestionBank::create(['owner_id' => $owner->id, 'title' => $topic, 'subject_id' => $subject->id, 'strand' => $strand, 'topic' => $topic]);
         $question = $bank->questions()->create(['type' => 'single_choice', 'prompt' => 'Q', 'options' => [['key' => 'a', 'text' => 'A'], ['key' => 'b', 'text' => 'B']], 'answer' => ['key' => 'a']]);
         $assessment = Assessment::create(['owner_id' => $owner->id, 'title' => $topic, 'kind' => 'practice']);
         foreach ($results as $i => $correct) {

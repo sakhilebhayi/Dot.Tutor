@@ -46,7 +46,7 @@ class ProgressAndCertificatesTest extends TestCase
         $this->assertSame(1, Certificate::query()->count());
 
         // Public verification works without signing in and shows initials by default.
-        $this->app["auth"]->forgetGuards();
+        $this->app['auth']->forgetGuards();
         $this->getJson("/certificates/{$code}")->assertOk()
             ->assertJsonPath('data.valid', true)
             ->assertJsonPath('data.learner', 'S. B. D.')

@@ -11,6 +11,7 @@ use App\Domain\Learning\Models\Course;
 use App\Domain\Learning\Services\CourseAccess;
 use App\Domain\Learning\Services\ProgressService;
 use App\Domain\Learning\Support\CoursePresenter;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -136,7 +137,7 @@ class CatalogueController extends LearningController
                 ? $this->error('idempotency_key_required', 'Send an Idempotency-Key header (up to 100 characters).', 400)
                 : back()->withErrors(['checkout' => 'The checkout form expired. Reload the page and try again.']);
         }
-        $decision = $this->safeguarding->allows($request->user(), 'pay', $item instanceof \Illuminate\Database\Eloquent\Model ? $item : null);
+        $decision = $this->safeguarding->allows($request->user(), 'pay', $item instanceof Model ? $item : null);
         if (! $decision->allowed) {
             return $this->wantsJson($request)
                 ? $this->error('not_allowed', $decision->reason ?? 'Purchases are not allowed for this account.', 403)
