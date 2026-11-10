@@ -4,6 +4,7 @@ namespace App\Domain\Student;
 
 use App\Domain\Student\Http\Composers\FindComposer;
 use App\Domain\Student\Http\Composers\LearnerComposer;
+use App\Domain\Student\Http\Composers\LearningComposer;
 use App\Domain\Student\Http\Composers\LessonsComposer;
 use App\Domain\Student\Http\Composers\StorefrontComposer;
 use App\Domain\Student\Services\LearnerContext;
@@ -28,6 +29,7 @@ class TutorStudentServiceProvider extends ServiceProvider
         View::composer('student.find.index', FindComposer::class);
         View::composer('student.storefront', StorefrontComposer::class);
         View::composer('student.lessons', LessonsComposer::class);
+        View::composer('student.learning.*', LearningComposer::class);
         View::composer(['student.*'], LearnerComposer::class);
     }
 }

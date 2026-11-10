@@ -734,3 +734,12 @@
         }
     }
 }
+
+@layer components {
+    /* The join panel comes first on phones so price and refund policy are read before the content list. */
+    @media (max-width: 63.99rem) {
+        .st-course__aside {
+            order: -1;
+        }
+    }
+}
