@@ -201,7 +201,7 @@ class RoomController extends Controller
                 'version' => $data['version'],
                 'request_tutoring_url' => $data['requestHelpUrl'],
                 'threads' => isset($data['threads']) ? collect($data['threads']->items())->map(fn (Post $p) => $this->postJson($p) + ['replies' => $p->replies_count])->all() : null,
-                'library' => isset($data['library']) ? $data['library']->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'type' => $r->type?->value, 'language' => $r->language, 'url' => route('library.show', $r->id)])->all() : null,
+                'library' => isset($data['library']) ? $data['library']->map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'type' => $r->type?->value, 'language' => $r->language, 'url' => route('learning.library.show', $r->id)])->all() : null,
                 'tutors' => $data['tutors'] ?? null,
                 'courses' => isset($data['courses']) ? $data['courses']->map(fn ($row) => ['id' => $row['course']->id, 'title' => $row['course']->title, 'reasons' => $row['reasons']])->all() : null,
                 'groups' => isset($data['groups']) ? $data['groups']->map(fn (StudyGroup $g) => ['id' => $g->id, 'name' => $g->name, 'topic' => $g->topic, 'exam_focus' => $g->exam_focus, 'members' => $g->members_count, 'size_cap' => $g->size_cap, 'join_rule' => $g->join_rule])->all() : null,

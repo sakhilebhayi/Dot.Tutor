@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class CommunityRefusal extends HttpException
 {
     /** @param array<string, mixed> $data */
-    public function __construct(public readonly string $code, string $message, int $status = 422, public readonly array $data = [])
+    public function __construct(public readonly string $errorCode, string $message, int $status = 422, public readonly array $data = [])
     {
         parent::__construct($status, $message);
     }
@@ -26,7 +26,7 @@ class CommunityRefusal extends HttpException
     {
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json(array_filter([
-                'error' => $this->code,
+                'error' => $this->errorCode,
                 'message' => $this->getMessage(),
                 'data' => $this->data ?: null,
             ], fn ($v) => $v !== null), $this->getStatusCode());
