@@ -12,7 +12,7 @@ use App\Models\User;
  */
 class NullSafeguarding implements SafeguardingPort
 {
-    public function allows(User $actor, string $ability, mixed $subject = null): GateDecision
+    public function allows(User $actor, string $ability, mixed $subject = null, array $context = []): GateDecision
     {
         return GateDecision::allow('safeguarding_not_connected');
     }

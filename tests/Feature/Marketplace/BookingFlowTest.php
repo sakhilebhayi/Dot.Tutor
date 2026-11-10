@@ -299,7 +299,7 @@ class BookingFlowTest extends TestCase
     {
         $this->app->instance(SafeguardingPort::class, new class implements SafeguardingPort
         {
-            public function allows(User $actor, string $ability, mixed $subject = null): GateDecision
+            public function allows(User $actor, string $ability, mixed $subject = null, array $context = []): GateDecision
             {
                 return GateDecision::deny('account restricted');
             }

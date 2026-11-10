@@ -11,5 +11,10 @@ use App\Models\User;
  */
 interface SafeguardingPort
 {
-    public function allows(User $actor, string $ability, mixed $subject = null): GateDecision;
+    /**
+     * Mirrors Safety\Contracts\SafeguardingGate::allows($actor, $ability, $subject, $context) (decision D-302).
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function allows(User $actor, string $ability, mixed $subject = null, array $context = []): GateDecision;
 }

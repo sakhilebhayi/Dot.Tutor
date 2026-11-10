@@ -751,7 +751,7 @@ class BookingFlow
 
     private function assertSafe(User $actor, string $ability, mixed $subject): void
     {
-        $decision = $this->safeguarding->allows($actor, $ability, $subject);
+        $decision = $this->safeguarding->allows($actor, $ability, $subject, ['domain' => 'marketplace', 'action' => $ability.'_'.class_basename($subject)]);
         if (! $decision->allowed) {
             throw new MarketplaceException('safeguarding', 'This is not allowed for your account: '.implode('; ', $decision->reasons ?: ['safeguarding rule']).'.', 403);
         }
