@@ -384,6 +384,16 @@
     color: var(--td-stage-fet);
 }
 
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .lp-how__line.is-soft {
+        color: oklch(74% 0.11 262);
+    }
+}
+
+:root[data-theme='dark'] .lp-how__line.is-soft {
+    color: oklch(74% 0.11 262);
+}
+
 .lp-how__line.is-faint {
     color: var(--td-ink-2);
 }
@@ -418,6 +428,10 @@
     border-top: 1px solid var(--td-line);
 }
 
+.lp-how__text .lp-h2 {
+    margin-bottom: var(--td-space-5);
+}
+
 .lp-how__text p {
     max-width: 48ch;
     font-size: var(--td-text-md);
@@ -430,8 +444,8 @@
     }
 
     .lp-how__stack {
-        grid-column: 1 / -1;
-        grid-row: 1;
+        grid-column: 1 / 8;
+        grid-row: 1 / 3;
     }
 
     .lp-how__card {
@@ -442,8 +456,9 @@
     }
 
     .lp-how__text {
-        grid-column: 1 / 7;
+        grid-column: 8 / 13;
         grid-row: 2;
+        align-self: end;
     }
 }
 
@@ -454,10 +469,12 @@
 
 .lp-sheets {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--td-space-5);
 }
 
 .lp-sheet {
+    min-width: 0;
     display: grid;
     gap: var(--td-space-5);
     padding: var(--td-space-5);
@@ -505,10 +522,6 @@
     mix-blend-mode: multiply;
 }
 
-.lp-sheet--guard .lp-sheet__img {
-    mix-blend-mode: luminosity;
-}
-
 .lp-sheet__ladder {
     padding: var(--td-space-5);
     background: var(--td-surface);
@@ -518,6 +531,11 @@
 .lp-sheet__ladder-head {
     margin: 0 0 var(--td-space-4);
     font-weight: 700;
+}
+
+.lp-sheet__ladder .td-badge {
+    white-space: normal;
+    padding-block: var(--td-space-1);
 }
 
 .lp-sheet__ladder ul {
