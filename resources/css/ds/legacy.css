@@ -1,1 +1,492 @@
-/* Legacy bridge. */
+/*
+ * Legacy bridge (temporary). The pages written before R-47 (dashboard, tutors, sessions, tutor profile and
+ * availability, operator queues, Jetstream profile and team pages) carry their own page-level <style> blocks and
+ * inline colours drawn for a dark zinc theme. Until wave 2 rebuilds each screen on the kit, this file maps
+ * those classes and inline colours onto the tokens so the pages read correctly in both themes.
+ * Scope: .td-app--app (the Jetstream app layout) and .td-guest-body (the guest layout). Delete a block when
+ * the page that needs it has moved to a shell; delete the file when none do.
+ */
+
+/* Old guest-page custom properties, now pointing at tokens. */
+.td-guest-body,
+.td-app--app {
+    --paper: var(--td-ground);
+    --paper-soft: var(--td-sunken);
+    --ink: var(--td-ink);
+    --ink-soft: var(--td-ink);
+    --gold: var(--td-primary);
+    --gold-bright: var(--td-primary-hover);
+    --leaf: var(--td-primary);
+    --leaf-bright: var(--td-primary-hover);
+    --chalk: var(--td-ink-inverse);
+    --moss: var(--td-ink-2);
+    --sage: var(--td-ink-2);
+    --line: var(--td-line);
+    --accent: var(--td-primary);
+    --font-display: var(--td-font-display);
+    --font-body: var(--td-font-text);
+}
+
+.td-guest-body .font-display {
+    font-family: var(--td-font-display);
+    font-stretch: var(--td-display-stretch);
+}
+
+/* The old design's shared classes (formerly in the app layout's <style>). */
+.td-app--app .t-page {
+    max-width: none;
+    padding: 0;
+}
+
+.td-app--app .t-h1 {
+    margin: 0 0 var(--td-space-2);
+    font-family: var(--td-font-display);
+    font-stretch: var(--td-display-stretch);
+    font-weight: 750;
+    font-size: var(--td-text-xl);
+    line-height: var(--td-leading-tight);
+    color: var(--td-ink);
+}
+
+.td-app--app .t-lede {
+    margin: 0 0 var(--td-space-5);
+    max-width: var(--td-measure);
+    color: var(--td-ink-2);
+}
+
+.td-app--app .t-panel {
+    padding: var(--td-space-5);
+    background: var(--td-surface);
+    border: 1px solid var(--td-line);
+}
+
+.td-app--app .t-panel + .t-panel {
+    margin-top: var(--td-space-4);
+}
+
+.td-app--app .t-h2 {
+    margin: 0 0 var(--td-space-1);
+    font-size: var(--td-text-md);
+    font-weight: 700;
+    color: var(--td-ink);
+}
+
+.td-app--app .t-hint {
+    margin: 0 0 var(--td-space-4);
+    font-size: var(--td-text-sm);
+    color: var(--td-ink-2);
+}
+
+.td-app--app .t-label {
+    display: block;
+    margin: 0 0 var(--td-space-2);
+    font-size: var(--td-text-sm);
+    font-weight: 650;
+    color: var(--td-ink);
+}
+
+.td-app--app .t-field {
+    width: 100%;
+    min-height: var(--td-control-h);
+    padding: var(--td-space-2) var(--td-space-3);
+    border: 1px solid var(--td-edge);
+    border-radius: var(--td-radius);
+    background: var(--td-surface);
+    color: var(--td-ink);
+    font-size: max(16px, var(--td-text-base));
+}
+
+.td-app--app .t-row {
+    margin-bottom: var(--td-space-4);
+}
+
+.td-app--app .t-grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: var(--td-space-4);
+}
+
+.td-app--app .t-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--td-space-2);
+    min-height: var(--td-control-h);
+    padding: 0 var(--td-control-pad-x);
+    border: 1px solid var(--td-edge);
+    border-radius: var(--td-radius);
+    background: var(--td-surface);
+    color: var(--td-ink);
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.td-app--app .t-btn:hover {
+    background: var(--td-sunken);
+}
+
+.td-app--app .t-btn-primary {
+    background: var(--td-primary);
+    border-color: var(--td-primary);
+    color: var(--td-primary-ink);
+}
+
+.td-app--app .t-btn-primary:hover {
+    background: var(--td-primary-hover);
+}
+
+.td-app--app .t-btn-danger {
+    color: var(--td-danger-ink);
+    border-color: var(--td-danger);
+}
+
+.td-app--app .t-btn-danger:hover {
+    background: var(--td-danger-soft);
+}
+
+.td-app--app .t-err {
+    margin-top: var(--td-space-1);
+    font-size: var(--td-text-sm);
+    font-weight: 600;
+    color: var(--td-danger-ink);
+}
+
+.td-app--app .t-flash {
+    margin: 0 0 var(--td-space-5);
+    padding: var(--td-space-3) var(--td-space-4);
+    max-width: var(--td-measure);
+    border-radius: var(--td-radius);
+    background: var(--td-info-soft);
+    color: var(--td-info-ink);
+}
+
+.td-app--app .t-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 var(--td-space-3);
+    border-radius: var(--td-radius);
+    background: var(--td-sunken);
+    color: var(--td-ink);
+    font-size: var(--td-text-sm);
+    font-weight: 600;
+}
+
+.td-app--app .t-state-approved { background: var(--td-success-soft); color: var(--td-success-ink); }
+.td-app--app .t-state-pending { background: var(--td-warning-soft); color: var(--td-warning-ink); }
+.td-app--app .t-state-rejected,
+.td-app--app .t-state-suspended { background: var(--td-danger-soft); color: var(--td-danger-ink); }
+
+.td-app--app .t-mono {
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+}
+
+.td-app--app .t-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.td-app--app .t-table th {
+    padding: var(--td-row-pad-y) var(--td-row-pad-x);
+    text-align: start;
+    font-size: var(--td-text-sm);
+    font-weight: 600;
+    color: var(--td-ink-2);
+    border-bottom: 1px solid var(--td-edge);
+}
+
+.td-app--app .t-table td {
+    padding: var(--td-row-pad-y) var(--td-row-pad-x);
+    border-bottom: 1px solid var(--td-line);
+    color: var(--td-ink);
+    vertical-align: middle;
+}
+
+.td-app--app .t-chip {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.td-app--app .t-chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.td-app--app .t-chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 var(--td-space-4);
+    border: 1px solid var(--td-edge);
+    border-radius: var(--td-radius-pill);
+    background: var(--td-surface);
+    color: var(--td-ink);
+    font-weight: 600;
+}
+
+.td-app--app .t-chip input:checked + span {
+    background: var(--td-primary);
+    border-color: var(--td-primary);
+    color: var(--td-primary-ink);
+}
+
+.td-app--app .t-chip input:focus-visible + span {
+    outline: 2.5px solid var(--td-focus);
+    outline-offset: 2px;
+}
+
+/* Page-local classes from the dashboard, tutor browse and profile, and session pages. Two-class selectors
+   outrank the pages' own single-class rules whatever their order in the document. */
+.td-app--app .panel,
+.td-app--app .readout > div,
+.td-app--app .tutor-card {
+    background: var(--td-surface);
+    border-color: var(--td-line);
+    border-radius: 0;
+    color: var(--td-ink);
+}
+
+.td-app--app .readout {
+    background: var(--td-line);
+    border-color: var(--td-line);
+    border-radius: 0;
+}
+
+.td-app--app .readout dt,
+.td-app--app .data-table th,
+.td-app--app .detail-label,
+.td-app--app .field-label {
+    color: var(--td-ink-2);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--td-text-sm);
+    font-weight: 600;
+}
+
+.td-app--app .readout dd {
+    font-family: var(--td-font-display);
+    font-stretch: var(--td-display-stretch);
+    font-weight: 700;
+    color: var(--td-ink);
+}
+
+.td-app--app .readout dd .ghost {
+    color: var(--td-ink-3);
+}
+
+.td-app--app .panel-header,
+.td-app--app .session-row,
+.td-app--app .subject-line,
+.td-app--app .detail-row,
+.td-app--app .resource-row,
+.td-app--app .data-table th,
+.td-app--app .data-table td {
+    border-color: var(--td-line);
+}
+
+.td-app--app .panel-title,
+.td-app--app .tutor-name {
+    font-family: var(--td-font-text);
+    color: var(--td-ink);
+}
+
+.td-app--app .panel-count {
+    background: var(--td-primary-soft);
+    color: var(--td-primary-soft-ink);
+}
+
+.td-app--app .session-row:hover {
+    background: var(--td-sunken);
+}
+
+.td-app--app .avatar-sm,
+.td-app--app .avatar-lg,
+.td-app--app .avatar-xl {
+    background: var(--td-primary-soft);
+    border-color: transparent;
+    color: var(--td-primary-soft-ink);
+}
+
+.td-app--app .status-badge {
+    border-radius: var(--td-radius);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--td-text-sm);
+}
+
+.td-app--app .badge-pending { background: var(--td-warning-soft); color: var(--td-warning-ink); }
+.td-app--app .badge-confirmed { background: var(--td-success-soft); color: var(--td-success-ink); }
+.td-app--app .badge-completed,
+.td-app--app .badge-no_show { background: var(--td-sunken); color: var(--td-ink); }
+.td-app--app .badge-cancelled { background: var(--td-danger-soft); color: var(--td-danger-ink); }
+
+.td-app--app .data-table td,
+.td-app--app .subject-line,
+.td-app--app .detail-value,
+.td-app--app .tutor-bio {
+    color: var(--td-ink);
+}
+
+.td-app--app .data-table .dim {
+    color: var(--td-ink-2);
+}
+
+.td-app--app .tutor-rate {
+    color: var(--td-ink);
+}
+
+.td-app--app .tutor-card:hover {
+    border-color: var(--td-primary);
+}
+
+.td-app--app .filter-chip,
+.td-app--app .subject-pill {
+    border-color: var(--td-edge);
+    color: var(--td-ink);
+    background: var(--td-surface);
+    min-height: 2.75rem;
+}
+
+.td-app--app .subject-pill {
+    min-height: 1.75rem;
+}
+
+.td-app--app .filter-chip:hover {
+    background: var(--td-sunken);
+    color: var(--td-ink);
+}
+
+.td-app--app .filter-chip.active {
+    background: var(--td-primary);
+    border-color: var(--td-primary);
+    color: var(--td-primary-ink);
+}
+
+.td-app--app .field-input {
+    background: var(--td-surface);
+    border-color: var(--td-edge);
+    color: var(--td-ink);
+}
+
+.td-app--app .error-text {
+    color: var(--td-danger-ink);
+}
+
+.td-app--app .confirm-btn,
+.td-app--app .submit-btn {
+    background: var(--td-primary);
+    border-color: var(--td-primary);
+    color: var(--td-primary-ink);
+}
+
+.td-app--app .complete-btn {
+    background: var(--td-surface);
+    border-color: var(--td-edge);
+    color: var(--td-ink);
+}
+
+.td-app--app .cancel-btn {
+    background: transparent;
+    border-color: var(--td-danger);
+    color: var(--td-danger-ink);
+}
+
+/* Inline colours written for the dark zinc theme, mapped to token roles. */
+.td-app--app [style*='color:#f4f4f5'],
+.td-app--app [style*='color: #f4f4f5'],
+.td-app--app [style*='color:#e4e4e7'],
+.td-app--app [style*='color:#d4d4d8'],
+.td-app--app [style*='color: #d4d4d8'] {
+    color: var(--td-ink) !important;
+}
+
+.td-app--app [style*='color:#a1a1aa'],
+.td-app--app [style*='color: #a1a1aa'],
+.td-app--app [style*='color:#71717a'],
+.td-app--app [style*='color: #71717a'],
+.td-app--app [style*='color:#52525b'] {
+    color: var(--td-ink-2) !important;
+}
+
+.td-app--app [style*='color:#fbbf24'],
+.td-app--app [style*='color: #fbbf24'],
+.td-app--app [style*='color:#fcd34d'] {
+    color: var(--td-warning-ink) !important;
+}
+
+.td-app--app [style*='color:#f87171'],
+.td-app--app [style*='color: #f87171'],
+.td-app--app [style*='color:#fca5a5'] {
+    color: var(--td-danger-ink) !important;
+}
+
+.td-app--app [style*='color:#86efac'],
+.td-app--app [style*='color: #4ade80'] {
+    color: var(--td-success-ink) !important;
+}
+
+.td-app--app [style*='color:#a5b4fc'],
+.td-app--app [style*='color: #a5b4fc'] {
+    color: var(--td-info-ink) !important;
+}
+
+.td-app--app [style*='color:#09090b'] {
+    color: var(--td-primary-ink) !important;
+}
+
+.td-app--app [style*='background:#141416'],
+.td-app--app [style*='background: #141416'],
+.td-app--app [style*='background: #0f0f11'],
+.td-app--app [style*='background:#0f0f11'] {
+    background: var(--td-surface) !important;
+}
+
+.td-app--app [style*='background:#fbbf24'] {
+    background: var(--td-primary) !important;
+}
+
+.td-app--app [style*="font-family:'Syne'"],
+.td-app--app [style*="font-family: 'Syne'"] {
+    font-family: var(--td-font-display) !important;
+    font-stretch: var(--td-display-stretch);
+}
+
+.td-app--app [style*="font-family:'JetBrains Mono'"],
+.td-app--app [style*="font-family: 'JetBrains Mono'"] {
+    font-family: inherit !important;
+}
+
+.td-app--app [style*='border:1px solid rgba(255,255,255'],
+.td-app--app [style*='border: 1px solid rgba(255,255,255'],
+.td-app--app [style*='border-bottom:1px solid rgba(255,255,255'],
+.td-app--app [style*='border-top:1px solid rgba(255,255,255'] {
+    border-color: var(--td-line) !important;
+}
+
+.td-app--app [style*='padding:2rem 2.5rem'],
+.td-app--app [style*='padding: 2rem 2.5rem'] {
+    padding: 0 !important;
+}
+
+@media (max-width: 39.98rem) {
+    .td-app--app main [style*='grid-template-columns'] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .td-app--app main [style*='grid-template-columns'] > [style*='grid-column'] {
+        grid-column: 1 / -1 !important;
+    }
+
+    .td-app--app .table-scroll > .data-table,
+    .td-app--app .table-scroll > .t-table {
+        min-width: max-content;
+    }
+}
+
+/* Jetstream's Tailwind gray utilities on profile and team pages, in the night theme. */
+[data-theme='dark'] .td-app--app .bg-white {
+    background: var(--td-surface);
+}

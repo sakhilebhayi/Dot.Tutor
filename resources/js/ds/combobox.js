@@ -24,6 +24,7 @@ export function initComboboxes(root = document) {
             fallback.remove();
         }
         box.querySelector('[data-td-combobox-live]')?.removeAttribute('hidden');
+        hidden.disabled = false;
 
         const nodes = Array.from(list.querySelectorAll('[role="option"]'));
         const options = nodes.map((node) => ({

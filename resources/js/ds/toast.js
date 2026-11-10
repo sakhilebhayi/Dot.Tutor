@@ -50,6 +50,11 @@ export function initToasts(root = document) {
     if (!window.tdToast) {
         window.tdToast = showToast;
         window.addEventListener('td-toast', (event) => showToast(event.detail?.message, event.detail?.tone));
+        // Jetstream's Livewire components announce results with a 'banner-message' event.
+        window.addEventListener('banner-message', (event) => {
+            const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+            showToast(detail?.message, detail?.style === 'danger' ? 'error' : 'success');
+        });
     }
     // Server-rendered toasts (flash messages) get the same dismiss and timing behaviour.
     root.querySelectorAll('[data-td-toast]:not([data-td-ready])').forEach((node) => {
