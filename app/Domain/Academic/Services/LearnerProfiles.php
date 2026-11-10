@@ -55,6 +55,17 @@ class LearnerProfiles
         });
     }
 
+    /**
+     * The date of birth age banding should use for a user: the LAST day of the
+     * stored birth month (never older than they are), or null without a profile.
+     * This is what the safety seam BirthDateSource reads once the integration
+     * provider binds it.
+     */
+    public function birthDateFor(User|int $user): ?CarbonImmutable
+    {
+        return LearnerProfile::query()->where('user_id', $user instanceof User ? $user->id : $user)->first()?->ageBandBirthDate();
+    }
+
     /** The safety domain's age band for this learner (null = unknown; treat as most protected). */
     public function ageBand(LearnerProfile $profile): ?string
     {

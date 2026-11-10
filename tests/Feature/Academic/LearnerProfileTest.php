@@ -65,6 +65,7 @@ class LearnerProfileTest extends TestCase
         $this->actingAs($this->learner)->get(route('academic.profile.edit', ['level' => $this->level('za-caps', 'grade-4')->id]))
             ->assertOk()
             ->assertSee('Natural Sciences and Technology')
+            ->assertSee('Language subjects (22)')
             ->assertDontSee('Physical Sciences')
             ->assertDontSee('University or college');
 
@@ -171,6 +172,8 @@ class LearnerProfileTest extends TestCase
         $profile = LearnerProfile::query()->firstOrFail();
 
         $this->assertNull(app(LearnerProfiles::class)->ageBand($profile), 'Unknown until the safety domain is bound');
+        $this->assertSame($profile->ageBandBirthDate()->toDateString(), app(LearnerProfiles::class)->birthDateFor($this->learner)->toDateString());
+        $this->assertNull(app(LearnerProfiles::class)->birthDateFor(User::factory()->create()));
 
         $this->app->bind(AgeBandResolver::class, fn () => new class implements AgeBandResolver
         {
