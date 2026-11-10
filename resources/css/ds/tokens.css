@@ -1,0 +1,249 @@
+/*
+ * Dot.Tutor tokens (--td-*). Every colour and face on every page comes from here.
+ * World: a lending library. The ground is shelf-label white tinted toward reading-room green (never cream);
+ * each academic stage has its own binding colour, like library cloth; ink is a deep green-black.
+ * Light is the day reading room; dark is the same room at night. docs/R47_DS.md explains every token.
+ */
+:root {
+    color-scheme: light;
+
+    /* Ground and surfaces: separated by tone steps, not shadows. */
+    --td-ground: oklch(97.4% 0.006 165);
+    --td-surface: oklch(99.4% 0.003 165);
+    --td-sunken: oklch(94.6% 0.009 165);
+    --td-raised: oklch(99.4% 0.003 165);
+    --td-line: oklch(88.5% 0.012 165);
+    --td-edge: oklch(58% 0.02 165); /* field edges and control outlines, 3:1 or better on every surface */
+
+    /* Ink. Running text is always --td-ink; --td-ink-2 is for secondary lines (4.5:1 on ground and sunken). */
+    --td-ink: oklch(23% 0.026 165);
+    --td-ink-2: oklch(41% 0.02 165);
+    --td-ink-3: oklch(50% 0.018 165); /* icons and large text only */
+    --td-ink-inverse: oklch(97.4% 0.006 165);
+
+    /* Brand: reading-room green. The accent marks the primary action and the current place, nothing else. */
+    --td-primary: oklch(42% 0.085 162);
+    --td-primary-hover: oklch(36% 0.08 162);
+    --td-primary-press: oklch(31% 0.072 162);
+    --td-primary-ink: oklch(98.5% 0.006 165);
+    --td-primary-soft: oklch(93% 0.035 162);
+    --td-primary-soft-ink: oklch(33% 0.075 162);
+
+    /* Focus: the ink itself, as a pencil line. Contrast is the ink's, on every surface. */
+    --td-focus: oklch(23% 0.026 165);
+    --td-focus-halo: oklch(99.4% 0.003 165);
+
+    /* Signals. Each has a soft ground and an ink that reads 4.5:1 on that ground. */
+    --td-success: oklch(47% 0.11 150);
+    --td-success-soft: oklch(94% 0.04 150);
+    --td-success-ink: oklch(34% 0.09 150);
+    --td-warning: oklch(70% 0.14 75);
+    --td-warning-soft: oklch(95% 0.05 85);
+    --td-warning-ink: oklch(40% 0.09 65);
+    --td-danger: oklch(51% 0.17 28);
+    --td-danger-hover: oklch(45% 0.16 28);
+    --td-danger-soft: oklch(95% 0.03 28);
+    --td-danger-ink: oklch(42% 0.15 28);
+    --td-info: oklch(48% 0.12 255);
+    --td-info-soft: oklch(95% 0.025 255);
+    --td-info-ink: oklch(40% 0.11 255);
+
+    /* Binding colours, one per academic stage (stage keys are seeded data, docs/R47_ARCHITECTURE.md).
+       Each pairs with an ink for text set on it. */
+    --td-stage-foundation: oklch(80% 0.15 82);
+    --td-stage-foundation-ink: oklch(25% 0.04 70);
+    --td-stage-intermediate: oklch(64% 0.15 140);
+    --td-stage-intermediate-ink: oklch(20% 0.04 140);
+    --td-stage-senior: oklch(53% 0.09 200);
+    --td-stage-senior-ink: oklch(98.5% 0.006 200);
+    --td-stage-fet: oklch(45% 0.14 262);
+    --td-stage-fet-ink: oklch(98.5% 0.006 262);
+    --td-stage-undergraduate: oklch(43% 0.13 25);
+    --td-stage-undergraduate-ink: oklch(98.5% 0.006 25);
+    --td-stage-postgraduate: oklch(38% 0.1 340);
+    --td-stage-postgraduate-ink: oklch(98.5% 0.006 340);
+    --td-stage-doctoral: oklch(29% 0.045 170);
+    --td-stage-doctoral-ink: oklch(97% 0.01 170);
+    --td-stage-professional: oklch(46% 0.03 240);
+    --td-stage-professional-ink: oklch(98.5% 0.006 240);
+
+    /* Type. */
+    --td-font-display: 'TD Display', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+    --td-font-text: 'TD Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --td-display-stretch: 75%;
+    --td-text-xs: 0.8125rem;   /* 13px: meta lines, never running text */
+    --td-text-sm: 0.875rem;    /* 14px: labels, table cells in the dense step */
+    --td-text-base: 1rem;      /* 16px: running text */
+    --td-text-md: 1.125rem;    /* 18px: lead paragraphs */
+    --td-text-lg: 1.375rem;    /* 22px: item titles */
+    --td-text-xl: 1.75rem;     /* 28px: page titles in app shells */
+    --td-text-2xl: clamp(2rem, 1.4rem + 2.2vw, 3rem);         /* section heads */
+    --td-text-display: clamp(2.75rem, 1.2rem + 5.6vw, 6rem); /* the landing headline */
+    --td-leading: 1.55;
+    --td-leading-tight: 1.15;
+    --td-leading-display: 1.02;
+    --td-measure: 66ch;
+
+    /* Space: a 4px base. */
+    --td-space-1: 0.25rem;
+    --td-space-2: 0.5rem;
+    --td-space-3: 0.75rem;
+    --td-space-4: 1rem;
+    --td-space-5: 1.5rem;
+    --td-space-6: 2rem;
+    --td-space-7: 3rem;
+    --td-space-8: 4rem;
+    --td-space-9: 6rem;
+    --td-space-10: 8rem;
+    --td-gutter: 1rem;          /* page side gutter on phones; grows on wider screens */
+    --td-container: 84rem;      /* 1344px cap; gutters grow past it */
+
+    /* Controls. The young-learner and business steps change these, never the components. */
+    --td-control-h: 2.75rem;    /* 44px */
+    --td-control-pad-x: 1rem;
+    --td-control-text: var(--td-text-base);
+    --td-row-pad-y: 0.75rem;
+    --td-row-pad-x: 1rem;
+
+    /* Shape: labels and controls have a 4px corner like a spine label; chips are fully round; panels and media are square. */
+    --td-radius: 0.25rem;
+    --td-radius-pill: 999px;
+
+    /* Deep reading-room green: the footer and inverse bands. Dark in both themes. */
+    --td-deep: oklch(26% 0.035 165);
+    --td-deep-ink: oklch(96% 0.01 165);
+
+    /* Scrim behind dialogs and the drawer. */
+    --td-scrim: oklch(20% 0.02 165 / 0.55);
+
+    /* The FET binding colour lifted for text on the night ground. */
+    --td-stage-fet-text: var(--td-stage-fet);
+
+    /* Inverse button on a dark binding colour (the landing's tutor sheet). */
+    --td-inverse-hover: oklch(88% 0.02 170);
+    --td-inverse-press: oklch(82% 0.02 170);
+
+    /* Elevation: only what floats (menus, dialogs, toasts) carries a shadow. */
+    --td-shadow-float: 0 12px 32px -8px oklch(23% 0.026 165 / 0.28), 0 2px 6px oklch(23% 0.026 165 / 0.12);
+
+    /* Motion: state, never decoration. */
+    --td-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --td-dur-micro: 120ms;
+    --td-dur-short: 200ms;
+    --td-dur-reveal: 640ms;
+
+    /* Layers. */
+    --td-z-sticky: 20;
+    --td-z-drawer: 40;
+    --td-z-dialog: 60;
+    --td-z-toast: 70;
+}
+
+/* The young-learner step: calmer, larger, fewer things at once. Set data-td-step="young" on <html> or any container. */
+[data-td-step='young'] {
+    --td-text-sm: 1rem;
+    --td-text-base: 1.1875rem;
+    --td-text-md: 1.3125rem;
+    --td-text-lg: 1.625rem;
+    --td-text-xl: 2.125rem;
+    --td-leading: 1.7;
+    --td-control-h: 3.5rem;
+    --td-control-pad-x: 1.375rem;
+    --td-row-pad-y: 1.125rem;
+    --td-row-pad-x: 1.25rem;
+    --td-radius: 0.5rem;
+    --td-measure: 52ch;
+}
+
+/* The business step: dense tables and tight rows for a tutor running a practice or an operator working a queue. */
+[data-td-step='dense'] {
+    --td-text-base: 0.9375rem;
+    --td-text-md: 1rem;
+    --td-text-lg: 1.1875rem;
+    --td-text-xl: 1.5rem;
+    --td-leading: 1.45;
+    --td-control-h: 2.25rem;
+    --td-control-pad-x: 0.75rem;
+    --td-control-text: var(--td-text-sm);
+    --td-row-pad-y: 0.5rem;
+    --td-row-pad-x: 0.75rem;
+}
+
+/* Night: the same reading room after dark. Follows the system unless the person picked a theme. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+        --td-ground: oklch(18.5% 0.014 165);
+        --td-surface: oklch(22% 0.016 165);
+        --td-sunken: oklch(16% 0.013 165);
+        --td-raised: oklch(25.5% 0.017 165);
+        --td-line: oklch(31% 0.016 165);
+        --td-edge: oklch(56% 0.02 165);
+        --td-ink: oklch(94.5% 0.008 165);
+        --td-ink-2: oklch(79% 0.012 165);
+        --td-ink-3: oklch(68% 0.012 165);
+        --td-ink-inverse: oklch(18.5% 0.014 165);
+        --td-primary: oklch(76% 0.11 160);
+        --td-primary-hover: oklch(81% 0.1 160);
+        --td-primary-press: oklch(70% 0.1 160);
+        --td-primary-ink: oklch(19% 0.03 165);
+        --td-primary-soft: oklch(30% 0.045 162);
+        --td-primary-soft-ink: oklch(86% 0.07 160);
+        --td-focus: oklch(94.5% 0.008 165);
+        --td-focus-halo: oklch(18.5% 0.014 165);
+        --td-success: oklch(74% 0.13 150);
+        --td-success-soft: oklch(29% 0.05 150);
+        --td-success-ink: oklch(86% 0.09 150);
+        --td-warning: oklch(80% 0.13 80);
+        --td-warning-soft: oklch(30% 0.05 75);
+        --td-warning-ink: oklch(88% 0.09 85);
+        --td-danger: oklch(70% 0.15 28);
+        --td-danger-hover: oklch(75% 0.14 28);
+        --td-danger-soft: oklch(30% 0.06 28);
+        --td-danger-ink: oklch(86% 0.08 28);
+        --td-info: oklch(72% 0.11 255);
+        --td-info-soft: oklch(29% 0.05 255);
+        --td-info-ink: oklch(86% 0.06 255);
+        --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
+        --td-stage-fet-text: oklch(74% 0.11 262);
+        --td-deep: oklch(13.5% 0.012 165);
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --td-ground: oklch(18.5% 0.014 165);
+    --td-surface: oklch(22% 0.016 165);
+    --td-sunken: oklch(16% 0.013 165);
+    --td-raised: oklch(25.5% 0.017 165);
+    --td-line: oklch(31% 0.016 165);
+    --td-edge: oklch(56% 0.02 165);
+    --td-ink: oklch(94.5% 0.008 165);
+    --td-ink-2: oklch(79% 0.012 165);
+    --td-ink-3: oklch(68% 0.012 165);
+    --td-ink-inverse: oklch(18.5% 0.014 165);
+    --td-primary: oklch(76% 0.11 160);
+    --td-primary-hover: oklch(81% 0.1 160);
+    --td-primary-press: oklch(70% 0.1 160);
+    --td-primary-ink: oklch(19% 0.03 165);
+    --td-primary-soft: oklch(30% 0.045 162);
+    --td-primary-soft-ink: oklch(86% 0.07 160);
+    --td-focus: oklch(94.5% 0.008 165);
+    --td-focus-halo: oklch(18.5% 0.014 165);
+    --td-success: oklch(74% 0.13 150);
+    --td-success-soft: oklch(29% 0.05 150);
+    --td-success-ink: oklch(86% 0.09 150);
+    --td-warning: oklch(80% 0.13 80);
+    --td-warning-soft: oklch(30% 0.05 75);
+    --td-warning-ink: oklch(88% 0.09 85);
+    --td-danger: oklch(70% 0.15 28);
+    --td-danger-hover: oklch(75% 0.14 28);
+    --td-danger-soft: oklch(30% 0.06 28);
+    --td-danger-ink: oklch(86% 0.08 28);
+    --td-info: oklch(72% 0.11 255);
+    --td-info-soft: oklch(29% 0.05 255);
+    --td-info-ink: oklch(86% 0.06 255);
+    --td-shadow-float: 0 12px 32px -8px oklch(5% 0.01 165 / 0.7), 0 2px 6px oklch(5% 0.01 165 / 0.5);
+    --td-stage-fet-text: oklch(74% 0.11 262);
+    --td-deep: oklch(13.5% 0.012 165);
+}
