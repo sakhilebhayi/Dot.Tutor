@@ -53,6 +53,9 @@ trait BuildsOfferings
 
     protected function fakeMinors(User ...$minors): void
     {
+        // Wave-1 marketplace tests run against the marketplace's own null guardian port; the integration provider
+        // binds the safety adapter over it (D-1400), whose own tests live in tests/Feature/Integration.
+        $this->app->bind(\App\Domain\Marketplace\Contracts\GuardianApprovalsPort::class, \App\Domain\Marketplace\Seams\NullGuardianApprovals::class);
         $ids = array_map(fn (User $u) => $u->id, $minors);
         $this->app->instance(LearnerAgePort::class, new class($ids) implements LearnerAgePort
         {

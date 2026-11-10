@@ -204,7 +204,8 @@ class ProtectedDeliveryTest extends TestCase
         $this->getJson("/api/tutor/learning/courses/{$course->id}/quote?coupon=SAVE10")->assertOk()
             ->assertJsonPath('data.payable_minor', 19900)
             ->assertJsonPath('data.coupon_accepted', false)
-            ->assertJsonPath('data.message', 'Coupons are not available yet.');
+            // Coupons are real since checkout is bound to money (D-1400): an unknown code is refused by money.
+            ->assertJsonPath('data.message', 'That code is not valid.');
     }
 
     public function test_storage_paths_never_reach_the_client(): void

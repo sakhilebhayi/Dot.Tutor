@@ -145,6 +145,9 @@ class MatchingTest extends TestCase
 
     public function test_without_language_or_academic_data_the_result_says_so(): void
     {
+        // The marketplace's null defaults (the integration provider binds the real academic seams over them).
+        $this->app->bind(\App\Domain\Marketplace\Contracts\LanguageProfilePort::class, \App\Domain\Marketplace\Seams\NullLanguageProfile::class);
+        $this->app->bind(\App\Domain\Marketplace\Contracts\AcademicScopePort::class, \App\Domain\Marketplace\Seams\NullAcademicScope::class);
         $this->tutor('Anyone');
 
         $result = $this->match(['languages' => ['xh'], 'level_id' => 11]);

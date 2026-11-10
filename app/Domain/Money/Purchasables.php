@@ -13,7 +13,7 @@ use Closure;
 class Purchasables
 {
     /** Types an order line may hold. */
-    public const TYPES = ['booking', 'offering', 'package', 'course', 'resource', 'room', 'bundle'];
+    public const TYPES = ['booking', 'seat', 'offering', 'package', 'course', 'course_bundle', 'resource', 'room', 'bundle'];
 
     /** @var array<string, Closure(int): ?Purchasable> */
     private array $resolvers = [];

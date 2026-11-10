@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Domain\Integration\Listeners;
+
+use App\Domain\Learning\Models\Bundle;
+use App\Domain\Learning\Models\Enrolment;
+use App\Domain\Marketplace\Services\BookingStateMachine;
+use App\Domain\Money\Events\OrderRefunded;
+use App\Domain\Money\Models\OrderLine;
+use App\Domain\Money\Models\Refund;
+use App\Models\TutorSession;
+use App\Domain\Marketplace\Models\TutorSessionParticipant;
+
+/**
+ * A processed refund, told to the domain that sold the item. Money has already revoked access (entitlements) for a
+ * full refund; here a fully refunded course closes the enrolment (status "refunded", progress kept), and a lesson or
+ * seat gets a "refunded" event on its booking timeline.
+ */
+class RecordRefund
+{
+    public function __construct(private readonly BookingStateMachine $machine) {}
+
+    public function handle(OrderRefunded $event): void
+    {
+        $line = OrderLine::query()->with('order')->find($event->orderLineId);
+        $refund = Refund::query()->find($event->refundId);
+
+        if ($line === null || $line->order === null) {
+            return;
+        }
+
+        $id = (int) $line->purchasable_id;
+        $context = ['order_reference' => $line->order->uuid, 'refund_id' => $event->refundId,
+            'amount_minor' => (int) ($refund?->amount_minor ?? 0), 'fully_refunded' => $event->fullyRefunded];
+
+        match ($line->purchasable_type) {
+            'booking' => ($session = TutorSession::query()->find($id))
+                ? $this->machine->record($session, 'refunded', null, $session->status, $session->status, null, $context) : null,
+            'seat' => ($seat = TutorSessionParticipant::query()->find($id)) && $seat->session
+                ? $this->machine->record($seat->session, 'seat_refunded', null, $seat->status, $seat->status, null, $context, $seat->id) : null,
+            'course' => $event->fullyRefunded ? $this->closeEnrolments([$id], $line->order->buyer_id) : null,
+            'course_bundle' => $event->fullyRefunded
+                ? $this->closeEnrolments(Bundle::query()->find($id)?->courses()->pluck('learning_courses.id')->map(fn ($v) => (int) $v)->all() ?? [], $line->order->buyer_id) : null,
+            default => null,
+        };
+    }
+
+    /** @param  list<int>  $courseIds */
+    private function closeEnrolments(array $courseIds, int $userId): void
+    {
+        // Only enrolments that rest on a purchase; a learner who enrolled while the course was free keeps access.
+        Enrolment::query()->whereIn('course_id', $courseIds)->where('user_id', $userId)
+            ->where('source', 'entitlement')->where('status', 'active')
+            ->update(['status' => 'refunded', 'updated_at' => now()]);
+    }
+}
