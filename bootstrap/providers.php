@@ -8,4 +8,5 @@ return [
     AppServiceProvider::class,
     FortifyServiceProvider::class,
     JetstreamServiceProvider::class,
+    App\Domain\Academic\TutorAcademicServiceProvider::class,
 ];
