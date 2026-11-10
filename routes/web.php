@@ -113,3 +113,4 @@ if (! Features::enabled(Features::registration())) {
 }
 
 require __DIR__.'/tutor/safety.php';
+require __DIR__.'/tutor/money.php';

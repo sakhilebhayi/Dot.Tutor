@@ -62,3 +62,16 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Audit trail | None | M | Moderation and admin actions untracked | Append-only, hash-chained `Audit::record()` used by every domain |
 | Account deletion | Cascades or restricts per table | I | Safeguarding evidence must survive deletion | Evidence rows restrict deletion of named people (D-416) |
 
+### Money (money agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Payments | M | No provider; `config/tutor.php` says Dot.Tutor does not take payment | Paystack hosted checkout, test mode by default, live behind a second switch, server-side verify (R47_MONEY 1-2) |
+| Money representation | I | Decimals (`hourly_rate`, `rate`) shown as `ZAR 350.00` labels via `App\Support\Money` | `App\Domain\Money\Money` (integer minor units, NNBSP format); decimals read by string for lessons; the old helper left for existing views |
+| Commission | M | None | Versioned rules, per-category overrides, preview endpoint for tutors |
+| Earnings, payouts | M | None | Pending/available/paid earnings, manual CSV batch, encrypted bank details, Transfers built and off |
+| Refunds, disputes | M | None | Finance-only refunds via Paystack with ledger reversal; dispute records |
+| Coupons, credits, bundles | M | None | Tutor- and platform-funded codes with limits; ledger-backed credit; tutor bundles |
+| Receipts, ledger, reconciliation | M | None | Gapless receipts; immutable double-entry ledger with database triggers; reconciliation command and settlement sweep |
+| Access to paid content | M | None | `EntitlementCheck` seam over `money_entitlements` |
+| Guardian-approved payments | M | Every user treated as an adult | Money-side approval seam holds minors; real age and guardian link wait for the safety domain (integration) |

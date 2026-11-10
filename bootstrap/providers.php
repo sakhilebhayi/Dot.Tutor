@@ -9,4 +9,5 @@ return [
     FortifyServiceProvider::class,
     JetstreamServiceProvider::class,
     App\Domain\Safety\TutorSafetyServiceProvider::class,
+    App\Domain\Money\TutorMoneyServiceProvider::class,
 ];
