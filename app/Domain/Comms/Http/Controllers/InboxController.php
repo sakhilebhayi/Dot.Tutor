@@ -70,7 +70,7 @@ class InboxController extends Controller
             return redirect($url);
         }
 
-        return back()->with('status', 'Marked as read.');
+        return back()->with('success', 'Marked as read.');
     }
 
     public function readAll(Request $request): JsonResponse|RedirectResponse
@@ -79,6 +79,6 @@ class InboxController extends Controller
 
         return $request->expectsJson()
             ? response()->json(['marked' => $count, 'unread' => 0, 'badge' => null])
-            : back()->with('status', $count === 1 ? 'One notification marked as read.' : "{$count} notifications marked as read.");
+            : back()->with('success', $count === 1 ? 'One notification marked as read.' : "{$count} notifications marked as read.");
     }
 }

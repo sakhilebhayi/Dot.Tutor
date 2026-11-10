@@ -108,6 +108,6 @@ class PreferencesController extends Controller
 
         return $request->expectsJson()
             ? response()->json(['saved' => true, 'categories' => $this->preferences->matrix($user), 'quiet_hours' => $this->quiet->settings($user)])
-            : back()->with('status', 'Your notification settings are saved.');
+            : back()->with('success', 'Your notification settings are saved.');
     }
 }

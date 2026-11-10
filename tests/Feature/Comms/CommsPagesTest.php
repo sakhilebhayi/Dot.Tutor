@@ -59,7 +59,7 @@ class CommsPagesTest extends TestCase
             'shown' => ['lessons.email', 'lessons.push', 'community.push'],
             'on' => ['lessons.push'],
             'quiet_hours' => ['enabled' => '1', 'start' => '22:00', 'end' => '06:30', 'timezone' => 'Africa/Johannesburg'],
-        ])->assertRedirect('/comms/preferences')->assertSessionHas('status');
+        ])->assertRedirect('/comms/preferences')->assertSessionHas('success');
 
         $prefs = app(Preferences::class);
         $this->assertFalse($prefs->allows($user, 'lessons', 'email'));

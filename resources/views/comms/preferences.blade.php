@@ -23,46 +23,34 @@
         @method('PUT')
 
         <x-td.panel title="What you hear about, and where">
-            <x-td.table caption="Notification choices by kind of message">
-                <thead>
-                    <tr>
-                        <th scope="col">Kind of message</th>
-                        @foreach (['email' => 'Email', 'push' => 'Push'] as $channel => $label)
-                            <th scope="col" class="w-28">{{ $label }}</th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($categories as $key => $category)
-                        <tr>
-                            <th scope="row" class="max-w-[46ch] text-left align-top font-normal">
-                                <span class="block font-semibold text-td-ink">{{ $category['label'] }}</span>
-                                <span class="block text-[0.8125rem] text-td-ink-2">{{ $category['description'] }}</span>
-                                @if ($category['mandatory'])
-                                    <span class="mt-1 inline-flex items-start gap-1.5 text-[0.8125rem] text-td-ink-2">
-                                        <x-td.icon name="lock" />{{ $category['mandatory_reason'] }}
-                                    </span>
-                                @endif
-                            </th>
-                            @foreach (['email', 'push'] as $channel)
-                                <td class="align-top">
-                                    @if (! isset($category['channels'][$channel]))
-                                        <span class="text-td-ink-2">Not used</span>
-                                    @elseif ($category['mandatory'])
-                                        <span class="font-semibold text-td-ink">Always on</span>
-                                    @else
+            <ul class="m-0 list-none p-0" aria-label="Notification choices by kind of message">
+                @foreach ($categories as $key => $category)
+                    <li class="grid gap-x-6 gap-y-3 border-b border-td-line py-4 first:pt-0 last:border-b-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_14rem]">
+                        <div class="min-w-0">
+                            <p class="m-0 font-semibold text-td-ink" id="cat-{{ $key }}">{{ $category['label'] }}</p>
+                            <p class="m-0 max-w-[60ch] text-[0.8125rem] text-td-ink-2">{{ $category['description'] }}</p>
+                        </div>
+                        @if ($category['mandatory'])
+                            <p class="m-0 flex items-start gap-2 text-[0.8125rem] text-td-ink">
+                                <x-td.icon name="lock" />
+                                <span><strong class="block font-semibold">Always on</strong>{{ $category['mandatory_reason'] }}</span>
+                            </p>
+                        @else
+                            <div class="flex flex-wrap gap-x-6 gap-y-2" role="group" aria-labelledby="cat-{{ $key }}">
+                                @foreach (['email' => 'Email', 'push' => 'Push'] as $channel => $label)
+                                    @isset($category['channels'][$channel])
                                         <input type="hidden" name="shown[]" value="{{ $key }}.{{ $channel }}">
                                         <label class="td-check" for="pref-{{ $key }}-{{ $channel }}">
                                             <input type="checkbox" id="pref-{{ $key }}-{{ $channel }}" name="on[]" value="{{ $key }}.{{ $channel }}" @checked($category['channels'][$channel]['enabled'])>
-                                            <span>On<span class="td-sr"> for {{ $category['label'] }} by {{ $channel === 'email' ? 'email' : 'push' }}</span></span>
+                                            <span>{{ $label }}<span class="td-sr"> for {{ $category['label'] }}</span></span>
                                         </label>
-                                    @endif
-                                </td>
-                            @endforeach
-                        </tr>
-                    @endforeach
-                </tbody>
-            </x-td.table>
+                                    @endisset
+                                @endforeach
+                            </div>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
         </x-td.panel>
 
         <x-td.panel title="Quiet hours">
