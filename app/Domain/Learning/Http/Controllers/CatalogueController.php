@@ -37,7 +37,7 @@ class CatalogueController extends LearningController
         ]);
         $courses = Course::query()->with(['owner:id,name', 'currentVersion'])
             ->where('status', CourseStatus::Published->value)
-            ->when($filters['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w->where('title', 'like', '%'.$term.'%')->orWhere('description', 'like', '%'.$term.'%')))
+            ->when($filters['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w->whereLike('title', '%'.$term.'%')->orWhereLike('description', '%'.$term.'%')))
             ->when($filters['subject_id'] ?? null, fn ($q, $id) => $q->where('subject_id', $id))
             ->when($filters['pricing'] ?? null, fn ($q, $p) => $q->where('pricing', $p))
             ->when($filters['language'] ?? null, fn ($q, $l) => $q->where('original_locale', $l))

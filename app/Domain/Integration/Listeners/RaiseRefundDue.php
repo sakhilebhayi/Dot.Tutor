@@ -3,12 +3,13 @@
 namespace App\Domain\Integration\Listeners;
 
 use App\Domain\Marketplace\Models\TutorSessionEvent;
+use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\OrderLine;
 use App\Domain\Money\Money;
 use App\Domain\Money\Services\FinanceIssues;
-use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Models\TutorSession;
+use Illuminate\Support\Str;
 
 /**
  * The marketplace computes what is due back when a paid lesson or seat is cancelled, resolved in a dispute, or
@@ -33,7 +34,8 @@ class RaiseRefundDue
             : ['booking', (int) $event->tutor_session_id, TutorSession::query()->whereKey($event->tutor_session_id)->value('order_reference')];
 
         $reference = $event->context['order_reference'] ?? $reference;
-        $order = $reference ? Order::query()->where('uuid', $reference)->first() : null;
+        // Only money order references (uuids) are looked up; another checkout's reference is not ours.
+        $order = is_string($reference) && Str::isUuid($reference) ? Order::query()->where('uuid', $reference)->first() : null;
 
         if ($order === null || ! $order->isSettled()) {
             return; // nothing was paid through money

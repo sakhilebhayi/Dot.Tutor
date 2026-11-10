@@ -6,6 +6,7 @@ use App\Domain\Academic\Contracts\AcademicScope;
 use App\Domain\Academic\Models\AcademicLevel;
 use App\Domain\Academic\Models\Subject;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -65,6 +66,15 @@ class LegacySubjectMappingTest extends TestCase
 
         Artisan::call('migrate');
         Artisan::call('academic:sync');
+    }
+
+    protected function tearDown(): void
+    {
+        // This test leaves its own rows behind (no RefreshDatabase). On SQLite in memory the next test gets a new
+        // database anyway; on PostgreSQL the next RefreshDatabase test must rebuild the schema (R-47 D-1407).
+        RefreshDatabaseState::$migrated = false;
+
+        parent::tearDown();
     }
 
     public function test_no_subject_row_is_lost_and_every_id_and_reference_stays_valid(): void
