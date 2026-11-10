@@ -4,11 +4,13 @@ namespace Tests\Feature\Comms;
 
 use App\Domain\Comms\Calendar\LessonCalendar;
 use App\Domain\Comms\Models\NotificationDelivery;
+use App\Domain\Comms\QuietHours;
 use App\Domain\Learning\Models\Assessment;
 use App\Domain\Learning\Models\Assignment;
 use App\Domain\Learning\Models\Attempt;
 use App\Domain\Marketplace\Models\TutorSessionEvent;
 use App\Domain\Marketplace\Models\TutorSessionParticipant;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +21,7 @@ class RemindersAndCalendarTest extends TestCase
     use BuildsComms;
     use RefreshDatabase;
 
-    private function confirmedLesson(CarbonImmutable $startsAt, array $tutorProfile = [], ?\App\Models\User $learner = null): array
+    private function confirmedLesson(CarbonImmutable $startsAt, array $tutorProfile = [], ?User $learner = null): array
     {
         [$tutor, $subject] = $this->bookableTutor([], $tutorProfile);
         $learner ??= $this->adult('Learner');
@@ -124,7 +126,7 @@ class RemindersAndCalendarTest extends TestCase
         $this->configurePush();
         [, $learner, $session] = $this->confirmedLesson(CarbonImmutable::now()->addMinutes(45));
         $this->subscribeBrowser($learner);
-        app(\App\Domain\Comms\QuietHours::class)->save($learner, true, '00:00', '23:59', 'UTC');
+        app(QuietHours::class)->save($learner, true, '00:00', '23:59', 'UTC');
 
         $this->artisan('comms:reminders');
         $push = $this->delivery($learner, 'lesson_reminder', 'push');

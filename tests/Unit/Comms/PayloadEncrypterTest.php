@@ -68,7 +68,7 @@ class PayloadEncrypterTest extends TestCase
     {
         $int = function (string $part): string {
             $part = ltrim($part, "\0");
-            if ($part === '' || ord($part[0]) > 0x7f) {
+            if ($part === '' || ord($part[0]) > 0x7F) {
                 $part = "\0".$part;
             }
 

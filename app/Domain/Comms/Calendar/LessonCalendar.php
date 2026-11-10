@@ -106,7 +106,7 @@ final class LessonCalendar
     /** RFC 5545 TEXT escaping. */
     public static function text(string $value): string
     {
-        return str_replace(["\\", ';', ',', "\r\n", "\n"], ['\\\\', '\\;', '\\,', '\\n', '\\n'], $value);
+        return str_replace(['\\', ';', ',', "\r\n", "\n"], ['\\\\', '\\;', '\\,', '\\n', '\\n'], $value);
     }
 
     /** Fold lines longer than 75 octets (continuation lines start with a space), never inside a UTF-8 character. */

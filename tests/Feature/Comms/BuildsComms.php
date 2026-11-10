@@ -6,9 +6,12 @@ use App\Domain\Comms\Contracts\MinorRouting;
 use App\Domain\Comms\Models\NotificationDelivery;
 use App\Domain\Comms\Push\Base64Url;
 use App\Domain\Comms\Push\EcKeys;
+use App\Domain\Comms\Push\PushSubscriptions;
 use App\Models\User;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\BuildsOfferings;
 use Tests\Feature\Safety\BuildsSafetyState;
 
@@ -56,7 +59,7 @@ trait BuildsComms
     {
         $ua = EcKeys::generate();
         $auth = random_bytes(16);
-        app(\App\Domain\Comms\Push\PushSubscriptions::class)->subscribe($user, $endpoint, Base64Url::encode($ua['public']), Base64Url::encode($auth), 'Mozilla/5.0 (Linux; Android 14) Chrome/130');
+        app(PushSubscriptions::class)->subscribe($user, $endpoint, Base64Url::encode($ua['public']), Base64Url::encode($auth), 'Mozilla/5.0 (Linux; Android 14) Chrome/130');
 
         return ['ua' => $ua, 'auth' => $auth];
     }
@@ -71,7 +74,7 @@ trait BuildsComms
     {
         $guardian ??= $this->adult('Guardian');
         $this->linkGuardian($learner, $guardian);
-        \Illuminate\Support\Facades\Notification::swap(new \Illuminate\Notifications\ChannelManager($this->app));
+        Notification::swap(new ChannelManager($this->app));
         $this->forgetAges();
 
         return $guardian;

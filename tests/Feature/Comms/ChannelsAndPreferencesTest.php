@@ -11,12 +11,13 @@ use App\Domain\Comms\Models\NotificationPreference;
 use App\Domain\Comms\Models\PushSubscription;
 use App\Domain\Comms\NotificationRouter;
 use App\Domain\Comms\Preferences;
-use App\Domain\Comms\Push\Base64Url;
 use App\Domain\Comms\Push\PayloadEncrypter;
+use App\Domain\Comms\QuietHours;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -60,7 +61,7 @@ class ChannelsAndPreferencesTest extends TestCase
 
         // Even a stored "off" (written around the screen) does not stop it.
         NotificationPreference::create(['user_id' => $user->id, 'category' => $category, 'channel' => 'email', 'enabled' => false]);
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
         $this->assertTrue(app(Preferences::class)->allows($user, $category, 'email'));
 
         $this->deliversMail();
@@ -248,7 +249,7 @@ class ChannelsAndPreferencesTest extends TestCase
         $this->actingAs($user)->putJson('/comms/preferences', ['quiet_hours' => ['enabled' => false, 'start' => '22:00', 'end' => '06:00']])
             ->assertOk()->assertJsonPath('quiet_hours.enabled', false);
 
-        $this->assertNull(app(\App\Domain\Comms\QuietHours::class)->deferUntil($user, CarbonImmutable::parse('2026-11-12 23:00')));
+        $this->assertNull(app(QuietHours::class)->deferUntil($user, CarbonImmutable::parse('2026-11-12 23:00')));
     }
 
     public function test_a_push_is_encrypted_for_the_device_and_a_gone_device_is_dropped(): void
@@ -257,7 +258,7 @@ class ChannelsAndPreferencesTest extends TestCase
         $user = $this->adult('Learner');
         $device = $this->subscribeBrowser($user);
         $this->subscribeBrowser($user, 'https://updates.push.services.mozilla.com/wpush/v2/gone');
-        app(\App\Domain\Comms\QuietHours::class)->save($user, false, '21:00', '07:00', null);
+        app(QuietHours::class)->save($user, false, '21:00', '07:00', null);
         $bodies = [];
         Http::fake(function (HttpRequest $request) use (&$bodies) {
             if (str_contains($request->url(), 'gone')) {

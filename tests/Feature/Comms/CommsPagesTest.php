@@ -5,7 +5,9 @@ namespace Tests\Feature\Comms;
 use App\Domain\Comms\CommsMessage;
 use App\Domain\Comms\NotificationRouter;
 use App\Domain\Comms\Preferences;
+use App\Domain\Comms\QuietHours;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 /** The inbox and settings pages: real content, honest channel states, forms that work without script. */
@@ -65,7 +67,7 @@ class CommsPagesTest extends TestCase
         $this->assertFalse($prefs->allows($user, 'lessons', 'email'));
         $this->assertTrue($prefs->allows($user, 'lessons', 'push'));
         $this->assertFalse($prefs->allows($user, 'community', 'push'));
-        $this->assertSame('22:00', app(\App\Domain\Comms\QuietHours::class)->settings($user)['start']);
+        $this->assertSame('22:00', app(QuietHours::class)->settings($user)['start']);
     }
 
     public function test_a_teen_is_told_their_guardian_gets_copies(): void
@@ -89,11 +91,11 @@ class CommsPagesTest extends TestCase
     {
         $user = $this->adult('Learner');
         $this->actingAs($user);
-        $this->assertStringContainsString('Notifications, none unread', \Illuminate\Support\Facades\Blade::render('<x-comms::bell />'));
+        $this->assertStringContainsString('Notifications, none unread', Blade::render('<x-comms::bell />'));
 
         foreach (range(1, 3) as $i) {
             app(NotificationRouter::class)->send(new CommsMessage($user, 'lesson_changed', 'bell'.$i, 'T', 'B', null, 'booking-1'));
         }
-        $this->assertStringContainsString('Notifications, 1 unread', \Illuminate\Support\Facades\Blade::render('<x-comms::bell />'));
+        $this->assertStringContainsString('Notifications, 1 unread', Blade::render('<x-comms::bell />'));
     }
 }

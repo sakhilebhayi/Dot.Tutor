@@ -15,12 +15,13 @@ use App\Domain\Money\Models\Payment;
 use App\Domain\Money\Models\Payout;
 use App\Domain\Safety\Enums\ReportCategory;
 use App\Domain\Safety\Services\DatabaseReportSink;
-use App\Domain\Safety\Services\Incidents;
 use App\Domain\Safety\Services\Moderation;
 use App\Models\User;
 use App\Services\TutorModeration;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -144,8 +145,8 @@ class DomainSourcesTest extends TestCase
     public function test_a_safeguarding_incident_alerts_operators_at_once_ignoring_quiet_hours(): void
     {
         $this->configurePush();
-        \Illuminate\Support\Facades\Http::fake(['fcm.googleapis.com/*' => \Illuminate\Support\Facades\Http::response('', 201)]);
-        $this->travelTo(\Carbon\CarbonImmutable::parse('2026-11-12 23:30', 'Africa/Johannesburg'));
+        Http::fake(['fcm.googleapis.com/*' => Http::response('', 201)]);
+        $this->travelTo(CarbonImmutable::parse('2026-11-12 23:30', 'Africa/Johannesburg'));
         $operator = $this->operator('Officer');
         $this->subscribeBrowser($operator);
         $reporter = $this->adult('Reporter');

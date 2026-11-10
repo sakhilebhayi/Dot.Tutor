@@ -39,3 +39,11 @@ Invoked and applied, in this order:
 - **design-md**: DESIGN.md in Google format from the shipped tokens; `npx @google/design.md lint DESIGN.md`: 0 errors, 0 warnings.
 
 Not used: awesome-design-md and open-design (no brand reference needed), gsap-* and scroll-world (no scroll choreography by direction), react-bits and canvas-ui (no React or WebGL), dataviz (no charts in this scope; the progress meter and stat strip follow its stat-tile rules). `ui-ux-pro-max` and `emil-design-eng` are dangling symlinks on this machine and were not used.
+
+## comms agent (wave 2, 2026-11-10)
+
+- Invoked `impeccable` before writing the inbox and settings pages; ran `impeccable context` (PRODUCT.md and DESIGN.md from the ds agent: the Reading Room world) and read `reference/craft-floor.md`. Treated as a scoped Operate surface inside the ds shells, built only from the x-td kit (page-head, tabs, state, panel, notice, button, check, field, input, select, pill, icon) and token utilities.
+- Applied: controls named by their action ("Mark all as read", "Turn on push here", "Save notification settings"); mandatory kinds shown as facts with their reason, never as disabled switches; channel states in plain words (email that only logs is "Not available"); unread marked with words and a dot, not colour alone; `<time>` with the exact time on hover; the settings list stacks on phones instead of a cramped table; no eyebrows, no card grids, no side stripes.
+- `impeccable detect --json resources/views/comms`: no findings.
+- Browser check (Claude Browser pane, local server on 8709, a local demo user with three real router-written notifications): inbox at 1440 and 390, settings at 1440 and 390 (dark theme), no horizontal overflow at 390; unticked a box and saved, the choice persisted and the ds toast confirmed. The embedded browser was not used to subscribe a real device to push (VAPID keys were not configured locally); the push path is covered by tests that decrypt the sent body with the browser's key.
+- Not used: hallmark (no new visual world), `ui-ux-pro-max` and `emil-design-eng` (dangling symlinks).

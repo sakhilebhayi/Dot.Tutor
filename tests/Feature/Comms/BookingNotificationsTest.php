@@ -2,8 +2,12 @@
 
 namespace Tests\Feature\Comms;
 
+use App\Domain\Comms\Inbox;
 use App\Domain\Comms\Listeners\BookingEventsObserver;
+use App\Domain\Comms\Models\NotificationDelivery;
 use App\Domain\Marketplace\Models\TutorSessionEvent;
+use App\Domain\Safety\Models\GuardianLink;
+use App\Domain\Safety\Services\Guardians;
 use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,7 +72,7 @@ class BookingNotificationsTest extends TestCase
         $this->assertSame($id, $learnerConfirm->data['ics_session_id']);
         $this->assertSame('Lesson confirmed and paid', $tutorConfirm->data['title']);
         // One subject: three notices about one booking count once.
-        $this->assertSame(1, \App\Domain\Comms\Inbox::unreadCount($learner));
+        $this->assertSame(1, Inbox::unreadCount($learner));
     }
 
     public function test_a_free_lesson_is_confirmed_on_acceptance_without_telling_the_tutor_what_they_just_did(): void
@@ -137,7 +141,7 @@ class BookingNotificationsTest extends TestCase
         $this->assertSame('Approval needed', $ask->data['title']);
         $this->assertSame('guardian', $ask->data['category']);
         $this->assertSame('mail_transport_not_delivering', $this->delivery($guardian, 'guardian_approval_requested', 'email')->reason);
-        $this->assertSame(1, \App\Domain\Comms\Models\NotificationDelivery::where('user_id', $guardian->id)->where('type', 'guardian_approval_requested')->where('channel', 'email')->count());
+        $this->assertSame(1, NotificationDelivery::where('user_id', $guardian->id)->where('type', 'guardian_approval_requested')->where('channel', 'email')->count());
 
         $tutorNotice = $this->inbox($tutor->user, 'lesson_requested')->sole();
         $this->assertStringContainsString('Sipho asked', $tutorNotice->data['message']);
@@ -155,8 +159,8 @@ class BookingNotificationsTest extends TestCase
         [$tutor, $subject, $offering] = $this->bookableTutor(['price_minor' => 0]);
         $learner = $this->teen('Sipho Dlamini');
         $guardian = $this->guardianFor($learner, $this->adult('Nomsa Dlamini'));
-        $link = \App\Domain\Safety\Models\GuardianLink::where('learner_id', $learner->id)->sole();
-        app(\App\Domain\Safety\Services\Guardians::class)->setTeenApprovals($link, ['booking' => false, 'purchase' => true, 'paid_room' => true, 'live_lesson' => false], $guardian);
+        $link = GuardianLink::where('learner_id', $learner->id)->sole();
+        app(Guardians::class)->setTeenApprovals($link, ['booking' => false, 'purchase' => true, 'paid_room' => true, 'live_lesson' => false], $guardian);
         $this->screen($tutor->user);
 
         $id = $this->book($learner, $offering, $subject, $this->slotAt($tutor, 2))->json('data.id');

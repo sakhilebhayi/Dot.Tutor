@@ -4,12 +4,12 @@ namespace App\Domain\Comms\Http\Controllers;
 
 use App\Domain\Comms\ChannelStatus;
 use App\Domain\Comms\Contracts\MinorRouting;
-use App\Domain\Comms\Preferences;
 use App\Domain\Comms\PreferenceLocked;
+use App\Domain\Comms\Preferences;
 use App\Domain\Comms\Push\PushSubscriptions;
 use App\Domain\Comms\Push\VapidKeys;
-use App\Domain\Comms\Support\ShellFor;
 use App\Domain\Comms\QuietHours;
+use App\Domain\Comms\Support\ShellFor;
 use App\Http\Controllers\Controller;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;

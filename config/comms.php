@@ -1,5 +1,12 @@
 <?php
 
+use App\Domain\Safety\Notifications\AccountWarned;
+use App\Domain\Safety\Notifications\GuardianApprovalDecided;
+use App\Domain\Safety\Notifications\GuardianApprovalRequested;
+use App\Domain\Safety\Notifications\IncidentAlert;
+use App\Notifications\SessionCancelledByModeration;
+use App\Notifications\TutorProfileDecision;
+
 /*
 |--------------------------------------------------------------------------
 | R-47 comms: notifications, reminders, channels (docs/R47_COMMS.md)
@@ -157,12 +164,12 @@ return [
     | comms type so the inbox, preferences and push/email copies treat them like comms' own.
     */
     'source_types' => [
-        App\Notifications\TutorProfileDecision::class => 'tutor_application_decided',
-        App\Notifications\SessionCancelledByModeration::class => 'lesson_cancelled',
-        App\Domain\Safety\Notifications\GuardianApprovalRequested::class => 'guardian_approval_requested',
-        App\Domain\Safety\Notifications\GuardianApprovalDecided::class => 'guardian_approval_decided',
-        App\Domain\Safety\Notifications\AccountWarned::class => 'account_warned',
-        App\Domain\Safety\Notifications\IncidentAlert::class => 'incident_alert',
+        TutorProfileDecision::class => 'tutor_application_decided',
+        SessionCancelledByModeration::class => 'lesson_cancelled',
+        GuardianApprovalRequested::class => 'guardian_approval_requested',
+        GuardianApprovalDecided::class => 'guardian_approval_decided',
+        AccountWarned::class => 'account_warned',
+        IncidentAlert::class => 'incident_alert',
     ],
 
     /*
@@ -170,7 +177,7 @@ return [
     | second copy.
     */
     'source_sends_own_email' => [
-        App\Domain\Safety\Notifications\GuardianApprovalRequested::class,
+        GuardianApprovalRequested::class,
     ],
 
     // Types that stay in the inbox only (no push, email or SMS copies).

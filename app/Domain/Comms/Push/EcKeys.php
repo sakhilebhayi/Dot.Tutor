@@ -89,7 +89,7 @@ final class EcKeys
 
         $offset = 2;
         if ((ord($der[1]) & 0x80) !== 0) {
-            $offset += ord($der[1]) & 0x7f;
+            $offset += ord($der[1]) & 0x7F;
         }
 
         $parts = [];
