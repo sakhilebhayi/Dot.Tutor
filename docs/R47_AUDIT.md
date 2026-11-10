@@ -45,3 +45,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 
 ## Domain audits
 (appended by the wave-1 agents)
+
+### Academic, languages and i18n (academic agent, 2026-11-10)
+
+| Area as found | Class | Finding | After |
+|---|---|---|---|
+| Academic levels and grades | B | `subjects.level` free string (primary, high_school, university, adult); no country, curriculum, grade or tertiary level | Countries, frameworks, curricula, ordered levels, stages as data; CAPS, IEB (Gr 1-12), SA higher education (1st year to doctoral, professional), Cambridge seeded; operator-editable |
+| Subjects | I | Flat operator catalogue, name + level string, duplicates per level | Global catalogue on the same table (ids kept), aliases, families, language subjects; ~880 offerings per level; legacy rows adopted or linked, legacy level strings mapped, unknown strings reported |
+| Topics | M | None | Topic tree per offering; starter topics for CAPS Mathematics Gr 1-12, Physical and Life Sciences Gr 10 |
+| Institutions | M | None | Table + operator CRUD; 26 public universities seeded; never a school name for a learner |
+| Learner profile | M | User row only | Learner profile (country, curriculum, level, subjects, tertiary institution, birth month only, bilingual flag), one-minute form, describe-what-you-need parser |
+| Languages | M | English only, no language data | Languages table (11 official + SASL + pt/fr/sw), holdings by role, tutor teaching languages with self-declared level and operator verification |
+| Interface i18n | M | No lang files, hard-coded English | `lang/` architecture, locale middleware (user, session, Accept-Language, English), switcher with measured coverage and provenance; en source, af/fr/pt AI-drafted unreviewed for this domain's strings; other screens still hard-coded English |
+| Content translation | M | None | Translation store with provenance, review, out-of-date detection, notation guard, side-by-side API |
+| Academic admin | P | Subject screen only | Operator screens for every structure table, audited through a seam |
