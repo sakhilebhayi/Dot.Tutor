@@ -2,9 +2,13 @@
 
 namespace Tests\Feature\Comms;
 
+use App\Domain\Comms\Contracts\MinorRouting;
 use App\Domain\Comms\Inbox;
 use App\Domain\Comms\Listeners\BookingEventsObserver;
 use App\Domain\Comms\Models\NotificationDelivery;
+use App\Domain\Comms\Support\SafetyMinorRouting;
+use App\Domain\Integration\Adapters\Marketplace\SafetyGuardianApprovals;
+use App\Domain\Marketplace\Contracts\GuardianApprovalsPort;
 use App\Domain\Marketplace\Models\TutorSessionEvent;
 use App\Domain\Safety\Models\GuardianLink;
 use App\Domain\Safety\Services\Guardians;
@@ -127,31 +131,54 @@ class BookingNotificationsTest extends TestCase
         $this->assertSame('Leave a review', $invite->data['action_label']);
     }
 
-    public function test_a_minor_booking_reaches_the_guardian_and_the_tutor_sees_only_a_first_name(): void
+    public function test_a_minor_booking_reaches_the_guardian_first_and_the_tutor_sees_only_a_first_name_after_approval(): void
     {
         [$tutor, $subject, $offering] = $this->bookableTutor(['price_minor' => 0]);
         $learner = $this->teen('Sipho Dlamini');
         $guardian = $this->guardianFor($learner, $this->adult('Nomsa Dlamini'));
         $this->screen($tutor->user);
 
-        $this->book($learner, $offering, $subject, $this->slotAt($tutor, 2));
+        $id = $this->book($learner, $offering, $subject, $this->slotAt($tutor, 2))->json('data.id');
+        $this->assertSame('awaiting_guardian', TutorSession::find($id)->status);
 
-        // The safety domain asks the guardian (its own notification, brought under comms' rules, its own email recorded).
+        // The guardian is asked once (safety's own notice under comms' rules, its own email recorded, not duplicated).
         $ask = $this->inbox($guardian, 'guardian_approval_requested')->sole();
         $this->assertSame('Approval needed', $ask->data['title']);
         $this->assertSame('guardian', $ask->data['category']);
-        $this->assertSame('mail_transport_not_delivering', $this->delivery($guardian, 'guardian_approval_requested', 'email')->reason);
         $this->assertSame(1, NotificationDelivery::where('user_id', $guardian->id)->where('type', 'guardian_approval_requested')->where('channel', 'email')->count());
+        $this->assertSame('mail_transport_not_delivering', $this->delivery($guardian, 'guardian_approval_requested', 'email')->reason);
+        // The learner is told why it waits; the tutor hears nothing about a request a guardian has not allowed yet.
+        $this->assertCount(1, $this->inbox($learner, 'lesson_awaiting_guardian'));
+        $this->assertCount(0, $this->inbox($tutor->user));
+
+        $this->actingAs($guardian)->post(route('safety.guardian.approvals.decide', $ask->data['approval_id']), ['decision' => 'approve'])->assertRedirect();
+        $this->assertSame('pending', TutorSession::find($id)->status);
 
         $tutorNotice = $this->inbox($tutor->user, 'lesson_requested')->sole();
         $this->assertStringContainsString('Sipho asked', $tutorNotice->data['message']);
         $this->assertStringNotContainsString('Dlamini', json_encode($tutorNotice->data));
         $this->assertStringNotContainsString($learner->email, json_encode($tutorNotice->data));
         $this->assertTrue($tutorNotice->data['about_minor']);
+        // The guardian decided it themselves: no "asked for a lesson" copy back to them.
+        $this->assertCount(0, $this->inbox($guardian, 'lesson_requested'));
+        $this->assertCount(1, $this->inbox($learner, 'guardian_approval_decided'));
+    }
 
-        $copy = $this->inbox($guardian, 'lesson_requested')->sole();
-        $this->assertSame('Sipho asked for a lesson', $copy->data['title']);
-        $this->assertSame('/safety/guardian', $copy->data['url']);
+    public function test_a_guardian_declining_tells_the_learner_once_and_the_tutor_never_hears(): void
+    {
+        [$tutor, $subject, $offering] = $this->bookableTutor(['price_minor' => 0]);
+        $learner = $this->teen('Sipho');
+        $guardian = $this->guardianFor($learner);
+        $this->screen($tutor->user);
+        $id = $this->book($learner, $offering, $subject, $this->slotAt($tutor, 2))->json('data.id');
+        $ask = $this->inbox($guardian, 'guardian_approval_requested')->sole();
+
+        $this->actingAs($guardian)->post(route('safety.guardian.approvals.decide', $ask->data['approval_id']), ['decision' => 'decline', 'note' => 'Not this week.'])->assertRedirect();
+
+        $this->assertSame('cancelled', TutorSession::find($id)->status);
+        $this->assertCount(1, $this->inbox($learner, 'guardian_approval_decided'));
+        $this->assertCount(0, $this->inbox($learner, 'lesson_cancelled'));
+        $this->assertCount(0, $this->inbox($tutor->user));
     }
 
     public function test_a_teens_confirmed_lesson_is_copied_to_the_guardian(): void
@@ -168,5 +195,11 @@ class BookingNotificationsTest extends TestCase
 
         $this->assertSame('Sipho\'s lesson is confirmed', $this->inbox($guardian, 'lesson_confirmed')->sole()->data['title']);
         $this->assertTrue($this->inbox($learner, 'lesson_confirmed')->sole()->data['about_minor']);
+    }
+
+    public function test_comms_and_marketplace_ask_the_safety_domain_about_minors(): void
+    {
+        $this->assertInstanceOf(SafetyMinorRouting::class, app(MinorRouting::class));
+        $this->assertInstanceOf(SafetyGuardianApprovals::class, app(GuardianApprovalsPort::class));
     }
 }
