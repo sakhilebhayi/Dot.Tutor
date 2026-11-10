@@ -2,7 +2,7 @@
 <x-app-layout>
 @include('money::partials.styles')
 <div class="t-page m-receipt">
-    <h1 class="t-h1">Receipt {{ $receipt->number }}</h1>
+    <h1 class="t-h1">Receipt <span style="white-space:nowrap;">{{ $receipt->number }}</span></h1>
     <p class="t-lede m-noprint">Use your browser's print command to print this receipt or save it as a PDF.</p>
 
     <section class="t-panel" aria-label="Receipt">
@@ -22,11 +22,11 @@
         </div>
 
         <div style="overflow-x:auto;margin-top:1.25rem;" role="region" aria-label="Items" tabindex="0">
-            <table class="t-table">
-                <thead><tr><th scope="col">Item</th><th scope="col">Tutor</th><th scope="col" class="m-num">Price</th><th scope="col" class="m-num">Paid</th></tr></thead>
+            <table class="t-table m-lines">
+                <thead><tr><th scope="col">Item</th><th scope="col" class="m-hide-sm">Tutor</th><th scope="col" class="m-num m-hide-sm">Price</th><th scope="col" class="m-num">Paid</th></tr></thead>
                 <tbody>
                 @foreach($s['lines'] as $line)
-                    <tr><td>{{ $line['title'] }}</td><td>{{ $line['seller'] ?? 'Dot.Tutor' }}</td><td class="m-num">{{ Money::of($line['price_minor'], $cur)->format() }}</td><td class="m-num">{{ Money::of($line['paid_minor'], $cur)->format() }}</td></tr>
+                    <tr><td>{{ $line['title'] }}</td><td class="m-hide-sm">{{ $line['seller'] ?? 'Dot.Tutor' }}</td><td class="m-num m-hide-sm">{{ Money::of($line['price_minor'], $cur)->format() }}</td><td class="m-num">{{ Money::of($line['paid_minor'], $cur)->format() }}</td></tr>
                 @endforeach
                 </tbody>
             </table>

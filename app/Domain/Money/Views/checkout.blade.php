@@ -1,4 +1,4 @@
-@php use App\Domain\Money\Money; use App\Domain\Money\Models\Order; $cur = $order->currency; @endphp
+@php use App\Domain\Money\Money; use App\Domain\Money\Models\Order; $cur = $order->currency; $hasDiscount = $order->discount_minor > 0; $hasCredit = $order->credit_minor > 0; @endphp
 <x-app-layout>
 @include('money::partials.styles')
 <div class="t-page">
@@ -11,15 +11,15 @@
     <section class="t-panel" aria-labelledby="items-h">
         <h2 class="t-h2" id="items-h">What you are buying</h2>
         <div class="table-scroll" style="overflow-x:auto;" role="region" aria-label="Order items" tabindex="0">
-            <table class="t-table">
-                <thead><tr><th scope="col">Item</th><th scope="col" class="m-num">Price</th><th scope="col" class="m-num">Discount</th><th scope="col" class="m-num">Credit</th><th scope="col" class="m-num">To pay</th></tr></thead>
+            <table class="t-table m-lines">
+                <thead><tr><th scope="col">Item</th><th scope="col" class="m-num m-hide-sm">Price</th>@if($hasDiscount)<th scope="col" class="m-num m-hide-sm">Discount</th>@endif @if($hasCredit)<th scope="col" class="m-num m-hide-sm">Credit</th>@endif<th scope="col" class="m-num">To pay</th></tr></thead>
                 <tbody>
                 @foreach($order->lines as $line)
                     <tr>
                         <td>{{ $line->title }}</td>
-                        <td class="m-num">{{ Money::of($line->price_minor, $cur)->format() }}</td>
-                        <td class="m-num">{{ $line->tutor_discount_minor + $line->platform_discount_minor ? '-'.Money::of($line->tutor_discount_minor + $line->platform_discount_minor, $cur)->format() : '' }}</td>
-                        <td class="m-num">{{ $line->credit_minor ? '-'.Money::of($line->credit_minor, $cur)->format() : '' }}</td>
+                        <td class="m-num m-hide-sm">{{ Money::of($line->price_minor, $cur)->format() }}</td>
+                        @if($hasDiscount)<td class="m-num m-hide-sm">{{ $line->tutor_discount_minor + $line->platform_discount_minor ? '-'.Money::of($line->tutor_discount_minor + $line->platform_discount_minor, $cur)->format() : '' }}</td>@endif
+                        @if($hasCredit)<td class="m-num m-hide-sm">{{ $line->credit_minor ? '-'.Money::of($line->credit_minor, $cur)->format() : '' }}</td>@endif
                         <td class="m-num">{{ Money::of($line->cash_minor, $cur)->format() }}</td>
                     </tr>
                 @endforeach

@@ -15,8 +15,12 @@
     .t-table th { font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:#a1a1aa; font-weight:700; }
     .t-btn:focus-visible, .t-field:focus-visible, a:focus-visible { outline:2px solid #fbbf24; outline-offset:2px; }
     .t-btn[disabled] { opacity:.5; cursor:not-allowed; }
+    .t-table.m-lines { min-width:0; table-layout:auto; }
+    .m-lines td:first-child { min-width:9rem; overflow-wrap:anywhere; }
+    @media (max-width: 640px) { .m-lines th, .m-lines td { padding:.55rem .4rem; } .m-hide-sm { display:none; } }
     @media print {
         .sidebar, .topbar, .m-noprint { display:none !important; }
+        .m-hide-sm { display:table-cell !important; }
         .content-wrap { margin:0 !important; padding:0 !important; }
         body { background:#fff !important; color:#000 !important; }
         .t-panel { background:#fff !important; border-color:#ccc !important; }

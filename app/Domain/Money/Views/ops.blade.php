@@ -11,7 +11,7 @@
             <p class="t-hint">Nothing to resolve.</p>
         @else
         <div style="overflow-x:auto;" role="region" aria-label="Open exceptions" tabindex="0">
-            <table class="t-table">
+            <table class="t-table m-lines">
                 <thead><tr><th scope="col">Raised</th><th scope="col">Kind</th><th scope="col">Summary</th><th scope="col" class="m-num">Amount</th></tr></thead>
                 <tbody>
                 @foreach($issues as $i)
@@ -29,7 +29,7 @@
             <p class="t-hint">No orders yet.</p>
         @else
         <div style="overflow-x:auto;" role="region" aria-label="Recent orders" tabindex="0">
-            <table class="t-table">
+            <table class="t-table m-lines">
                 <thead><tr><th scope="col">Created</th><th scope="col">Order</th><th scope="col">Status</th><th scope="col" class="m-num">Total</th><th scope="col" class="m-num">Refunded</th></tr></thead>
                 <tbody>
                 @foreach($orders as $o)

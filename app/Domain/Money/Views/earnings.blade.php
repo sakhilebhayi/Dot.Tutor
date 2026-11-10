@@ -20,7 +20,7 @@
             <p class="t-hint">No sales yet. When a learner pays for one of your lessons or courses, it appears here with the commission and what you keep.</p>
         @else
         <div style="overflow-x:auto;" role="region" aria-label="Recent sales" tabindex="0">
-            <table class="t-table">
+            <table class="t-table m-lines">
                 <thead><tr><th scope="col">Item</th><th scope="col" class="m-num">Price</th><th scope="col" class="m-num">Commission</th><th scope="col" class="m-num">Other charges</th><th scope="col" class="m-num">You keep</th><th scope="col">Status</th></tr></thead>
                 <tbody>
                 @foreach($earnings as $e)
@@ -46,7 +46,7 @@
             <p class="t-hint">No payouts yet. Add your bank account so finance can include you in the next batch.</p>
         @else
         <div style="overflow-x:auto;" role="region" aria-label="Payouts" tabindex="0">
-            <table class="t-table">
+            <table class="t-table m-lines">
                 <thead><tr><th scope="col">Reference</th><th scope="col" class="m-num">Amount</th><th scope="col">Status</th><th scope="col">Paid</th></tr></thead>
                 <tbody>
                 @foreach($payouts as $p)
