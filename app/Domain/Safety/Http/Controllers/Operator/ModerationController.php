@@ -4,6 +4,7 @@ namespace App\Domain\Safety\Http\Controllers\Operator;
 
 use App\Domain\Safety\Audit;
 use App\Domain\Safety\Enums\ReportPriority;
+use App\Domain\Safety\Models\Message;
 use App\Domain\Safety\Models\Report;
 use App\Domain\Safety\Services\Moderation;
 use App\Http\Controllers\Controller;
@@ -42,7 +43,7 @@ class ModerationController extends Controller
             'snapshot' => $report->snapshot,
             'resolution' => $report->resolution,
             // The unredacted text of a redacted message: evidence for safeguarding staff only.
-            'original_body' => $report->reportable instanceof \App\Domain\Safety\Models\Message ? $report->reportable->original_body : null,
+            'original_body' => $report->reportable instanceof Message ? $report->reportable->original_body : null,
         ]];
 
         return $request->expectsJson() ? response()->json($data) : view('safety::operator.report', $data);

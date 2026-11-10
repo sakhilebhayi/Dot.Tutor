@@ -4,6 +4,7 @@ namespace Tests\Feature\Safety;
 
 use App\Domain\Safety\Models\Conversation;
 use App\Domain\Safety\Models\ConversationParticipant;
+use App\Domain\Safety\Models\GuardianLink;
 use App\Domain\Safety\Models\Message;
 use App\Domain\Safety\Models\MessageAttachment;
 use App\Domain\Safety\Services\ContactRedactor;
@@ -175,7 +176,7 @@ class MessagingTest extends TestCase
     {
         [$child, $guardian, $tutor, $session] = $this->childBooking();
         $id = $this->actingAs($tutor)->postJson(route('safety.conversations.store'), ['context_type' => 'booking', 'context_id' => $session->id, 'body' => 'Hi'])->json('conversation_id');
-        $link = \App\Domain\Safety\Models\GuardianLink::query()->where('guardian_id', $guardian->id)->sole();
+        $link = GuardianLink::query()->where('guardian_id', $guardian->id)->sole();
 
         $this->actingAs($guardian)->postJson(route('safety.guardian.links.revoke', $link))->assertOk();
 

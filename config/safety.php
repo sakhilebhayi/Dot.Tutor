@@ -1,5 +1,11 @@
 <?php
 
+use App\Domain\Safety\Models\Message;
+use App\Models\LessonResource;
+use App\Models\SessionRating;
+use App\Models\TutorProfile;
+use App\Models\User;
+
 /*
 |--------------------------------------------------------------------------
 | Safeguarding (R-47 safety domain, app/Domain/Safety)
@@ -66,11 +72,11 @@ return [
         // Report types the HTTP endpoint accepts: alias => model class. Classes that do not exist yet
         // (wave-2 domains) are skipped. Other domains report in code through the ReportSink seam.
         'reportable' => [
-            'message' => App\Domain\Safety\Models\Message::class,
-            'profile' => App\Models\User::class,
-            'tutor_profile' => App\Models\TutorProfile::class,
-            'review' => App\Models\SessionRating::class,
-            'resource' => App\Models\LessonResource::class,
+            'message' => Message::class,
+            'profile' => User::class,
+            'tutor_profile' => TutorProfile::class,
+            'review' => SessionRating::class,
+            'resource' => LessonResource::class,
         ],
     ],
 

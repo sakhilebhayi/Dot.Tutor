@@ -2,6 +2,7 @@
 
 namespace App\Domain\Safety\Services;
 
+use App\Domain\Safety\Contracts\GuardianApprovals;
 use App\Domain\Safety\Enums\AgeBand;
 use App\Domain\Safety\Models\Conversation;
 use App\Domain\Safety\Models\ConversationParticipant;
@@ -68,7 +69,7 @@ class GuardianDashboard
             'birth_date_known' => $this->ages->knownBand($child) !== null,
             'recording_consent' => $this->guardians->hasRecordingConsent($child),
             'approval_settings' => $band === AgeBand::Teen
-                ? collect(config('safety.approvals.kinds'))->mapWithKeys(fn ($kind) => [$kind => app(\App\Domain\Safety\Contracts\GuardianApprovals::class)->requires($child, $kind)])->all()
+                ? collect(config('safety.approvals.kinds'))->mapWithKeys(fn ($kind) => [$kind => app(GuardianApprovals::class)->requires($child, $kind)])->all()
                 : null,
             'upcoming_lessons' => TutorSession::query()->with(['tutorProfile.user', 'subject'])
                 ->where('student_id', $child->id)

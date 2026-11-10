@@ -4,7 +4,6 @@ namespace App\Domain\Safety\Http\Controllers;
 
 use App\Domain\Safety\Audit;
 use App\Domain\Safety\Models\Conversation;
-use App\Domain\Safety\Models\ConversationParticipant;
 use App\Domain\Safety\Models\Message;
 use App\Domain\Safety\Models\MessageAttachment;
 use App\Domain\Safety\Services\ContactRedactor;

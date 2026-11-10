@@ -7,6 +7,7 @@ use App\Domain\Safety\Enums\ScreeningKind;
 use App\Domain\Safety\Models\AgeRecord;
 use App\Domain\Safety\Models\GuardianLink;
 use App\Domain\Safety\Models\ScreeningCheck;
+use App\Domain\Safety\Services\AgeResolver;
 use App\Domain\Safety\Services\Guardians;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -64,7 +65,7 @@ trait BuildsSafetyState
 
         $birthDate = $learnerAge !== null
             ? CarbonImmutable::now()->subYears($learnerAge)->subMonths(2)
-            : (app(\App\Domain\Safety\Services\AgeResolver::class)->birthDate($learner) ?? CarbonImmutable::now()->subYears(10));
+            : (app(AgeResolver::class)->birthDate($learner) ?? CarbonImmutable::now()->subYears(10));
 
         return $guardians->accept($result['invitation'], $query['token'], $guardian, $birthDate, $recording);
     }

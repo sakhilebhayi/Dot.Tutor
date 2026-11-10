@@ -6,6 +6,7 @@ use App\Domain\Safety\Audit;
 use App\Domain\Safety\Enums\ScreeningKind;
 use App\Domain\Safety\Models\ScreeningCheck;
 use App\Models\User;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -97,7 +98,7 @@ class Screening
         return $this->missingKinds($tutor) === [];
     }
 
-    public function evidenceDisk(): \Illuminate\Contracts\Filesystem\Filesystem
+    public function evidenceDisk(): Filesystem
     {
         return Storage::disk(config('safety.messaging.disk'));
     }

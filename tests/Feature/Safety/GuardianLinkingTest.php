@@ -6,6 +6,7 @@ use App\Domain\Safety\Models\Consent;
 use App\Domain\Safety\Models\GuardianInvitation;
 use App\Domain\Safety\Models\GuardianLink;
 use App\Domain\Safety\Notifications\GuardianInvited;
+use App\Domain\Safety\Services\Guardians;
 use App\Domain\Safety\Support\ConsentText;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,7 +81,7 @@ class GuardianLinkingTest extends TestCase
     public function test_the_accept_page_sends_signed_out_visitors_to_sign_in(): void
     {
         Notification::fake();
-        $result = app(\App\Domain\Safety\Services\Guardians::class)->invite($this->child(), 'someone@example.com', 'parent');
+        $result = app(Guardians::class)->invite($this->child(), 'someone@example.com', 'parent');
 
         $this->get($result['url'])->assertRedirect('/login');
     }
