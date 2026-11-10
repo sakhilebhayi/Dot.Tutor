@@ -20,3 +20,7 @@ Global owner rule: all UI work goes through the installed design skills. Each ag
 - Ran `impeccable detect --json resources/views/learning`: no findings.
 - Browser check with Playwright CLI (the shared Browser pane was in use by another agent) at 1440 px and 390 px on the course builder, course page, lesson player, library and quiz; fixed: repeat publish disabled and refused server-side, buy/enrol panel first on mobile, larger answer choices, clearer practice wording.
 - Not claimed: `ui-ux-pro-max`, `emil-design-eng` (dangling), `hallmark` (not a new public page).
+## academic agent (wave 1, functional views only)
+
+- **impeccable**: invoked before writing the learner profile, locale switcher and operator views. `impeccable context` ran (no PRODUCT.md/DESIGN.md yet: the ds agent owns them). Applied from `craft-floor.md`, `clarify.md` and the i18n part of `harden.md`: persistent labels (placeholders only as examples), controls that name their action ("Save my learning profile", "Use this language"), errors that say what to fix, why birth month is asked, flexible widths for translated text (no fixed-width buttons or labels), `lang` attributes on language names, honest empty states, no eyebrow labels. `impeccable detect --json app/Domain/Academic/resources/views` returned no findings. Browser check at 390 px and 1440 px on the local server (profile form, locale switcher, operator levels screen).
+- Not applied: no visual direction work (wave 2 restyles on the ds design system). `ui-ux-pro-max` and `emil-design-eng` were not used (dangling symlinks).
