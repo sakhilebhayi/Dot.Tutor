@@ -132,3 +132,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Landing | I | A brochure for a booking tool with an Unsplash hotlink and unpkg Alpine | Rebuilt around plain-words requests, explained matches, rooms by level, tutors' practice and languages; real content and credited open-licence photographs |
 | Error pages | I | Designed, but loaded Google Fonts and Material Symbols | Same pages in the new system, self-contained, no third-party hosts |
 | Existing pages | n/a | Dark inline styles per page | Render in the new system through a temporary bridge (legacy.css) until wave 2 rebuilds them |
+
+### Integration (integ agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Every cross-domain port bound to a null default | integration | Matching ignored levels and languages, payments answered 503, guardians could never approve, audit went to logs | All 22 ports bound to owners (R47_INTEGRATION.md section 1) |
+| Marketplace asked the gate about the offering | safety bug | `peopleIn(TutorOffering)` is empty, so a minor's booking of an unscreened tutor was only caught by the safety model backstop (generic error) | The adapter asks about the offering's tutor; priced offerings published count as selling |
+| Money's booking adapter refused `awaiting_payment` and priced by rate | money/marketplace bug | A v2 booking could not be paid at all | `MarketplaceBookingPurchasable` |
+| Checkout without Paystack created an order anyway | money/learning | The open order then blocked quotes ("already in an unpaid order") | No order when payments are off; open orders reused |
+| Search used `like` | PostgreSQL bug | Case-sensitive on PostgreSQL | `whereLike` |
+| Idempotency stored the full class name in a 40-char column | PostgreSQL bug | Seat, package and series requests failed on PostgreSQL | Class basename |
+| JSON errors had four renderers with different codes | consistency | `access_denied_http_exception` vs `forbidden`, redirects for JSON calls outside `api/*` | One policy (D-1404) |
+| Academic ids without keys | data integrity | Orphans possible | Keys added (D-1406) |
+| Suite memory | CI | Fails at 128 MB on trunk | 512M (D-1405) |
