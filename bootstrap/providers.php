@@ -16,5 +16,6 @@ return [
     App\Providers\TutorDesignServiceProvider::class,
     App\Domain\Ai\TutorAiServiceProvider::class,
     App\Domain\Comms\TutorCommsServiceProvider::class,
+    App\Domain\Student\TutorStudentServiceProvider::class,
     App\Domain\Integration\TutorIntegrationServiceProvider::class,
 ];
