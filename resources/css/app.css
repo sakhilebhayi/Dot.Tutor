@@ -1,22 +1,54 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-[x-cloak] {
-    display: none;
-}
+/* Hallmark · v2.0.0 · theme: custom · idea: "Dot.Tutor is a lending library of people: every level and subject has its shelf, every tutor a catalogue record that says what they teach, at which levels, in which languages, and what was verified" · vibe: "reading room, binding cloth, calm, exact, multilingual" · paper: shelf-label white oklch(97.4% 0.006 165) · accent: reading-room green oklch(42% 0.085 162), stage binding colours as data · faces: Archivo (display, condensed), Atkinson Hyperlegible Next (text) · posture: light/grotesk-condensed/cool · hero: headline and request slip on the left, a library photograph rising on the right, the stage shelf under both · job: find a tutor */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: P, a library could read as nostalgic; kept it current with the live stage shelf built from the seeded academic structure and a real South African university library photograph */
+/* Hallmark · answered: 64 no mono anywhere, figures use tabular numerals of the text face · answered: 55a display set in sentence case at 1.02 leading so eleven languages and young readers read it */
 
 /*
- * Reduced motion (WCAG 2.3.3): people who ask the system for less motion get none of it from
- * transitions, animations or smooth scrolling, whichever file or utility class declares them.
+ * Tailwind 4 entry. No automatic source detection: the @source lines are exactly the Blade views, the compiled
+ * views and the vendor templates the old tailwind.config.js scanned.
  */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
+@import 'tailwindcss' source(none);
+
+@import './ds/fonts.css';
+@import './ds/tokens.css';
+@import './ds/base.css';
+@import './ds/components.css';
+@import './ds/shells.css';
+@import './ds/landing.css';
+@import './ds/legacy.css';
+
+@source '../views/**/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../vendor/laravel/jetstream/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@plugin '@tailwindcss/typography';
+
+/* Night follows data-theme on <html> first, then the system. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Tokens exposed to utilities: bg-td-surface, text-td-ink, border-td-line, font-td-display and so on. */
+@theme inline {
+    --color-td-ground: var(--td-ground);
+    --color-td-surface: var(--td-surface);
+    --color-td-sunken: var(--td-sunken);
+    --color-td-line: var(--td-line);
+    --color-td-edge: var(--td-edge);
+    --color-td-ink: var(--td-ink);
+    --color-td-ink-2: var(--td-ink-2);
+    --color-td-ink-3: var(--td-ink-3);
+    --color-td-primary: var(--td-primary);
+    --color-td-primary-ink: var(--td-primary-ink);
+    --color-td-primary-soft: var(--td-primary-soft);
+    --color-td-success: var(--td-success);
+    --color-td-warning: var(--td-warning);
+    --color-td-danger: var(--td-danger);
+    --color-td-info: var(--td-info);
+    --font-td-display: var(--td-font-display);
+    --font-td-text: var(--td-font-text);
+    --font-sans: var(--td-font-text);
+    --radius-td: var(--td-radius);
+}
+
+[x-cloak] {
+    display: none !important;
 }
