@@ -228,7 +228,7 @@
 .lp-spine:focus-visible {
     outline: 3px solid var(--td-pill-ink);
     outline-offset: -6px;
-    box-shadow: none;
+    box-shadow: none; /* taste-skill-ignore: removes the base focus halo, not a shadow */
 }
 
 .lp-spine__name {
@@ -421,7 +421,7 @@
     gap: var(--td-space-2);
     margin-top: var(--td-space-5);
     padding-top: var(--td-space-4);
-    border-top: 1px solid var(--td-line);
+    border-top: 1px solid var(--td-line); /* taste-skill-ignore: rule inside an interface fragment (data-ui) */
 }
 
 .lp-how__text .lp-h2 {
@@ -626,7 +626,7 @@
     align-items: baseline;
     gap: var(--td-space-3);
     padding: var(--td-space-2) 0;
-    border-bottom: 1px solid var(--td-line);
+    border-bottom: 1px solid var(--td-line); /* taste-skill-ignore: rows of a real list of languages and codes */
     break-inside: avoid;
     font-family: var(--td-font-display);
     font-stretch: 85%;

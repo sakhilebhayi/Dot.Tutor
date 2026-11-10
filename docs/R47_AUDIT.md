@@ -45,3 +45,18 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 
 ## Domain audits
 (appended by the wave-1 agents)
+
+### Design system and public pages (ds agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Visual identity | B | Two unrelated looks: a Fraunces/Figtree landing on cream and a dark Syne/Inter dashboard with an amber accent | One world (DESIGN.md): reading-room tokens, Archivo and Atkinson Hyperlegible Next, eight stage binding colours, light and night themes |
+| Frontend build | P | `@tailwindcss/vite` 4 installed but unused; Tailwind 3 via PostCSS for guest pages and cdn.tailwindcss.com at runtime for signed-in pages | Tailwind 4.3.1 built by Vite for every page; no runtime CDN |
+| Fonts and icons | I | Google Fonts on every layout; Material Symbols icon font from Google | Self-hosted OFL fonts in public/fonts; Lucide SVG sprite in public/icons |
+| Alpine | I | unpkg Alpine on the landing (Livewire already bundles Alpine) | Removed; the landing needs no Alpine |
+| Component kit | M | Jetstream defaults plus per-page inline styles and `t-*` classes in the layout | 30 `x-td.*` components with states and accessibility built in; Jetstream components restyled |
+| Shells | P | One app layout (sidebar drawer, good a11y contract) for everyone | Public, learner (phone bottom bar), tutor workspace, operations shells on one frame; navigation as data, only built routes linked |
+| Young learners | M | No difference between a Grade 1 learner and an operator | Young, standard and dense steps in one system |
+| Landing | I | A brochure for a booking tool with an Unsplash hotlink and unpkg Alpine | Rebuilt around plain-words requests, explained matches, rooms by level, tutors' practice and languages; real content and credited open-licence photographs |
+| Error pages | I | Designed, but loaded Google Fonts and Material Symbols | Same pages in the new system, self-contained, no third-party hosts |
+| Existing pages | n/a | Dark inline styles per page | Render in the new system through a temporary bridge (legacy.css) until wave 2 rebuilds them |
