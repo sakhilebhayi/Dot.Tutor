@@ -1,7 +1,7 @@
-{{-- Off-canvas drawer for the app shell below 860px. Plain JavaScript, no dependencies.
+{{-- Off-canvas drawer for the signed-in shells below 60rem. Plain JavaScript, no dependencies.
      Contract: #app-sidebar is the drawer, [data-shell-open] the top-bar button, [data-shell-close]
      the in-drawer close button and the backdrop, [data-shell-behind] what is made inert while open. --}}
-<script>
+<script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>
     (function () {
         var root = document.documentElement;
         var drawer = document.getElementById('app-sidebar');
@@ -11,7 +11,7 @@
         var closer = drawer.querySelector('[data-shell-close]');
         var backdrops = document.querySelectorAll('.shell-backdrop[data-shell-close]');
         var behind = document.querySelectorAll('[data-shell-behind]');
-        var narrow = window.matchMedia('(max-width: 859.98px)');
+        var narrow = window.matchMedia('(max-width: 59.98rem)');
         var focusable = 'a[href], button:not([disabled]), summary, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
         // Links inside a closed <details> are skipped by the browser, so they must not count as the last stop.

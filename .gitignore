@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Design-skill working files (screenshots, inspector output)
+/.taste-skill
+/.hallmark/screens
+/.impeccable/review
