@@ -72,8 +72,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('translations');
-        Schema::dropIfExists('learner_profile_subjects');
-        Schema::dropIfExists('learner_profiles');
+        // Reference rows point at each other with RESTRICT; the rollback drops them together.
+        Schema::withoutForeignKeyConstraints(function (): void {
+            Schema::dropIfExists('translations');
+            Schema::dropIfExists('learner_profile_subjects');
+            Schema::dropIfExists('learner_profiles');
+        });
     }
 };

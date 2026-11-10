@@ -148,25 +148,28 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('legacy_subject_level_map');
-        Schema::dropIfExists('institutions');
-        Schema::dropIfExists('academic_topics');
-        Schema::dropIfExists('curriculum_subject_levels');
+        // Reference rows point at each other with RESTRICT; the rollback drops them together.
+        Schema::withoutForeignKeyConstraints(function (): void {
+            Schema::dropIfExists('legacy_subject_level_map');
+            Schema::dropIfExists('institutions');
+            Schema::dropIfExists('academic_topics');
+            Schema::dropIfExists('curriculum_subject_levels');
 
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->dropForeign(['canonical_subject_id']);
-            $table->dropForeign(['language_id']);
-            $table->dropUnique(['slug']);
-            $table->dropIndex(['family']);
-        });
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->dropColumn(['slug', 'family', 'category', 'aliases', 'canonical_subject_id', 'language_id', 'language_tier', 'description']);
-        });
+            Schema::table('subjects', function (Blueprint $table) {
+                $table->dropForeign(['canonical_subject_id']);
+                $table->dropForeign(['language_id']);
+                $table->dropUnique(['slug']);
+                $table->dropIndex(['family']);
+            });
+            Schema::table('subjects', function (Blueprint $table) {
+                $table->dropColumn(['slug', 'family', 'category', 'aliases', 'canonical_subject_id', 'language_id', 'language_tier', 'description']);
+            });
 
-        Schema::dropIfExists('academic_levels');
-        Schema::dropIfExists('academic_stages');
-        Schema::dropIfExists('curricula');
-        Schema::dropIfExists('qualification_frameworks');
-        Schema::dropIfExists('countries');
+            Schema::dropIfExists('academic_levels');
+            Schema::dropIfExists('academic_stages');
+            Schema::dropIfExists('curricula');
+            Schema::dropIfExists('qualification_frameworks');
+            Schema::dropIfExists('countries');
+        });
     }
 };

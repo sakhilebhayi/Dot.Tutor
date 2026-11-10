@@ -31,9 +31,10 @@ class LocaleCatalogue
     public function options(): array
     {
         $meta = $this->meta();
+        $fullyKeyed = $this->interfaceFullyKeyed();
 
-        return $this->languages()->map(function (Language $language) use ($meta): array {
-            $percent = $this->coverage()[$language->code]['percent'] ?? 0;
+        return $this->languages()->map(function (Language $language) use ($meta, $fullyKeyed): array {
+            $percent = $language->code === 'en' ? 100 : ($this->coverage()[$language->code]['percent'] ?? 0);
 
             return [
                 'code' => $language->code,
@@ -41,7 +42,7 @@ class LocaleCatalogue
                 'name_native' => $language->name_native,
                 'percent' => $percent,
                 'status' => match (true) {
-                    $percent >= 100 => 'complete',
+                    $language->code === 'en', $percent >= 100 && $fullyKeyed => 'complete',
                     $percent > 0 => 'partial',
                     default => 'none',
                 },
@@ -93,6 +94,18 @@ class LocaleCatalogue
 
     /** @return array<string, array{provenance: string, reviewed: bool}> */
     public function meta(): array
+    {
+        return $this->metaFile()['locales'] ?? [];
+    }
+
+    /** False while screens still hold hard-coded English: then only English is "complete". */
+    public function interfaceFullyKeyed(): bool
+    {
+        return (bool) ($this->metaFile()['interface_fully_keyed'] ?? false);
+    }
+
+    /** @return array{interface_fully_keyed?: bool, locales?: array<string, array{provenance: string, reviewed: bool}>} */
+    private function metaFile(): array
     {
         $path = lang_path('locales.php');
 

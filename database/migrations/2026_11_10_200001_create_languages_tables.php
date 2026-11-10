@@ -47,7 +47,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('user_languages');
-        Schema::dropIfExists('languages');
+        // Reference rows point at each other with RESTRICT; the rollback drops them together.
+        Schema::withoutForeignKeyConstraints(function (): void {
+            Schema::dropIfExists('user_languages');
+            Schema::dropIfExists('languages');
+        });
     }
 };
