@@ -2,6 +2,7 @@
 
 namespace App\Domain\Community\Http\Controllers;
 
+use App\Domain\Academic\Contracts\AcademicScope;
 use App\Domain\Academic\Models\AcademicLevel;
 use App\Domain\Academic\Models\Curriculum;
 use App\Domain\Academic\Models\Language;
@@ -73,7 +74,7 @@ class RoomController extends Controller
         $user = $request->user();
         $audience = $this->audienceParam($request);
         $level->loadMissing(['stage', 'curriculum']);
-        $scope = app(\App\Domain\Academic\Contracts\AcademicScope::class)->forLearner($user);
+        $scope = app(AcademicScope::class)->forLearner($user);
         $rows = $this->rooms->hub($level, $audience, $scope?->levelId === $level->id ? $scope->subjectIds : []);
 
         $tutorRooms = Room::query()->with(['subject', 'owner'])->where('kind', Room::TUTOR)->where('status', 'active')

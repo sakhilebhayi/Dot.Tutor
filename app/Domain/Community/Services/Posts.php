@@ -2,6 +2,7 @@
 
 namespace App\Domain\Community\Services;
 
+use App\Domain\Academic\Contracts\LanguageProfile;
 use App\Domain\Community\Models\Post;
 use App\Domain\Community\Models\PostReport;
 use App\Domain\Community\Models\PostRevision;
@@ -325,7 +326,7 @@ class Posts
             return $requested;
         }
 
-        return (string) (app(\App\Domain\Academic\Contracts\LanguageProfile::class)->interfaceLocale($author) ?: config('app.locale', 'en'));
+        return (string) (app(LanguageProfile::class)->interfaceLocale($author) ?: config('app.locale', 'en'));
     }
 
     private function throttle(User $user, string $what, int $max, int $decay): void

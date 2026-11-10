@@ -13,6 +13,7 @@ use App\Domain\Safety\Audit;
 use App\Domain\Safety\Support\SafeguardingDenied;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Collection;
 
 /**
@@ -167,6 +168,13 @@ class Rooms
 
         $decision = $this->access->eligibility($user, $room);
         if ($decision->denied()) {
+            $request = request();
+            // Opening a page is answered with a 403 page that says why; forms and the API get the gate's reasons.
+            if ($request->isMethod('GET') && ! $request->expectsJson() && ! $request->is('api/*')) {
+                throw new HttpResponseException(
+                    response()->view('community.denied', ['room' => $room, 'decision' => $decision], 403)
+                );
+            }
             throw new SafeguardingDenied($decision);
         }
     }

@@ -103,7 +103,7 @@
                     @endif
                     <form method="POST" action="{{ route('rooms.groups.revision.store', $group) }}" class="flex flex-wrap items-end gap-3 border-t border-td-line px-5 py-4">
                         @csrf
-                        <x-td.field label="Add a topic" for="r-title" class="min-w-0 flex-1"><x-td.input name="title" id="r-title" maxlength="160" required placeholder="Difference of squares" /></x-td.field>
+                        <x-td.field label="Add a topic" for="r-title" class="min-w-0 flex-1"><x-td.input name="title" id="r-title" maxlength="160" required /></x-td.field>
                         <x-td.button type="submit" variant="secondary" icon="plus">Add</x-td.button>
                     </form>
                 </section>

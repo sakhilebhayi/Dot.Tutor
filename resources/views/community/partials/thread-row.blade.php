@@ -12,7 +12,9 @@
             <span class="td-badge td-badge--verified"><x-td.icon name="circle-check" />Resolved</span>
         @elseif ($isQuestion && $post->replies_count === 0)
             <span class="td-badge td-badge--self"><x-td.icon name="circle-help" />Waiting for an answer</span>
-        @elseif (! $isQuestion)
+        @elseif ($isQuestion)
+            <span class="td-badge td-badge--review"><x-td.icon name="message-square" />Answered, not resolved yet</span>
+        @else
             <span class="td-badge td-badge--peer">{{ Post::kindLabel($post->kind) }}</span>
         @endif
         @if ($showLanguage ?? false)

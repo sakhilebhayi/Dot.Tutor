@@ -21,11 +21,11 @@
     @endif
 
     <div class="td-panels td-panels--2">
+        <div class="td-panel">
         @if ($level)
-            <x-td.panel :title="$level->name.', '.($level->curriculum?->short_name ?: $level->curriculum?->name)" flush>
-                <x-slot:actions>
-                    <x-td.button :href="route('rooms.levels.show', $level)" variant="quiet" size="sm" icon-end="arrow-right">All subjects</x-td.button>
-                </x-slot:actions>
+            <section aria-labelledby="level-title">
+                <div class="td-panel__head"><h2 class="td-panel__title" id="level-title">{{ $level->name }}, {{ $level->curriculum?->short_name ?: $level->curriculum?->name }}</h2>
+                    <x-td.button :href="route('rooms.levels.show', $level)" variant="quiet" size="sm" icon-end="arrow-right">All subjects</x-td.button></div>
                 @if ($mine['hub']->isEmpty())
                     <x-td.state kind="empty" title="No subjects are listed for this level yet">
                         An academic editor adds subjects to each level. Browse the level to see what is offered.
@@ -53,9 +53,10 @@
                         @endforeach
                     </ul>
                 @endif
-            </x-td.panel>
+            </section>
         @else
-            <x-td.panel title="Your level">
+            <section aria-labelledby="level-title">
+                <div class="td-panel__head"><h2 class="td-panel__title" id="level-title">Your level</h2></div>
                 <x-td.state kind="empty" title="Tell us your grade or level first">
                     Your rooms come from your learner profile: country, curriculum, grade or level, and subjects.
                     <x-slot:actions>
@@ -65,8 +66,33 @@
                         <x-td.button href="#browse" variant="secondary">Browse levels</x-td.button>
                     </x-slot:actions>
                 </x-td.state>
-            </x-td.panel>
+            </section>
         @endif
+            <section class="border-t border-td-line" aria-labelledby="joined-title">
+                <div class="td-panel__head"><h2 class="td-panel__title" id="joined-title">Rooms and tutor rooms you joined</h2></div>
+            @if ($mine['joined']->isEmpty())
+                <x-td.state kind="empty" title="You have not joined a room yet">
+                    Open a subject above and join it, or post a question: posting joins the room for you.
+                </x-td.state>
+            @else
+                <x-td.table caption="Rooms you joined" caption-hidden>
+                    <thead><tr><th>Room</th><th>Level</th><th class="is-num">Waiting</th><th>Your place</th></tr></thead>
+                    <tbody>
+                        @foreach ($mine['joined'] as $room)
+                            @php($membership = $room->members->first())
+                            <tr>
+                                <td><a class="td-link" href="{{ route('rooms.show', $room) }}">{{ $room->displayName() }}</a>@if ($room->isTutorRoom())<span class="block text-sm text-td-ink-2">Tutor room by {{ \App\Domain\Community\Support\Names::short($room->owner) }}</span>@endif</td>
+                                <td><x-td.pill kind="level" :stage="$room->level?->stage?->code">{{ $room->level?->name }}</x-td.pill></td>
+                                <td class="is-num">{{ $counts[$room->id]['open'] ?? 0 }}</td>
+                                <td>{{ $membership?->statusLabel() ?? 'Member' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </x-td.table>
+            @endif
+            </section>
+
+        </div>
 
         <x-td.panel title="Your learning here">
             <x-td.stat-strip label="Your learning indicators" :items="[
@@ -92,32 +118,7 @@
         </x-td.panel>
     </div>
 
-    <div class="mt-8">
-        <x-td.panel title="Rooms and tutor rooms you joined" flush>
-            @if ($mine['joined']->isEmpty())
-                <x-td.state kind="empty" title="You have not joined a room yet">
-                    Open a subject above and join it, or post a question: posting joins the room for you.
-                </x-td.state>
-            @else
-                <x-td.table caption="Rooms you joined" caption-hidden>
-                    <thead><tr><th>Room</th><th>Level</th><th class="is-num">Waiting</th><th>Your place</th></tr></thead>
-                    <tbody>
-                        @foreach ($mine['joined'] as $room)
-                            @php($membership = $room->members->first())
-                            <tr>
-                                <td><a class="td-link" href="{{ route('rooms.show', $room) }}">{{ $room->displayName() }}</a>@if ($room->isTutorRoom())<span class="block text-sm text-td-ink-2">Tutor room by {{ \App\Domain\Community\Support\Names::short($room->owner) }}</span>@endif</td>
-                                <td><x-td.pill kind="level" :stage="$room->level?->stage?->code">{{ $room->level?->name }}</x-td.pill></td>
-                                <td class="is-num">{{ $counts[$room->id]['open'] ?? 0 }}</td>
-                                <td>{{ $membership?->statusLabel() ?? 'Member' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </x-td.table>
-            @endif
-        </x-td.panel>
-    </div>
-
-    <section id="browse" class="mt-8" aria-labelledby="browse-title">
+    <div id="browse" class="mt-8">
         <x-td.panel title="Browse other levels" heading-level="2">
             <p class="mt-0 text-td-ink-2" style="max-width: var(--td-measure)">Each level has its own rooms, so you only see questions from people learning the same thing. Open a level to see its subjects.</p>
             <div class="grid gap-3">
@@ -134,5 +135,5 @@
                 @endforeach
             </div>
         </x-td.panel>
-    </section>
+    </div>
 </x-layouts::learner>

@@ -34,7 +34,7 @@
 
     @include('community.partials.poll', ['room' => $room, 'version' => $version])
 
-    <x-td.tabs label="Room sections" class="mb-6" :items="[
+    <x-td.tabs label="Room sections" class="mb-6 max-sm:flex-wrap" :items="[
         ['label' => 'Questions', 'href' => $tabUrl('questions'), 'current' => $tab === 'questions', 'count' => $counts['open'] ?: null],
         ['label' => 'Discussions', 'href' => $tabUrl('discussions'), 'current' => $tab === 'discussions'],
         ['label' => 'Material', 'href' => $tabUrl('material'), 'current' => $tab === 'material'],

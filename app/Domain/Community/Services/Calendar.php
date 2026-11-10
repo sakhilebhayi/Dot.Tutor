@@ -9,7 +9,7 @@ class Calendar
 {
     public function ics(StudySession $session, string $url): string
     {
-        $esc = fn (?string $v) => str_replace(["\\", ';', ',', "\r\n", "\n"], ['\\\\', '\;', '\,', '\n', '\n'], (string) $v);
+        $esc = fn (?string $v) => str_replace(['\\', ';', ',', "\r\n", "\n"], ['\\\\', '\;', '\,', '\n', '\n'], (string) $v);
         $fmt = fn ($t) => $t->utc()->format('Ymd\THis\Z');
 
         $lines = [

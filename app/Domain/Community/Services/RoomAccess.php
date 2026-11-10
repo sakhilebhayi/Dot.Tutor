@@ -5,6 +5,7 @@ namespace App\Domain\Community\Services;
 use App\Domain\Community\Models\Room;
 use App\Domain\Community\Models\RoomMember;
 use App\Domain\Money\Contracts\EntitlementCheck;
+use App\Domain\Safety\Audit;
 use App\Domain\Safety\Contracts\SafeguardingGate;
 use App\Domain\Safety\Services\AccountStanding;
 use App\Domain\Safety\Support\Decision;
@@ -146,7 +147,7 @@ class RoomAccess
 
             if (! $this->takeSeat($room)) {
                 // Paid after the last seat went: the place cannot be given. Finance must refund (recorded).
-                \App\Domain\Safety\Audit::record(null, 'community.room.paid_but_full', $room, ['user_id' => $fresh->user_id]);
+                Audit::record(null, 'community.room.paid_but_full', $room, ['user_id' => $fresh->user_id]);
                 $fresh->forceFill(['status' => RoomMember::PENDING])->save();
 
                 return $fresh;

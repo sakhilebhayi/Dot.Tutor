@@ -4,6 +4,7 @@ namespace App\Domain\Community\Http\Concerns;
 
 use App\Domain\Community\Models\Post;
 use App\Domain\Community\Models\Room;
+use App\Domain\Community\Support\Names;
 use Illuminate\Http\Request;
 
 /** One controller action answers the JSON API (/api/tutor/community) and the learner screens (/rooms). */
@@ -56,7 +57,7 @@ trait AnswersBoth
             'library_resource_id' => $post->library_resource_id,
             'status' => $post->status,
             'held' => $post->heldLabel(),
-            'author' => $post->author ? ['id' => $post->author->id, 'name' => \App\Domain\Community\Support\Names::short($post->author)] : null,
+            'author' => $post->author ? ['id' => $post->author->id, 'name' => Names::short($post->author)] : null,
             'resolved' => $post->isResolved(),
             'accepted_answer_id' => $post->accepted_answer_id,
             'edited_at' => $post->edited_at?->toIso8601String(),

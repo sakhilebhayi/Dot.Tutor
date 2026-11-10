@@ -1,6 +1,6 @@
 {{-- Report a post. Opens in place (no modal); the report goes to the safety moderation queue. --}}
 <details class="text-sm">
-    <summary class="cursor-pointer text-td-ink-2"><x-td.icon name="flag" /> Report</summary>
+    <summary class="inline-flex cursor-pointer list-none items-center gap-1 text-td-ink-2 [&::-webkit-details-marker]:hidden"><x-td.icon name="flag" /><span>Report</span></summary>
     <form method="POST" action="{{ route('rooms.posts.report', $target) }}" class="mt-3 grid max-w-md gap-3">
         @csrf
         <x-td.field label="What is wrong?" for="category-{{ $target->id }}">
