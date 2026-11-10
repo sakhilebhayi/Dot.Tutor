@@ -1,0 +1,7 @@
+{
+  "name": "tutor-classroom-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Two-browser WebRTC check for the Dot.Tutor classroom. Not part of the app build.",
+  "dependencies": { "playwright-core": "1.49.1" }
+}

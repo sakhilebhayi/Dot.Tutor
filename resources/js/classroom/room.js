@@ -933,6 +933,8 @@ class Classroom {
         }[kind] || ['You left the lesson', ''];
         this.el.live.hidden = true;
         this.el.lobby.hidden = true;
+        this.el.clock.hidden = true;
+        this.el.net.hidden = true;
         this.setStatus(kind === 'ended' ? 'Ended' : 'Not in the lesson', 'idle');
         const actions = [h('a', { class: 'td-btn td-btn--primary', href: this.urls.after }, h('span', {}, 'Open the lesson record'))];
         if (kind === 'displaced' || kind === 'expired') actions.unshift(h('button', { type: 'button', class: 'td-btn', onclick: () => window.location.reload() }, h('span', {}, 'Use this window')));
