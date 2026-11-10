@@ -5,6 +5,7 @@
         ['label' => 'Requests sent to the model', 'value' => number_format($summary['requests_this_month'])],
         ['label' => 'Estimated cost (USD)', 'value' => '$'.number_format($summary['cost_this_month_micro_usd'] / 1000000, 2), 'hint' => 'Budget $'.number_format($summary['budget_micro_usd'] / 1000000, 0).'; the provider bill is the source of truth'],
         ['label' => 'Flagged', 'value' => number_format($summary['flagged_open'])],
+        ['label' => 'Refused before sending', 'value' => number_format($summary['refused_this_month'])],
     ]" />
 
     <x-td.tabs :items="collect(['flagged' => 'Flagged or reported', 'reported' => 'Reported', 'refused' => 'Refused', 'all' => 'All'])->map(fn ($label, $key) => ['label' => $label, 'href' => route('ai.operator.log', ['filter' => $key]), 'current' => $filter === $key])->values()->all()" label="Filter" />

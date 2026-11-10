@@ -21,7 +21,7 @@ class AiInteraction extends Model implements Reportable
 {
     public const LABEL = 'AI guidance';
 
-    public const DISCLAIMER = 'AI guidance, not verified fact and not an official result. It can be wrong: check it with a tutor or your teacher.';
+    public const DISCLAIMER = 'Not verified fact and not an official result. It can be wrong: check it with a tutor or your teacher.';
 
     protected $table = 'ai_interactions';
 

@@ -34,6 +34,7 @@ class OperatorLogController extends AiController
             'cost_this_month_micro_usd' => (int) (clone $month)->sum('cost_micro_usd'),
             'budget_micro_usd' => (int) config('ai.limits.monthly_budget_micro_usd'),
             'flagged_open' => AiInteraction::query()->where('flagged', true)->count(),
+            'refused_this_month' => AiInteraction::query()->where('status', 'refused')->where('created_at', '>=', now()->startOfMonth())->count(),
         ];
         Audit::record($request->user(), 'ai.log.listed', null, ['filter' => $filter]);
 

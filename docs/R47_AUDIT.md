@@ -132,3 +132,13 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Landing | I | A brochure for a booking tool with an Unsplash hotlink and unpkg Alpine | Rebuilt around plain-words requests, explained matches, rooms by level, tutors' practice and languages; real content and credited open-licence photographs |
 | Error pages | I | Designed, but loaded Google Fonts and Material Symbols | Same pages in the new system, self-contained, no third-party hosts |
 | Existing pages | n/a | Dark inline styles per page | Render in the new system through a temporary bridge (legacy.css) until wave 2 rebuilds them |
+
+### AI domain (ai agent, 2026-11-10)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| AI assistant | `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL` in `.env.example`, read by nothing | M | Brief section 14: no assistant existed | `Domain/Ai`: guarded gateway, Anthropic SDK driver (off by default), null driver, student and tutor tasks |
+| Guardrails | None | M | Age, integrity, minimisation, limits, logging all missing | Enforced in code and tested (docs/R47_AI.md section 3) |
+| Machine translation | Academic `Translations` store ready, no producer; course, resource and tutor profile not registered | P | Brief section 10 | Machine translation with model, unreviewed status, notation check, side-by-side page, review |
+| Need parsing | Deterministic parser only | I | Free text it cannot read was a dead end | Optional AI rewording, parser re-match, confirmation step |
+| Dot.Agents/Brain/Memory | Not integrated | F (correctly absent) | No supported learning API exists | Recorded, not called (D-916) |
