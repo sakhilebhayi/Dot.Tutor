@@ -3,6 +3,7 @@
 namespace App\Domain\Comms\Http\Controllers;
 
 use App\Domain\Comms\Inbox;
+use App\Domain\Comms\Support\ShellFor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,7 @@ class InboxController extends Controller
             'unread' => $unread,
             'nextUrl' => $page->nextPageUrl(),
             'onlyUnread' => $request->boolean('unread'),
+            'shell' => ShellFor::user($user),
         ]);
     }
 

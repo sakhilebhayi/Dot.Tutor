@@ -25,7 +25,7 @@ final class Inbox
             $query->whereNull('read_at');
         }
 
-        return $query->cursorPaginate($perPage);
+        return $query->cursorPaginate($perPage)->withQueryString();
     }
 
     public static function unreadCount(User $user): int
