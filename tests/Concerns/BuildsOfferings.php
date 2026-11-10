@@ -4,13 +4,16 @@ namespace Tests\Concerns;
 
 use App\Domain\Marketplace\Contracts\AcademicScopePort;
 use App\Domain\Marketplace\Contracts\CheckoutPort;
+use App\Domain\Marketplace\Contracts\GuardianApprovalsPort;
 use App\Domain\Marketplace\Contracts\LanguageProfilePort;
 use App\Domain\Marketplace\Contracts\LearnerAgePort;
 use App\Domain\Marketplace\Models\TutorOffering;
+use App\Domain\Marketplace\Seams\NullGuardianApprovals;
 use App\Domain\Marketplace\Support\CheckoutResult;
 use App\Models\Subject;
 use App\Models\TutorProfile;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Marketplace v2 builders and seam fakes for tests. Fakes stand in for the
@@ -55,7 +58,7 @@ trait BuildsOfferings
     {
         // Wave-1 marketplace tests run against the marketplace's own null guardian port; the integration provider
         // binds the safety adapter over it (D-1400), whose own tests live in tests/Feature/Integration.
-        $this->app->bind(\App\Domain\Marketplace\Contracts\GuardianApprovalsPort::class, \App\Domain\Marketplace\Seams\NullGuardianApprovals::class);
+        $this->app->bind(GuardianApprovalsPort::class, NullGuardianApprovals::class);
         $ids = array_map(fn (User $u) => $u->id, $minors);
         $this->app->instance(LearnerAgePort::class, new class($ids) implements LearnerAgePort
         {
@@ -157,5 +160,29 @@ trait BuildsOfferings
                 return null;
             }
         });
+    }
+
+    /**
+     * Placeholder academic rows with exactly these ids, so tests that pin a fake AcademicScopePort to numeric ids
+     * satisfy the academic foreign keys added at integration (D-1406). Names say they are test stubs.
+     *
+     * @param  list<int|null>  $levelIds
+     */
+    protected function stubAcademicIds(?int $curriculumId, array $levelIds): void
+    {
+        if ($curriculumId === null) {
+            return;
+        }
+        $now = now();
+        $framework = DB::table('qualification_frameworks')->value('id')
+            ?? DB::table('qualification_frameworks')->insertGetId(['code' => 'test-fw', 'name' => 'Test framework', 'created_at' => $now, 'updated_at' => $now]);
+        $stage = DB::table('academic_stages')->value('id')
+            ?? DB::table('academic_stages')->insertGetId(['code' => 'test-stage', 'name' => 'Test stage', 'kind' => 'school', 'created_at' => $now, 'updated_at' => $now]);
+        DB::table('curricula')->insertOrIgnore(['id' => $curriculumId, 'qualification_framework_id' => $framework, 'code' => 'test-c'.$curriculumId,
+            'name' => 'Test curriculum '.$curriculumId, 'kind' => 'school', 'created_at' => $now, 'updated_at' => $now]);
+        foreach (array_filter($levelIds) as $levelId) {
+            DB::table('academic_levels')->insertOrIgnore(['id' => $levelId, 'curriculum_id' => $curriculumId, 'academic_stage_id' => $stage,
+                'code' => 'test-l'.$levelId, 'name' => 'Test level '.$levelId, 'position' => $levelId, 'created_at' => $now, 'updated_at' => $now]);
+        }
     }
 }
