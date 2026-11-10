@@ -45,3 +45,19 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 
 ## Domain audits
 (appended by the wave-1 agents)
+
+### Marketplace (marketplace agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Tutor profile | I | Headline, bio, free-text qualifications, decimal rate, subjects | Profile v2 (approach, experience, formats, area, group sizes, handle, photo), minor-unit rate, teaching scope by subject, curriculum and level range |
+| Qualifications | V (vs brief) | Free text shown as fact | Records with private evidence, review status and operator decisions; legacy text labelled self-declared |
+| Verification | P | Whole-profile approve/reject only | Five evidence-backed levels assigned by an operator with an append-only audit; labels cannot over-claim |
+| Offerings | M | One hourly rate | Eight offering types with minor-unit prices, durations, formats, subjects, levels, cancellation terms |
+| Discovery | P | Filter by one subject, ordered by rating | Filters, daily fair rotation, storefront payload with honest review counts |
+| Matching | M | None | Explained, deterministic MatchingService with hard filters and nine terms (R47_MATCHING.md) |
+| Booking | I | pending/confirmed/completed/cancelled/no_show, overlap guard, slot finder | State machine with guardian, payment, in-progress and dispute states, row locks, append-only events, Idempotency-Key, groups with race-safe capacity, weekly series, package credits, cancellation policy, hold expiry; old forms routed through it |
+| Ratings | I | One per session, average of all, no moderation | Reviews held on contact details or reports, tutor reply, moderation, average of published only; the SQLite 1-5 trigger survives the table rebuild |
+| Money on bookings | M | Decimal labels | Minor units on profiles, sessions, offerings, seats and packages; payment through the Checkout seam (unconfigured honestly) |
+| Tests | I | Booking rules only | 64 marketplace feature tests (booking, groups and the last-seat race, series, packages, matching, verification, reviews, API shape, pages) |
+

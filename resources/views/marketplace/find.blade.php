@@ -54,7 +54,7 @@
     @if($result)
         <div class="t-panel" aria-live="polite">
             <h2 class="t-h2">{{ count($result['results']) }} {{ Str::plural('match', count($result['results'])) }}</h2>
-            <p class="t-hint">{{ $result['considered'] }} tutors teach this subject; {{ $result['excluded'] }} did not fit a hard requirement (format, area, language, budget, level or kind of help).</p>
+            <p class="t-hint">{{ $result['considered'] }} {{ Str::plural('tutor', $result['considered']) }} {{ $result['considered'] === 1 ? 'teaches' : 'teach' }} this subject; {{ $result['excluded'] }} did not fit a hard requirement (format, area, language, budget, level or kind of help).</p>
             @foreach($result['notes'] as $note)<p class="t-hint">{{ $note }}</p>@endforeach
 
             @forelse($result['results'] as $match)
