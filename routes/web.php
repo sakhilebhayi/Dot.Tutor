@@ -119,3 +119,4 @@ require __DIR__.'/tutor/academic.php';
 require __DIR__.'/tutor/marketplace.php';
 require __DIR__.'/tutor/integration.php';
 require __DIR__.'/tutor/ai.php';
+require __DIR__.'/tutor/classroom.php';
