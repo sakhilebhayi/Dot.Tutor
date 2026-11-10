@@ -98,7 +98,7 @@ class NeedParserTest extends TestCase
 
     public function test_the_json_endpoint_requires_sign_in_and_validates(): void
     {
-        $this->postJson(route('academic.describe'), ['text' => 'grade 10 maths'])->assertRedirect('/login');
+        $this->postJson(route('academic.describe'), ['text' => 'grade 10 maths'])->assertUnauthorized()->assertJsonPath('error', 'unauthenticated'); // one JSON error policy (D-1404)
 
         $user = User::factory()->create();
         $this->actingAs($user)->postJson(route('academic.describe'), ['text' => ''])->assertUnprocessable()->assertJsonPath('error', 'validation_failed');

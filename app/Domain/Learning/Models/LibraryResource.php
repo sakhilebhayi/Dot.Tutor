@@ -7,13 +7,14 @@ use App\Domain\Learning\Enums\QualityTier;
 use App\Domain\Learning\Enums\ResourceLicence;
 use App\Domain\Learning\Enums\ResourceStatus;
 use App\Domain\Learning\Enums\ResourceType;
+use App\Domain\Safety\Contracts\Moderatable;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class LibraryResource extends Model implements Sellable
+class LibraryResource extends Model implements Moderatable, Sellable
 {
     protected $table = 'learning_resources';
 
@@ -104,5 +105,20 @@ class LibraryResource extends Model implements Sellable
     public function sellableDescription(): string
     {
         return 'Study resource: '.$this->title;
+    }
+
+    /** Safety moderation queue "hide": taken down (the file is kept for review and a possible restore). */
+    public function moderationHide(User $operator): void
+    {
+        if ($this->status === ResourceStatus::Published) {
+            $this->forceFill(['status' => ResourceStatus::TakenDown, 'takedown_reason' => 'Hidden by a moderator after a report.', 'taken_down_at' => now()])->save();
+        }
+    }
+
+    public function moderationRestore(User $operator): void
+    {
+        if ($this->status === ResourceStatus::TakenDown) {
+            $this->forceFill(['status' => ResourceStatus::Published, 'takedown_reason' => null, 'taken_down_at' => null])->save();
+        }
     }
 }

@@ -22,20 +22,15 @@ use App\Domain\Safety\Services\DatabaseReportSink;
 use App\Domain\Safety\Services\SafeguardingRules;
 use App\Domain\Safety\Support\NullBirthDateSource;
 use App\Domain\Safety\Support\NullRoomDirectory;
-use App\Domain\Safety\Support\SafeguardingDenied;
 use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * R-47 safety domain. Binds the real safeguarding seams (gate, guardian approvals, report sink, audit log) and
@@ -94,22 +89,7 @@ class TutorSafetyServiceProvider extends ServiceProvider
 
         TutorSession::observe(GuardLegacyBookings::class);
 
-        // The app renders JSON errors only for api/*; the safety JSON API answers {error, message} too.
-        $handler = $this->app->make(ExceptionHandler::class);
-
-        if (method_exists($handler, 'renderable')) {
-            $handler->renderable(function (ValidationException $e, Request $request) {
-                if ($request->is('safety/*') && $request->expectsJson()) {
-                    return response()->json(['error' => 'validation_failed', 'message' => $e->getMessage(), 'errors' => $e->errors()], $e->status);
-                }
-            });
-            $handler->renderable(function (HttpExceptionInterface $e, Request $request) {
-                if ($request->is('safety/*') && $request->expectsJson() && ! $e instanceof SafeguardingDenied) {
-                    return response()->json(['error' => Str::snake(class_basename($e)), 'message' => $e->getMessage() ?: 'Request refused.'],
-                        $e->getStatusCode(), $e->getHeaders());
-                }
-            });
-        }
+        // JSON errors ({error, message}) are rendered app-wide by bootstrap/app.php (R-47 D-1404).
 
         if ($this->app->runningInConsole()) {
             $this->commands([ExpireApprovals::class, EscalateIncidents::class, AuditVerify::class]);
