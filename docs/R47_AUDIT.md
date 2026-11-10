@@ -75,3 +75,18 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Receipts, ledger, reconciliation | M | None | Gapless receipts; immutable double-entry ledger with database triggers; reconciliation command and settlement sweep |
 | Access to paid content | M | None | `EntitlementCheck` seam over `money_entitlements` |
 | Guardian-approved payments | M | Every user treated as an adult | Money-side approval seam holds minors; real age and guardian link wait for the safety domain (integration) |
+### Learning (courses, library, assessments, progress), learning agent, 2026-11-10
+
+| Item | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Courses | none | M | No course model, structure or delivery | Courses, sections, 8 lesson types, materials with per-file permission, publish checks, immutable versions, bundles (F, tested) |
+| Monetisation of courses | none | M | Rates were labels only | Free/paid with `price_minor`, refund policy shown before purchase, coupons and checkout via money seam (null default answers honestly that payments are off) |
+| Protected content | Session files streamed through a policy (good pattern) | I | Only session-scoped | Private `learning` disk, `CourseAccess`, signed user-bound media URLs with range requests, entitlement re-check per request; guessing tests (F) |
+| Enrolment, progress, resume | none | M | | Enrolment (free or entitlement), completion, resume with video position, course percent, creator's learner list (F) |
+| Certificates | none | M | | Only with a completion rule; public verification by code with name minimisation (F) |
+| Course reviews | Session ratings only | M | | Enrolled learners with progress only (F) |
+| Study materials / library | `lesson_resources` per session; extension check by client name (`mimes`) | P | No library, metadata, licence, moderation | Library with metadata, sniffed uploads, licence and ownership rules, past-paper rule, tiers only via recorded review, copyright notice/counter/decision, recommendations, search (F). The session-scoped `lesson_resources` are left untouched (marketplace-owned paths) |
+| Assessments | none | M | | Question banks (4 types), course quizzes, tutor assessments with assignment rules, practice, server marking, time and attempt limits (F) |
+| Flashcards | none | M | | Sets and SM-2 spaced review (F) |
+| Progress insight | none | M | | Topic mastery and deterministic insights from real answers; `ProgressFeed` seam (F) |
+| Static analysis | Larastan level 5 not in CI; base app fails it | I | | Learning domain adds false positives from `casts()` methods; not gated (noted in R47_LEARNING.md) |
