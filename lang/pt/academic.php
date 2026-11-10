@@ -18,6 +18,7 @@ return [
         'choose_level_first' => 'Escolha o seu currículo e nível e depois prima Mostrar disciplinas.',
         'show_subjects' => 'Mostrar disciplinas',
         'subjects' => 'Disciplinas em que quer ajuda',
+        'language_subjects' => 'Disciplinas de língua (:count)',
         'subjects_none' => 'Ainda não há disciplinas listadas para este nível.',
         'institution' => 'Universidade ou instituição (opcional)',
         'institution_none' => 'Não está na lista ou prefiro não dizer',

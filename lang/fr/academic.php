@@ -18,6 +18,7 @@ return [
         'choose_level_first' => 'Choisissez votre programme et votre niveau, puis appuyez sur Afficher les matières.',
         'show_subjects' => 'Afficher les matières',
         'subjects' => 'Matières pour lesquelles vous voulez de l’aide',
+        'language_subjects' => 'Matières de langue (:count)',
         'subjects_none' => 'Aucune matière n’est encore proposée pour ce niveau.',
         'institution' => 'Université ou établissement (facultatif)',
         'institution_none' => 'Absent de la liste ou je préfère ne pas le dire',

@@ -22,6 +22,7 @@ return [
         'choose_level_first' => 'Choose your curriculum and level, then press Show subjects.',
         'show_subjects' => 'Show subjects',
         'subjects' => 'Subjects you want help with',
+        'language_subjects' => 'Language subjects (:count)',
         'subjects_none' => 'No subjects are listed for this level yet.',
         'institution' => 'University or college (optional)',
         'institution_none' => 'Not listed or prefer not to say',

@@ -18,6 +18,7 @@ return [
         'choose_level_first' => 'Kies jou kurrikulum en vlak, en druk dan Wys vakke.',
         'show_subjects' => 'Wys vakke',
         'subjects' => 'Vakke waarmee jy hulp wil hê',
+        'language_subjects' => 'Taalvakke (:count)',
         'subjects_none' => 'Daar is nog geen vakke vir hierdie vlak gelys nie.',
         'institution' => 'Universiteit of kollege (opsioneel)',
         'institution_none' => 'Nie gelys nie of verkies om nie te sê nie',

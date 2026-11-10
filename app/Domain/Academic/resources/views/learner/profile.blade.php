@@ -71,16 +71,31 @@
         <fieldset class="t-row" style="border:0;padding:0;margin:0 0 1rem;">
             <legend class="t-label">{{ __('academic.onboarding.subjects') }}</legend>
             @php($chosen = collect(old('subjects', $subjectIds))->map(fn ($id) => (int) $id)->all())
+            @php([$languageOfferings, $otherOfferings] = $offerings->partition(fn ($o) => $o->subject->category === 'languages'))
+            @if($offerings->isEmpty())
+                <p class="t-hint">{{ __('academic.onboarding.subjects_none') }}</p>
+            @endif
             <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
-                @forelse($offerings as $offering)
+                @foreach($otherOfferings as $offering)
                     <label class="t-chip">
                         <input type="checkbox" name="subjects[]" value="{{ $offering->subject_id }}" @checked(in_array($offering->subject_id, $chosen, true))>
                         <span>{{ $offering->subject->name }}</span>
                     </label>
-                @empty
-                    <p class="t-hint">{{ __('academic.onboarding.subjects_none') }}</p>
-                @endforelse
+                @endforeach
             </div>
+            @if($languageOfferings->isNotEmpty())
+                <details style="margin-top:.75rem;" @if($languageOfferings->contains(fn ($o) => in_array($o->subject_id, $chosen, true))) open @endif>
+                    <summary class="t-hint" style="cursor:pointer;margin:0 0 .5rem;">{{ __('academic.onboarding.language_subjects', ['count' => $languageOfferings->count()]) }}</summary>
+                    <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                        @foreach($languageOfferings as $offering)
+                            <label class="t-chip">
+                                <input type="checkbox" name="subjects[]" value="{{ $offering->subject_id }}" @checked(in_array($offering->subject_id, $chosen, true))>
+                                <span>{{ $offering->subject->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
             @error('subjects')<div class="t-err" role="alert">{{ $message }}</div>@enderror
         </fieldset>
 

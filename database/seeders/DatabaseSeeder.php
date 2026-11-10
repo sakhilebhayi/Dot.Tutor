@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->withPersonalTeam()->create();
 
         $this->call(SubjectCatalogueSeeder::class);
+        $this->call(AcademicReferenceSeeder::class);
 
         User::factory()->withPersonalTeam()->create([
             'name' => 'Test User',
