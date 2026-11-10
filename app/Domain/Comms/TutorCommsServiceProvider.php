@@ -53,8 +53,6 @@ class TutorCommsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(config_path('comms.php'), 'comms');
-
         $this->app->bindIf(MinorRouting::class, SafetyMinorRouting::class, true);
         $this->app->bindIf(SmsSender::class, NullSmsSender::class, true);
 
@@ -67,7 +65,8 @@ class TutorCommsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadViewsFrom(__DIR__.'/resources/views', 'comms');
+        // Views live under resources/views/comms so Tailwind's @source sees them.
+        $this->loadViewsFrom(resource_path('views/comms'), 'comms');
 
         RateLimiter::for('comms', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('comms-push-test', fn (Request $request) => Limit::perMinute(3)->by($request->user()?->id ?: $request->ip()));
