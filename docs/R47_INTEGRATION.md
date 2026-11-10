@@ -93,8 +93,12 @@ Added with restrict-on-delete: `tutor_teaching_scopes.curriculum_id, level_min_i
 |---|---|---|---|---|
 | Baseline at branch point (SQLite) | 661 | 654 | 7 | 0 |
 | After the design-system merge, before any fix | 666 | crashed at 128 MB (trunk too) | | |
-| Final, SQLite in memory | 676 | 669 | 7 | 0 |
-| Final, PostgreSQL (`bin/test-pgsql.sh`) | 676 | 669 | 7 | 0 |
+| Integration complete, SQLite in memory | 676 | 669 | 7 | 0 |
+| Integration complete, PostgreSQL (`bin/test-pgsql.sh`) | 676 | 669 | 7 | 0 |
+| After merging trunk with the ai domain, SQLite | 715 | 708 | 7 | 0 |
+| After merging trunk with the ai domain, PostgreSQL | 715 | 708 | 7 | 0 |
+
+The ai domain (merged last) binds its own driver (`AiTutor`: Anthropic only when switched on with a key, else the null driver) and reads learning through its own `LearningRecords`; it defines no port for integration to bind.
 
 First PostgreSQL run: 48 failures and 1 error, from five causes, all fixed: the legacy-mapping test left its rows for later tests (most of the failures), `like` search was case-sensitive, the marketplace idempotency table stored a full class name in a 40-character column, a test inserting a refused row aborted the PostgreSQL transaction, and the refund-due listener compared a non-uuid reference with a uuid column.
 
