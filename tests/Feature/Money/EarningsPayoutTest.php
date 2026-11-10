@@ -4,12 +4,13 @@ namespace Tests\Feature\Money;
 
 use App\Domain\Money\Ledger\Account;
 use App\Domain\Money\Ledger\Ledger;
+use App\Domain\Money\Ledger\Models\LedgerJournal;
 use App\Domain\Money\Models\Earning;
 use App\Domain\Money\Models\FinanceIssue;
 use App\Domain\Money\Models\Payout;
 use App\Domain\Money\Models\PayoutAccount;
-use App\Domain\Money\Models\PayoutBatch;
 use App\Domain\Money\Services\Earnings;
+use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,7 @@ class EarningsPayoutTest extends TestCase
         ])->assertOk()->assertJsonPath('account.account_ending', substr($number, -4))->assertJsonMissingPath('account.account_number');
     }
 
-    /** @return array{0: User, 1: \App\Models\TutorSession} */
+    /** @return array{0: User, 1: TutorSession} */
     private function completedPaidLesson(): array
     {
         [$session, $learner, $tutor] = $this->lesson();
@@ -126,7 +127,7 @@ class EarningsPayoutTest extends TestCase
         $this->actingAs($operator)->postJson("/api/tutor/money/ops/payouts/{$payout->id}/paid")->assertOk()->assertJsonPath('payout.status', 'paid');
         $this->actingAs($operator)->postJson("/api/tutor/money/ops/payouts/{$payout->id}/paid")->assertOk();
 
-        $this->assertSame(1, \App\Domain\Money\Ledger\Models\LedgerJournal::where('kind', 'payout')->count());
+        $this->assertSame(1, LedgerJournal::where('kind', 'payout')->count());
         $this->assertSame(Earning::PAID, Earning::where('seller_id', $tutor->id)->firstOrFail()->status);
         $this->assertSame(0, app(Ledger::class)->balance(Account::tutorPayable($tutor->id), 'ZAR'));
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Money;
 
+use App\Domain\Money\Contracts\EntitlementCheck;
 use App\Domain\Money\Ledger\Account;
 use App\Domain\Money\Ledger\Ledger;
 use App\Domain\Money\Models\Earning;
@@ -9,7 +10,6 @@ use App\Domain\Money\Models\FinanceIssue;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\Payment;
 use App\Domain\Money\Models\Receipt;
-use App\Domain\Money\Contracts\EntitlementCheck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsMoney;
 use Tests\TestCase;

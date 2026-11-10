@@ -13,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\FakePaystack;
 
 /**
@@ -60,7 +61,7 @@ trait BuildsMoney
      * @param  list<array{type: string, id: int}>  $items
      * @param  array<string, mixed>  $extra
      */
-    protected function placeOrder(User $buyer, array $items, string $key = 'key-1', array $extra = []): \Illuminate\Testing\TestResponse
+    protected function placeOrder(User $buyer, array $items, string $key = 'key-1', array $extra = []): TestResponse
     {
         return $this->actingAs($buyer)->withHeader('Idempotency-Key', $key)->postJson('/api/tutor/money/orders', ['items' => $items] + $extra);
     }
@@ -85,7 +86,7 @@ trait BuildsMoney
         return Order::where('uuid', $uuid)->firstOrFail();
     }
 
-    protected function signedWebhook(array $payload): \Illuminate\Testing\TestResponse
+    protected function signedWebhook(array $payload): TestResponse
     {
         $body = json_encode($payload);
 

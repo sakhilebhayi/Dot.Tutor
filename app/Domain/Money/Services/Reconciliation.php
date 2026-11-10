@@ -4,6 +4,7 @@ namespace App\Domain\Money\Services;
 
 use App\Domain\Money\Ledger\Account;
 use App\Domain\Money\Ledger\Ledger;
+use App\Domain\Money\Ledger\Models\LedgerEntry;
 use App\Domain\Money\Models\Earning;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\Payment;
@@ -103,7 +104,7 @@ class Reconciliation
         $sums = Earning::where('currency', $currency)->whereIn('status', [Earning::PENDING, Earning::AVAILABLE])
             ->selectRaw('seller_id, status, SUM(net_minor) as total')->groupBy('seller_id', 'status')->get();
         $sellers = $sums->pluck('seller_id')->merge(
-            \App\Domain\Money\Ledger\Models\LedgerEntry::whereIn('account_type', [Account::TUTOR_PENDING, Account::TUTOR_PAYABLE])->distinct()->pluck('party_id')
+            LedgerEntry::whereIn('account_type', [Account::TUTOR_PENDING, Account::TUTOR_PAYABLE])->distinct()->pluck('party_id')
         )->unique();
 
         foreach ($sellers as $sellerId) {

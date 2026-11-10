@@ -52,6 +52,13 @@ class MoneyPagesController extends Controller
         return redirect()->route('money.checkout.show', $order)->with('money_status', (string) $start->message);
     }
 
+    public function cancel(Request $request, Order $order, Orders $orders): RedirectResponse
+    {
+        $orders->cancel($order, $request->user());
+
+        return redirect()->route('money.checkout.show', $order)->with('money_status', 'Order cancelled. Nothing was charged.');
+    }
+
     public function checkoutReturn(Request $request, Payments $payments): RedirectResponse
     {
         $reference = (string) $request->query('reference', $request->query('trxref', ''));

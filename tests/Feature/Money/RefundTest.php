@@ -5,6 +5,7 @@ namespace Tests\Feature\Money;
 use App\Domain\Money\Contracts\EntitlementCheck;
 use App\Domain\Money\Ledger\Account;
 use App\Domain\Money\Ledger\Ledger;
+use App\Domain\Money\Ledger\Models\LedgerJournal;
 use App\Domain\Money\Models\Earning;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\Refund;
@@ -146,7 +147,7 @@ class RefundTest extends TestCase
             ->assertCreated()->assertJsonPath('refund.status', 'failed');
 
         $this->assertSame(Order::PAID, $order->fresh()->status);
-        $this->assertSame(0, \App\Domain\Money\Ledger\Models\LedgerJournal::where('kind', 'refund')->count());
+        $this->assertSame(0, LedgerJournal::where('kind', 'refund')->count());
         $this->assertLedgerHealthy();
     }
 }

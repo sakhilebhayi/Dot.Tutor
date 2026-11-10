@@ -89,6 +89,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/checkout/return', [MoneyPagesController::class, 'checkoutReturn'])->name('checkout.return');
         Route::get('/checkout/{order}', [MoneyPagesController::class, 'checkout'])->name('checkout.show');
         Route::post('/checkout/{order}/pay', [MoneyPagesController::class, 'pay'])->middleware('throttle:money-checkout')->name('checkout.pay');
+        Route::post('/checkout/{order}/cancel', [MoneyPagesController::class, 'cancel'])->name('checkout.cancel');
         Route::get('/receipts/{receipt}', [MoneyPagesController::class, 'receipt'])->name('receipts.show');
         Route::get('/earnings', [MoneyPagesController::class, 'earnings'])->name('earnings');
         Route::get('/ops', [MoneyPagesController::class, 'ops'])->middleware('can:money.finance')->name('ops');

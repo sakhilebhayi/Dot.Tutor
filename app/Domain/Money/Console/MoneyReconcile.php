@@ -23,7 +23,7 @@ class MoneyReconcile extends Command
         $record = (bool) $this->option('record');
         $report = $reconciliation->report($from, $to, $record);
 
-        $this->line("Ledger balanced: ".($report['ledger']['balanced'] ? 'yes' : 'NO'));
+        $this->line('Ledger balanced: '.($report['ledger']['balanced'] ? 'yes' : 'NO'));
         $this->line('Verified payments: '.$report['verified_payments']['count']);
 
         $mismatches = $report['mismatches'];
