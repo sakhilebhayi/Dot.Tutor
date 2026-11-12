@@ -53,7 +53,7 @@ class SafetyGuardianApprovals implements GuardianApprovalsPort
     {
         return match (true) {
             $subject instanceof TutorSession => array_filter([
-                'summary' => 'Lesson on '.$subject->starts_at?->timezone(config('tutor.timezone'))->format('j M Y H:i'),
+                'summary' => 'Lesson on '.$subject->starts_at?->timezone(config('tutor.timezone'))->format('j M Y H:i T'),
                 'amount_minor' => $subject->price_minor !== null ? (int) $subject->price_minor : null,
                 'currency' => $subject->currency,
             ], fn ($v) => $v !== null),

@@ -70,7 +70,7 @@
         <label class="st-slip__label" id="need-label" for="need">{{ $young ? 'What do you need help with?' : 'Tell us what you need' }}</label>
         <div class="st-slip__row">
             <x-td.input name="need" :hint="true" maxlength="500" autocomplete="off"
-                placeholder="{{ $young ? 'Maths, Grade 3' : 'Grade 11 Maths in isiZulu, after school, under R250' }}" />
+                placeholder="{{ $young ? 'Maths, '.($level?->name ?? 'my grade') : 'Grade 11 Maths in isiZulu, after school, under R250' }}" />
             <x-td.button type="submit" variant="primary" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
         </div>
         <p class="td-hint" id="need-hint">
@@ -79,7 +79,7 @@
             @else
                 Say it in your own words. We read the grade, subject, language and budget, show you what we understood, and explain why each tutor fits.
             @endif
-            @if (Route::has('ai.need.form') && $aiConfigured)
+            @if (Route::has('ai.need.form') && $aiConfigured && ! $young)
                 If we miss something, <a class="td-link" href="{{ route('ai.need.form') }}">the AI assistant can reword it</a>.
             @endif
         </p>
@@ -121,6 +121,33 @@
                     <p class="st-small" style="padding:0 var(--td-row-pad-x) var(--td-space-3)">{{ Times::zoneNote() }}</p>
                 @endif
             </x-td.panel>
+
+            @if ($last)
+                {{-- The lesson already taken (D-2024): what the tutor wrote afterwards, and the way back to them. --}}
+                @php $l = $last['lesson']; @endphp
+                <x-td.panel title="Your last lesson">
+                    <div class="st-stack st-stack--tight">
+                        <p class="st-row__title" style="margin:0"><a href="{{ route('learn.lessons.show', $l) }}">{{ $l->subject?->name ?? 'Lesson' }} with {{ $l->tutorProfile->displayName() }}</a></p>
+                        <p class="st-row__meta" style="margin:0"><time datetime="{{ $l->starts_at->toIso8601String() }}">{{ Times::stamp($l->starts_at) }}</time> · {{ $l->duration_minutes }} min</p>
+                        @if ($last['summary'])
+                            <blockquote class="st-quote" style="margin:var(--td-space-2) 0 0">
+                                <p style="margin:0;white-space:pre-line">{{ \Illuminate\Support\Str::limit($last['summary'], $young ? 200 : 400) }}</p>
+                                <footer class="st-small">{{ $young ? 'From your tutor' : 'Summary from '.$l->tutorProfile->displayName() }}</footer>
+                            </blockquote>
+                        @else
+                            <p class="st-small" style="margin:0">{{ $young ? 'Your tutor has not written about it yet.' : 'The tutor has not shared a summary of this lesson.' }}</p>
+                        @endif
+                        <div class="st-inline" style="margin-top:var(--td-space-2)">
+                            @if ($l->tutor_offering_id && $l->offering?->is_active)
+                                <x-td.button size="sm" variant="primary" :href="route('learn.book', $l->tutor_offering_id)" icon="calendar">Book again</x-td.button>
+                            @else
+                                <x-td.button size="sm" :href="route('marketplace.tutors.show', $l->tutor_profile_id)">See {{ $l->tutorProfile->displayName() }}'s profile</x-td.button>
+                            @endif
+                            <x-td.button size="sm" variant="quiet" :href="route('learn.lessons.show', $l)" icon-end="arrow-right">The lesson</x-td.button>
+                        </div>
+                    </div>
+                </x-td.panel>
+            @endif
 
             <x-td.panel title="{{ $young ? 'Your courses' : 'Courses in progress' }}" flush>
                 <x-slot:actions>
@@ -201,7 +228,7 @@
                             <li>{{ $sentence }}</li>
                         @endforeach
                     </ul>
-                    <p class="st-small" style="margin:var(--td-space-3) 0 0">{{ $insights['label'] }}</p>
+                    <p class="st-small" style="margin:var(--td-space-3) 0 0">{{ $young ? 'Worked out from your answers.' : $insights['label'] }}</p>
                 @endif
                 <div class="st-inline" style="margin-top:var(--td-space-3)">
                     <x-td.button size="sm" variant="quiet" :href="route('learn.progress')" icon-end="arrow-right">Progress</x-td.button>

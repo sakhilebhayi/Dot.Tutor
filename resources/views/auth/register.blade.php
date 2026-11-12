@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Create an account">
     <x-authentication-card title="Create an account">
         <x-slot name="logo">
             <x-authentication-card-logo />

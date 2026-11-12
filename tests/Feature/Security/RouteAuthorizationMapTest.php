@@ -70,6 +70,13 @@ class RouteAuthorizationMapTest extends TestCase
         'register' => 'closed: redirects to login',
         'sanctum.csrf-cookie' => 'CSRF cookie',
         'teach.handle' => 'a tutor\'s public link (redirects to the public storefront)',
+        // Public discovery (R-47 polish D-2003): approved tutors only, tutor free text through view_contact (contact
+        // details hidden from guests), no learner data; booking, paying, messaging and reporting need sign-in.
+        'marketplace.find' => 'public tutor search: approved tutors only, guests rate-limited (tutor-guest-search)',
+        'match.search' => 'the find form\'s redirect to /find-a-tutor (reads only the chosen level; rate-limited)',
+        'marketplace.tutors.show' => 'an approved tutor\'s public storefront (404 otherwise; contact details hidden from guests)',
+        'sitemap' => 'sitemap.xml: public pages and approved storefronts only (D-2014)',
+        'marketplace.tutors.photo' => 'an approved tutor\'s profile photo (404 for anyone else\'s unapproved profile)',
         'boost.browser-logs' => 'Laravel Boost, development only (not installed with --no-dev)',
     ];
 
@@ -78,7 +85,6 @@ class RouteAuthorizationMapTest extends TestCase
         'academic.offerings' => 'reference data: subjects offered at a level',
         'academic.topics' => 'reference data: topics of a subject offering',
         'tutors.show' => 'approved tutor\'s public profile (legacy page)',
-        'marketplace.tutors.show' => 'approved tutor\'s storefront',
         'marketplace.api.tutors.show' => 'approved tutor\'s storefront (JSON)',
         'marketplace.api.tutors.availability' => 'an approved tutor\'s open hours (no learner data)',
         'marketplace.api.tutors.offerings' => 'an approved tutor\'s published offerings',

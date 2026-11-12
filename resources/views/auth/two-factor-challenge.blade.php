@@ -1,4 +1,4 @@
-<x-guest-layout :livewire="true">
+<x-guest-layout :livewire="true" title="Two-step sign-in">
     <x-authentication-card title="Confirm it is you">
         <x-slot name="logo">
             <x-authentication-card-logo />

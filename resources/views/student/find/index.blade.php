@@ -6,11 +6,27 @@
     $young = ($ctx['step'] ?? 'standard') === 'young';
     $count = $result ? count($result['results']) : 0;
     $weekdayNames = [1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat', 7 => 'Sun'];
+    $guest = auth()->guest();
+    // Reasons every listed tutor shares are said once above the list; each card keeps only what sets it apart
+    // (R-47 polish D-2012, critic A 4: thirteen cards repeated the same seven lines).
+    $sharedLines = [];
+    if (count($rows) > 1) {
+        $same = fn (array $a, array $b) => $a['text'] === $b['text'] && $a['met'] === $b['met'];
+        $sharedLines = collect($rows[0]['lines'])->filter(fn ($line) => collect($rows)->every(fn ($r) => collect($r['lines'])->contains(fn ($x) => $same($x, $line))))->values()->all();
+    }
+    $sharedTexts = array_column($sharedLines, 'text');
 @endphp
-<x-student.shell :title="$young ? 'Get help' : 'Find a tutor'">
+<x-student.shell :title="$young ? 'Get help' : 'Find a tutor'" description="Find a tutor on Dot.Tutor by subject, level, curriculum and the language they really teach in. Every match says why it fits, and nobody pays to be placed higher.">
     <x-td.page-head :title="$young ? 'Get help' : 'Find a tutor'"
         lede="Say what you need. We rank tutors on how well they fit and tell you why. Nobody pays to be placed higher, and you book one lesson at a time." />
 
+    @if ($guest)
+        {{-- Reading plain words uses the learner's saved profile, so it is for signed-in learners; the form below
+             works for everyone (D-2003). --}}
+        <x-td.notice tone="info" title="Looking without an account">
+            Choose a subject below to see approved tutors and why each one fits. <a class="td-link" href="{{ route('login') }}">Sign in with InfoDot</a> to describe what you need in your own words, book or send a message.
+        </x-td.notice>
+    @else
     <form method="POST" action="{{ route('learn.need') }}" class="st-slip" role="search" aria-labelledby="find-need-label">
         @csrf
         <label class="st-slip__label" id="find-need-label" for="need">{{ $young ? 'What do you need help with?' : 'In your own words' }}</label>
@@ -20,6 +36,7 @@
         </div>
         @error('need')<p class="td-error"><x-td.icon name="circle-alert" />{{ $message }}</p>@enderror
     </form>
+    @endif
 
     @if ($understood !== [])
         <x-td.notice tone="info" title="What we understood">
@@ -64,6 +81,12 @@
                         <x-slot:actions><x-td.button :href="route('learning.library.index')" icon="book-marked">Study library</x-td.button></x-slot:actions>
                     </x-td.state>
                 @else
+                    @if ($sharedLines !== [])
+                        <div class="st-shared" aria-labelledby="shared-title">
+                            <p class="st-shared__title" id="shared-title">{{ $count === 2 ? 'Both tutors' : 'All '.$count.' tutors' }}</p>
+                            <x-td.match-reasons :reasons="$sharedLines" label="What every tutor listed here has in common" />
+                        </div>
+                    @endif
                     <div class="td-panels">
                         @foreach ($rows as $row)
                             @php $tutor = $row['tutor']; @endphp
@@ -80,7 +103,12 @@
                                     @endif
                                 </div>
                                 <div class="st-record__body">
-                                    <x-td.match-reasons :reasons="$row['lines']" label="Why {{ $tutor['name'] }} fits" />
+                                    @php $own = array_values(array_filter($row['lines'], fn ($l) => ! in_array($l['text'], $sharedTexts, true))); @endphp
+                                    @if ($own !== [])
+                                        <x-td.match-reasons :reasons="$own" label="Why {{ $tutor['name'] }} fits" />
+                                    @else
+                                        <p class="st-small" style="margin:0">Fits on everything above.</p>
+                                    @endif
                                     <div class="st-stack">
                                         @if ($row['teaching_languages'] !== [])
                                             <div class="st-chipset" aria-label="Teaches in">
@@ -101,12 +129,12 @@
                                             </div>
                                         @endif
                                         <div class="st-inline">
-                                            <x-td.button variant="primary" :href="route('marketplace.tutors.show', $tutor['id'])" icon-end="arrow-right">See profile and book</x-td.button>
+                                            <x-td.button variant="primary" :href="route('marketplace.tutors.show', $tutor['id'])" icon-end="arrow-right">{{ $guest ? 'See profile and prices' : 'See profile and book' }}</x-td.button>
                                         </div>
                                     </div>
                                 </div>
-                                <details class="st-young-hide">
-                                    <summary class="td-link" style="cursor:pointer">How this was ranked</summary>
+                                <details class="st-young-hide st-disclosure">
+                                    <summary class="td-link"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span>How this was ranked</span></summary>
                                     <x-td.table caption="Ranking for {{ $tutor['name'] }}" caption-hidden>
                                         <thead><tr><th scope="col">What we checked</th><th scope="col" class="is-num">Counts for</th><th scope="col" class="is-num">Points</th></tr></thead>
                                         <tbody>
@@ -133,8 +161,8 @@
         </section>
 
         <aside aria-labelledby="filters-title">
-            <details class="td-panel" @if (! $result || $count === 0) open @endif style="padding:0">
-                <summary class="td-panel__head" style="cursor:pointer"><h2 class="td-panel__title" id="filters-title">{{ $result ? 'Change what you asked for' : 'What you need' }}</h2></summary>
+            <details class="td-panel st-disclosure" @if (! $result || $count === 0) open @endif style="padding:0">
+                <summary class="td-panel__head"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span class="st-disclosure__label"><h2 class="td-panel__title" id="filters-title">{{ $result ? 'Change what you asked for' : 'What you need' }}</h2><span class="st-disclosure__hint">Subject, level, teaching language, budget, days and times</span></span></summary>
                 <form method="GET" action="{{ route('match.search') }}" class="st-form td-panel__body">
                     <x-td.field label="Subject" for="subject_id">
                         <x-td.select name="subject_id" required :value="$form['subject_id']" placeholder="Choose a subject"

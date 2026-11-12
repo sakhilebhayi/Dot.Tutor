@@ -48,7 +48,10 @@ class AcademicScopeAdapter implements AcademicScopePort
     public function curriculumName(int $curriculumId): ?string
     {
         if (! array_key_exists($curriculumId, $this->curriculumNames)) {
-            $this->curriculumNames[$curriculumId] = Curriculum::query()->whereKey($curriculumId)->value('name');
+            // The short name people use ("CAPS", "IEB"), not the gazetted title (R-47 polish D-2011: "Teaches the
+            // Curriculum and Assessment Policy Statement curriculum" read as jargon).
+            $row = Curriculum::query()->whereKey($curriculumId)->first(['name', 'short_name']);
+            $this->curriculumNames[$curriculumId] = $row ? ($row->short_name ?: $row->name) : null;
         }
 
         return $this->curriculumNames[$curriculumId];

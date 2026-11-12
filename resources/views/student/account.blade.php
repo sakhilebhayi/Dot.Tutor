@@ -60,10 +60,15 @@
                             <x-td.check type="radio" name="step" value="standard" :checked="$ctx['step_preference'] === 'standard'" id="step-standard">Standard</x-td.check>
                         </div>
                     </fieldset>
-                    <p class="st-small" style="margin:0">Now: {{ $ctx['step'] === 'young' ? 'larger and simpler' : 'standard' }}. {{ $ctx['step_reason'] }}</p>
+                    {{-- One plain status line (R-47 polish D-2027, critic A 17: "Now: standard. Standard view."). --}}
+                    @php $viewName = $ctx['step'] === 'young' ? 'larger, simpler view' : 'standard view'; @endphp
+                    <p class="st-small" style="margin:0">Showing the {{ $viewName }}{{ $ctx['step_preference'] === 'auto' ? ($ctx['level'] ? ' for '.$ctx['level']->name : '') : ', as you chose' }}.</p>
                     <div class="st-form__actions"><x-td.button type="submit">Save</x-td.button></div>
                 </form>
-                <div style="margin-top:var(--td-space-4)"><x-td.theme-switch /></div>
+                <div class="st-inline" style="margin-top:var(--td-space-4);padding-top:var(--td-space-4);border-top:1px solid var(--td-line)">
+                    <span>Light or dark screen</span>
+                    <x-td.theme-switch />
+                </div>
             </x-td.panel>
 
             <x-td.panel title="Safety and your parent or guardian">

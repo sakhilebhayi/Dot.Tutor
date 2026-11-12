@@ -57,7 +57,8 @@
         ['title' => 'Book spines, Town Library of Ipswich', 'creator' => 'Leutha', 'licence' => 'CC BY-SA 4.0', 'url' => 'https://commons.wikimedia.org/w/index.php?curid=137398271'],
     ];
 
-    $findHref = Route::has('match.index') ? route('match.index') : route('tutors.browse');
+    // The public tutor search (R-47 polish D-2003): a signed-out visitor sees approved tutors without signing in.
+    $findHref = Route::has('marketplace.find') ? route('marketplace.find') : route('tutors.browse');
     $teachHref = route('tutor.profile.edit');
 @endphp
 <x-layouts::public

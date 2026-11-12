@@ -47,6 +47,7 @@ class HomeController extends Controller
             'courses' => $courses,
             'work' => $work,
             'toReview' => $toReview,
+            'last' => $agenda->lastLesson($user),
             'insights' => $agenda->insights($user),
             'questions' => $agenda->unansweredInMyRooms($user),
             'aiConfigured' => class_exists(AiGateway::class) && app(AiGateway::class)->configured(),

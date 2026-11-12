@@ -54,13 +54,22 @@ class PracticeController extends Controller
 
     public function storeSet(Request $request): RedirectResponse
     {
-        // "front | back" per line in the form; the learning action validates the cards themselves.
-        $lines = preg_split('/\r\n|\r|\n/', (string) $request->input('cards_text', ''));
-        $cards = collect($lines)->map(fn ($line) => trim($line))->filter()->map(function ($line) {
-            [$front, $back] = array_pad(preg_split('/\s*\|\s*/', $line, 2), 2, '');
+        // Two fields per card (card[i][front], card[i][back]; R-47 polish D-2021); empty rows are dropped. The older
+        // "front | back" lines (cards_text) are still read. The learning action validates the cards themselves.
+        $cards = collect((array) $request->input('card', []))
+            ->filter(fn ($c) => is_array($c))
+            ->map(fn (array $c) => ['front' => trim((string) ($c['front'] ?? '')), 'back' => trim((string) ($c['back'] ?? ''))])
+            ->reject(fn (array $c) => $c['front'] === '' && $c['back'] === '')
+            ->values();
+        if ($cards->isEmpty() && $request->filled('cards_text')) {
+            $lines = preg_split('/\r\n|\r|\n/', (string) $request->input('cards_text', ''));
+            $cards = collect($lines)->map(fn ($line) => trim($line))->filter()->map(function ($line) {
+                [$front, $back] = array_pad(preg_split('/\s*\|\s*/', $line, 2), 2, '');
 
-            return ['front' => trim($front), 'back' => trim($back)];
-        })->values()->all();
+                return ['front' => trim($front), 'back' => trim($back)];
+            })->values();
+        }
+        $cards = $cards->all();
         $request->merge(['cards' => $cards, 'is_shared' => $request->boolean('is_shared')]);
         if ($request->input('subject_id') === '') {
             $request->merge(['subject_id' => null]);

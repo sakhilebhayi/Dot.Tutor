@@ -80,7 +80,7 @@ class MatchingTest extends TestCase
         $this->assertSame(['Thandi'], $this->names($result));
         $top = $result['results'][0];
         $this->assertContains('Teaches this subject at Grade 11.', $top['reasons']);
-        $this->assertContains('Teaches the CAPS curriculum.', $top['reasons']);
+        $this->assertContains('Follows CAPS, your curriculum.', $top['reasons']);
         $this->assertSame(MatchingService::TERMS, array_column($top['terms'], 'term'));
         $this->assertEqualsWithDelta($top['score'], array_sum(array_column($top['terms'], 'points')), 0.05);
         $this->assertSame(1, $result['excluded']);

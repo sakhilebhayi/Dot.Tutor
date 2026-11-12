@@ -1,0 +1,412 @@
+/*
+ * R-47 polish, learner area and public discovery (polish-learner, D-2000 onward, docs/R47_POLISH_LEARNER.md).
+ * Recipes on ds tokens only, in the components layer like the rest of the learner CSS.
+ */
+@layer components {
+    /* Learner pages read by a signed-out visitor (find a tutor, storefronts) inside the public shell. */
+    .st-public {
+        padding-block: var(--td-space-6) var(--td-space-9);
+    }
+
+    @media (min-width: 64rem) {
+        .st-narrow-only {
+            display: none;
+        }
+    }
+
+    /* A disclosure is one line: a chevron that turns, an optional icon, the label, and a short line saying what is
+       inside, so a closed one never looks like an empty card (critic A 9 and 11). */
+    .st-disclosure > summary {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--td-space-2);
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .st-disclosure > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .st-disclosure__chev {
+        margin-top: 0.15em;
+        color: var(--td-ink-2);
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    .st-disclosure[open] > summary .st-disclosure__chev {
+        transform: rotate(90deg);
+    }
+
+    .st-disclosure__label {
+        display: grid;
+        gap: 0.15rem;
+    }
+
+    .st-disclosure__hint {
+        font-size: var(--td-text-sm);
+        font-weight: 400;
+        color: var(--td-ink-2);
+    }
+
+    /* A panel whose head is the summary. */
+    .td-panel.st-disclosure > summary.td-panel__head {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+    }
+
+    .td-panel.st-disclosure:not([open]) > summary.td-panel__head {
+        border-bottom: 0;
+    }
+}
+
+@layer components {
+    /* What every listed tutor has in common, said once above the match cards (D-2012). */
+    .st-shared {
+        display: grid;
+        gap: var(--td-space-2);
+        padding: var(--td-space-4) var(--td-space-5);
+        background: var(--td-sunken);
+    }
+
+    .st-shared__title {
+        margin: 0;
+        font-weight: 700;
+    }
+}
+
+/* Legal pages (terms, privacy, cookies) in the site's own system (D-2015): the condensed display face for headings,
+   a square surface panel with no shadow and no rounding, running text in full ink at the reading measure. */
+@layer components {
+    .td-legal {
+        display: grid;
+        gap: var(--td-space-6);
+        padding-block: var(--td-space-7) var(--td-space-9);
+    }
+
+    .td-legal__head {
+        display: grid;
+        gap: var(--td-space-4);
+    }
+
+    .td-legal__title {
+        margin: 0;
+        font-family: var(--td-font-display);
+        font-stretch: var(--td-display-stretch);
+        font-weight: 780;
+        font-size: var(--td-text-2xl);
+        line-height: var(--td-leading-display);
+        letter-spacing: -0.015em;
+        color: var(--td-ink);
+    }
+
+    .td-legal__nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+    }
+
+    .td-legal__nav a {
+        display: inline-flex;
+        align-items: center;
+        min-block-size: 2.25rem;
+        padding-inline: var(--td-space-3);
+        border: 1px solid var(--td-line);
+        border-radius: var(--td-radius);
+        color: var(--td-ink);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .td-legal__nav a[aria-current='page'] {
+        background: var(--td-primary-soft);
+        border-color: transparent;
+        color: var(--td-primary-soft-ink);
+    }
+
+    @media (hover: hover) {
+        .td-legal__nav a:not([aria-current='page']):hover {
+            text-decoration: underline 2px;
+            text-underline-offset: 0.25em;
+        }
+    }
+
+    .td-legal__body {
+        max-width: calc(var(--td-measure) + 2 * var(--td-space-7));
+        padding: var(--td-space-6) var(--td-space-5);
+        background: var(--td-surface);
+        color: var(--td-ink);
+        line-height: var(--td-leading);
+    }
+
+    @media (min-width: 48rem) {
+        .td-legal__body {
+            padding: var(--td-space-7);
+        }
+    }
+
+    .td-legal__body > :first-child {
+        margin-top: 0;
+        color: var(--td-ink-2);
+    }
+
+    .td-legal__body h2 {
+        margin: var(--td-space-7) 0 var(--td-space-3);
+        font-family: var(--td-font-display);
+        font-stretch: var(--td-display-stretch);
+        font-weight: 750;
+        font-size: var(--td-text-lg);
+        line-height: var(--td-leading-tight);
+    }
+
+    .td-legal__body p,
+    .td-legal__body ul {
+        margin: 0 0 var(--td-space-4);
+        max-width: var(--td-measure);
+    }
+
+    .td-legal__body ul {
+        padding-left: 1.25rem;
+        list-style: disc;
+    }
+
+    .td-legal__body li + li {
+        margin-top: var(--td-space-2);
+    }
+
+    .td-legal__body a {
+        color: var(--td-primary);
+        font-weight: 600;
+        text-underline-offset: 0.2em;
+        padding-block: 3px;
+    }
+
+    .td-legal__body code {
+        font: inherit;
+        font-weight: 650;
+    }
+}
+
+/* Booking: a strip of days, then one day's times (D-2017). The chosen day radio shows its panel through :has();
+   a browser without :has lists every day, which still works. */
+@layer components {
+    /* A fieldset grows to its widest content unless told otherwise; the day strip scrolls inside it instead. */
+    .st-picker {
+        min-inline-size: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .st-daystrip {
+        scrollbar-width: thin;
+        display: flex;
+        gap: var(--td-space-2);
+        overflow-x: auto;
+        padding-bottom: var(--td-space-2);
+        margin-bottom: var(--td-space-3);
+        scroll-snap-type: x proximity;
+    }
+
+    .st-daystrip__day {
+        position: relative;
+        flex: none;
+        scroll-snap-align: start;
+    }
+
+    .st-daystrip__day input {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        cursor: pointer;
+    }
+
+    .st-daystrip__day input + span {
+        display: grid;
+        justify-items: center;
+        gap: 0.1rem;
+        min-width: 4.75rem;
+        padding: var(--td-space-2) var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.2;
+    }
+
+    .st-daystrip__dow {
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    .st-daystrip__date {
+        font-weight: 700;
+    }
+
+    .st-daystrip__count {
+        font-size: var(--td-text-xs);
+        color: var(--td-ink-2);
+    }
+
+    .st-daystrip__day input:hover + span {
+        border-color: var(--td-ink);
+    }
+
+    .st-daystrip__day input:checked + span {
+        background: var(--td-primary-soft);
+        border-color: var(--td-primary);
+        box-shadow: inset 0 -3px 0 var(--td-primary);
+    }
+
+    .st-daystrip__day input:checked + span .st-daystrip__dow,
+    .st-daystrip__day input:checked + span .st-daystrip__count {
+        color: var(--td-primary-soft-ink);
+    }
+
+    .st-daystrip__day input:focus-visible + span {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .st-picker:has(.st-daystrip input:checked) .st-picker__day {
+        display: none;
+    }
+
+    .st-picker:has(#day-0:checked) .st-picker__day[data-day='0'],
+    .st-picker:has(#day-1:checked) .st-picker__day[data-day='1'],
+    .st-picker:has(#day-2:checked) .st-picker__day[data-day='2'],
+    .st-picker:has(#day-3:checked) .st-picker__day[data-day='3'],
+    .st-picker:has(#day-4:checked) .st-picker__day[data-day='4'],
+    .st-picker:has(#day-5:checked) .st-picker__day[data-day='5'],
+    .st-picker:has(#day-6:checked) .st-picker__day[data-day='6'],
+    .st-picker:has(#day-7:checked) .st-picker__day[data-day='7'],
+    .st-picker:has(#day-8:checked) .st-picker__day[data-day='8'],
+    .st-picker:has(#day-9:checked) .st-picker__day[data-day='9'],
+    .st-picker:has(#day-10:checked) .st-picker__day[data-day='10'],
+    .st-picker:has(#day-11:checked) .st-picker__day[data-day='11'],
+    .st-picker:has(#day-12:checked) .st-picker__day[data-day='12'],
+    .st-picker:has(#day-13:checked) .st-picker__day[data-day='13'],
+    .st-picker:has(#day-14:checked) .st-picker__day[data-day='14'],
+    .st-picker:has(#day-15:checked) .st-picker__day[data-day='15'],
+    .st-picker:has(#day-16:checked) .st-picker__day[data-day='16'],
+    .st-picker:has(#day-17:checked) .st-picker__day[data-day='17'],
+    .st-picker:has(#day-18:checked) .st-picker__day[data-day='18'],
+    .st-picker:has(#day-19:checked) .st-picker__day[data-day='19'],
+    .st-picker:has(#day-20:checked) .st-picker__day[data-day='20'] {
+        display: block;
+    }
+
+    .st-picker .st-picker__day .st-day {
+        margin-top: 0;
+    }
+
+    /* The price and the one submit stay in view beside a long form on wide screens. */
+    @media (min-width: 64rem) {
+        .st-sticky {
+            position: sticky;
+            top: calc(4rem + var(--td-space-4));
+        }
+    }
+}
+
+@layer components {
+    /* Order sums: labels left, every amount right-aligned under the total (D-2019, critic A 14). */
+    .st-facts--sums {
+        grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .st-facts--sums dd {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    /* Flashcard editor: numbered rows of two fields (D-2021). */
+    .st-cards-editor {
+        display: grid;
+        gap: var(--td-space-3);
+        margin: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+    }
+
+    .st-cards-editor legend {
+        padding: 0;
+        font-weight: 650;
+    }
+
+    .st-cards-editor__list {
+        display: grid;
+        gap: var(--td-space-3);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .st-cards-editor__row {
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--td-space-2) var(--td-space-3);
+        align-items: end;
+    }
+
+    .st-cards-editor__n {
+        padding-bottom: 0.7rem;
+        color: var(--td-ink-2);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .st-cards-editor [data-cards-add] {
+        justify-self: start;
+    }
+}
+
+@layer components {
+    /* A notification's title opens it (D-2022): a text button that reads as a link, the arrow steps on hover. */
+    .comms-item__open {
+        display: inline;
+        padding: 3px 0;
+        border: 0;
+        background: none;
+        color: var(--td-primary);
+        font: inherit;
+        text-align: left;
+        text-decoration: underline;
+        text-decoration-color: color-mix(in oklch, var(--td-primary) 45%, transparent);
+        text-underline-offset: 0.2em;
+        cursor: pointer;
+    }
+
+    .comms-item__open .td-icon {
+        margin-left: 0.3em;
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    @media (hover: hover) {
+        .comms-item__open:hover {
+            text-decoration-color: currentColor;
+        }
+
+        .comms-item__open:hover .td-icon {
+            transform: translateX(3px);
+        }
+    }
+
+    .comms-item__open:focus-visible {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    /* A tutor's words quoted on a learner screen (the last lesson's summary). */
+    .st-quote {
+        display: grid;
+        gap: var(--td-space-1);
+        padding: var(--td-space-3) var(--td-space-4);
+        background: var(--td-sunken);
+    }
+}

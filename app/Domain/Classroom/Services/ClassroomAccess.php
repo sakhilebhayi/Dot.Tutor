@@ -164,7 +164,7 @@ class ClassroomAccess
         $role = $this->roleOf($actor, $session, $classroom);
         $subject = $this->liveSubject($session, $classroom);
         $asked = 0;
-        $when = $session->starts_at->copy()->timezone(config('app.timezone'))->format('j M Y, H:i');
+        $when = $session->starts_at->copy()->timezone((string) config('tutor.timezone', 'Africa/Johannesburg'))->format('j M Y, H:i T');
 
         foreach ($classroom->learnerIds() as $learnerId) {
             if ($role === 'learner' && $learnerId !== $actor->id) {

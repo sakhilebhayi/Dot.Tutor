@@ -7,6 +7,7 @@ use App\Domain\Academic\Enums\LanguageRole;
 use App\Domain\Academic\Models\Curriculum;
 use App\Domain\Academic\Models\Language;
 use App\Domain\Academic\Models\LearnerProfile;
+use App\Domain\Safety\Services\ContactPrivacy;
 use App\Models\TutorProfile;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -21,7 +22,7 @@ class FindComposer
     /** Terms in the order they are explained, with the word used when a term is met. */
     private const TERMS = ['scope', 'curriculum', 'language', 'availability', 'budget', 'help_type', 'reviews', 'new_tutor'];
 
-    public function __construct(private readonly Request $request, private readonly LanguageProfile $languages) {}
+    public function __construct(private readonly Request $request, private readonly LanguageProfile $languages, private readonly ContactPrivacy $privacy) {}
 
     public function compose(View $view): void
     {
@@ -86,7 +87,7 @@ class FindComposer
     private function rows(array $result, array $wanted): array
     {
         $ids = array_map(fn ($r) => $r['tutor']['id'], $result['results']);
-        $profiles = TutorProfile::query()->whereIn('id', $ids ?: [0])->get(['id', 'user_id', 'teaches_online', 'teaches_in_person', 'in_person_area'])->keyBy('id');
+        $profiles = TutorProfile::query()->whereIn('id', $ids ?: [0])->with('user')->get(['id', 'user_id', 'teaches_online', 'teaches_in_person', 'in_person_area'])->keyBy('id');
         $teaching = $this->languages->teachingLanguagesFor($profiles->pluck('user_id')->filter()->map(fn ($id) => (int) $id)->values()->all());
         $names = Language::query()->pluck('name_native', 'code');
 
@@ -107,6 +108,12 @@ class FindComposer
                 if (! collect($lines)->contains('text', $reason) && ! in_array($reason, collect($match['terms'])->pluck('note')->all(), true)) {
                     array_unshift($lines, ['text' => $reason, 'met' => true]);
                 }
+            }
+
+            // The headline is the tutor's free text: contact details are hidden from guests, minors and unknown ages
+            // through safety's view_contact rule, as on the storefront (S-08; R-47 polish D-2003, the page is public).
+            if (filled($match['tutor']['headline'] ?? null) && $profile?->user !== null) {
+                $match['tutor']['headline'] = $this->privacy->profileText($this->request->user(), $profile->user, (string) $match['tutor']['headline'])['text'];
             }
 
             return $match + [

@@ -7,7 +7,7 @@
     <nav aria-label="Breadcrumb" class="mb-3 text-sm"><a class="td-link" href="{{ route('rooms.index') }}">My rooms</a> <span class="text-td-ink-2">/ {{ $level->name }}</span></nav>
     <x-td.page-head :title="$level->name.', '.$curriculumName" :lede="'Every subject offered at '.$level->name.' in '.$level->curriculum?->name.' has a room. '.($audience === Room::UNDER_18 ? 'These are the rooms for learners under 18.' : 'These are the rooms for adult learners.')">
         <x-slot:actions>
-            @if ($stage)<x-td.pill kind="stage" :stage="$stage">{{ $level->stage?->name }}</x-td.pill>@endif
+            @if ($stage)<x-td.pill kind="stage" :stage="$stage">{{ \App\Domain\Student\Support\Stage::label($level->stage?->code, $level->stage?->name) }}</x-td.pill>@endif
         </x-slot:actions>
     </x-td.page-head>
 
