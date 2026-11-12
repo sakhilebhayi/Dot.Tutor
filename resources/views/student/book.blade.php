@@ -88,6 +88,20 @@
                     @if ($usablePackage)<input type="hidden" name="package_purchase_id" value="{{ $usablePackage->id }}">@endif
 
                     <x-td.panel :title="$isWeekly ? 'Choose the first lesson' : 'Choose a time'">
+                        @if ($window && $days !== [])
+                            {{-- The learner's window first (fix round D-2304); every open time stays one link away. --}}
+                            <div class="st-window" role="status">
+                                @if ($window['applied'])
+                                    <p class="st-window__text"><x-td.icon name="clock" /><span>{{ $window['source'] === 'after_school' ? 'After-school times' : 'Your times' }}: <strong>{{ $window['label'] }}</strong>. {{ $window['shown'] }} of {{ $window['all'] }} open {{ \Illuminate\Support\Str::plural('time', $window['all']) }}.</span></p>
+                                    <a class="td-link st-window__switch" href="{{ $window['all_url'] }}">Show all times</a>
+                                @elseif ($window['empty'])
+                                    <p class="st-window__text"><x-td.icon name="info" /><span>No open time fits <strong>{{ $window['label'] }}</strong>, so every open time is listed.</span></p>
+                                @else
+                                    <p class="st-window__text"><x-td.icon name="clock" /><span>Showing every open time.</span></p>
+                                    <a class="td-link st-window__switch" href="{{ $window['window_url'] }}">Only {{ $window['label'] }}</a>
+                                @endif
+                            </div>
+                        @endif
                         @if ($days === [])
                             <x-td.state kind="empty" title="No open times in the next two weeks">The tutor has not opened any time in that period. Try another tutor, or check back later.</x-td.state>
                         @else
@@ -95,12 +109,20 @@
                                 // One day at a time (R-47 polish D-2017, critic A 3): a strip of days, then that day's times.
                                 // Pure CSS (:has) shows the chosen day; without it every day is listed as before.
                                 $chosen = old('starts_at', $preselect);
-                                $openDay = 0;
+                                $openDay = null;
                                 foreach ($days as $i => $day) {
                                     foreach ($day['slots'] as $slot) {
                                         if ($slot->utc()->toIso8601String() === $chosen) { $openDay = $i; break 2; }
                                     }
                                 }
+                                // A time picked elsewhere that is not on this grid (another lesson length) still opens its day.
+                                if ($openDay === null && $chosen !== '') {
+                                    try { $chosenDay = Times::local($chosen)->format('Y-m-d'); } catch (\Throwable) { $chosenDay = null; }
+                                    foreach ($days as $i => $day) {
+                                        if (Times::local($day['slots'][0])->format('Y-m-d') === $chosenDay) { $openDay = $i; break; }
+                                    }
+                                }
+                                $openDay ??= 0;
                             @endphp
                             <fieldset class="st-picker" aria-describedby="times-hint">
                                 <legend class="td-sr">Open times</legend>
@@ -116,15 +138,21 @@
                                 @foreach ($days as $i => $day)
                                     <div class="st-picker__day" data-day="{{ $i }}">
                                         <p class="st-day">{{ Times::day($day['slots'][0]) }}</p>
-                                        <div class="st-times">
-                                            @foreach ($day['slots'] as $slot)
-                                                @php $iso = $slot->utc()->toIso8601String(); @endphp
-                                                <label class="st-time">
-                                                    <input type="radio" name="starts_at" value="{{ $iso }}" @checked($chosen === $iso)>
-                                                    <span>{{ Times::clock($slot) }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
+                                        {{-- Grouped into Morning, Afternoon and Evening (fix round D-2304): three columns on a phone. --}}
+                                        @foreach (collect($day['slots'])->groupBy(fn ($slot) => \App\Domain\Student\Support\BookingWindow::period(Times::local($slot))) as $period => $periodSlots)
+                                            <div class="st-times-group">
+                                                <p class="st-times-group__label">{{ $period }}</p>
+                                                <div class="st-times">
+                                                    @foreach ($periodSlots as $slot)
+                                                        @php $iso = $slot->utc()->toIso8601String(); @endphp
+                                                        <label class="st-time">
+                                                            <input type="radio" name="starts_at" value="{{ $iso }}" @checked($chosen === $iso)>
+                                                            <span>{{ Times::clock($slot) }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 @endforeach
                                 <p class="td-hint" id="times-hint" style="margin:var(--td-space-3) 0 0">{{ ($ctx['step'] ?? 'standard') === 'young' ? 'Pick a day, then a time. ' : 'Pick a day, then a time. Only times the tutor has opened and nobody has booked. ' }}{{ Times::zoneNote() }}</p>
@@ -169,7 +197,8 @@
         </div>
 
         <aside class="st-stack st-sticky" aria-label="Price and terms">
-            <x-td.panel title="What you pay">
+            {{-- A guardian approves and pays for a minor's booking (fix round D-2305). --}}
+            <x-td.panel :title="$ctx['minor'] ? 'What your parent or guardian pays' : 'What you pay'">
                 <div class="st-stack">
                     @if ($usablePackage)
                         <p style="margin:0">Uses one lesson from your package. {{ $usablePackage->creditsLeft() }} {{ \Illuminate\Support\Str::plural('lesson', $usablePackage->creditsLeft()) }} left.</p>
@@ -183,7 +212,7 @@
                                 <p class="st-small" style="margin:0">This is the whole price. Nothing is paid until your parent or guardian says yes and the tutor says yes.</p>
                             @else
                                 <p class="st-small" style="margin:0">This is the whole price. Dot.Tutor's commission comes out of the tutor's share; nothing is added to what you pay.</p>
-                                <p class="st-small" style="margin:0">You pay only after the tutor accepts{{ $ctx['minor'] ? ' and your parent or guardian approves' : '' }}. Payment is by Paystack.</p>
+                                <p class="st-small" style="margin:0">{{ $ctx['minor'] ? 'Your parent or guardian pays only after they approve and the tutor accepts.' : 'You pay only after the tutor accepts.' }} Payment is by Paystack.</p>
                             @endif
                         @endunless
                     @endif

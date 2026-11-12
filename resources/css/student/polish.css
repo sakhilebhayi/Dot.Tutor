@@ -129,6 +129,17 @@
             text-decoration: underline 2px;
             text-underline-offset: 0.25em;
         }
+
+        /* Fix round D-2310: links in the policy text thicken on hover, so the change is not colour alone. */
+        .td-legal__body a {
+            text-decoration-thickness: 1px;
+            text-underline-offset: 0.2em;
+            transition: text-decoration-thickness var(--td-dur-micro) var(--td-ease-out);
+        }
+
+        .td-legal__body a:hover {
+            text-decoration-thickness: 3px;
+        }
     }
 
     .td-legal__body {
@@ -380,8 +391,9 @@
         cursor: pointer;
     }
 
+    /* Preflight makes svg a block; inline keeps the arrow beside the last word (fix round D-2306). */
     .comms-item__open .td-icon {
-        margin-left: 0.3em;
+        display: inline-block;
         transition: transform var(--td-dur-short) var(--td-ease-out);
     }
 
@@ -408,5 +420,226 @@
         gap: var(--td-space-1);
         padding: var(--td-space-3) var(--td-space-4);
         background: var(--td-sunken);
+    }
+}
+
+/* Fix round (fix-public, D-2304): booking opens on the learner's own window, and a day's times are grouped into
+   Morning, Afternoon and Evening, three to a row on a phone. */
+@layer components {
+    .st-window {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--td-space-2) var(--td-space-4);
+        margin: 0 0 var(--td-space-4);
+        padding: var(--td-space-3) var(--td-space-4);
+        background: var(--td-sunken);
+        border-radius: var(--td-radius);
+    }
+
+    .st-window__text {
+        display: flex;
+        gap: var(--td-space-2);
+        align-items: baseline;
+        margin: 0;
+    }
+
+    .st-window__text > .td-icon {
+        flex: none;
+        align-self: center;
+    }
+
+    .st-window__switch {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        font-weight: 650;
+    }
+
+    .st-times-group + .st-times-group {
+        margin-top: var(--td-space-4);
+    }
+
+    .st-times-group__label {
+        margin: 0 0 var(--td-space-2);
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+    }
+
+    @media (max-width: 40rem) {
+        .st-times-group .st-times {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+}
+
+/* Fix round (fix-public, D-2309): a match card in two rows of about 200 px. Row one: who, verification, price and
+   the action; row two: what sets this tutor apart, the languages they teach in, and the next open times as links into
+   booking. The young step's extra filters wait behind "More choices" (D-2305). */
+@layer components {
+    .st-match {
+        gap: var(--td-space-3);
+        padding: var(--td-space-4) var(--td-space-5);
+    }
+
+    .st-match__head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--td-space-3);
+        align-items: start;
+    }
+
+    .st-match__who {
+        display: grid;
+        gap: var(--td-space-1);
+        min-width: 0;
+    }
+
+    .st-match__headline {
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .st-match__act {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--td-space-2) var(--td-space-4);
+    }
+
+    .st-match__body {
+        display: grid;
+        gap: var(--td-space-3);
+        align-items: start;
+    }
+
+    .st-match__facts {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--td-space-1) var(--td-space-3);
+    }
+
+    .st-match__times {
+        display: grid;
+        gap: var(--td-space-2);
+        align-content: start;
+    }
+
+    .st-match .td-reasons {
+        gap: var(--td-space-1);
+        font-size: var(--td-text-sm);
+        line-height: 1.45;
+    }
+
+    @media (min-width: 48rem) {
+        .st-match__head {
+            grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+
+        .st-match__act {
+            grid-column: auto;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: start;
+        }
+    }
+
+    @media (min-width: 40rem) {
+        .st-match__body {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+            column-gap: var(--td-space-5);
+        }
+
+    }
+
+    .st-slotchips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .st-slotchip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.25rem;
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        color: var(--td-ink);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: border-color var(--td-dur-micro) var(--td-ease-out), transform var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    a.st-slotchip:hover {
+        border-color: var(--td-primary);
+        transform: translateY(-1px);
+    }
+
+    a.st-slotchip:focus-visible {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .st-slotchip--plain {
+        border-style: dashed;
+        font-weight: 400;
+    }
+
+    .st-more {
+        margin-top: var(--td-space-1);
+    }
+
+    .st-more__body {
+        margin-top: var(--td-space-3);
+    }
+}
+
+/* Fix round (fix-public, D-2307): the receipt. "Items paid" sits inside the panel's padding, rows stack on phones,
+   and a printed receipt carries only the receipt. */
+@layer components {
+    .st-receipt-table caption {
+        padding: var(--td-space-4) var(--td-space-5) var(--td-space-3);
+    }
+}
+
+@media print {
+    .td-rail,
+    .td-top,
+    .td-bottom,
+    .td-skip,
+    .shell-backdrop,
+    .td-page-head__actions,
+    .td-no-print,
+    .td-toasts {
+        display: none !important;
+    }
+
+    .td-app,
+    .td-main,
+    .td-page {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .table-scroll {
+        overflow: visible !important;
     }
 }

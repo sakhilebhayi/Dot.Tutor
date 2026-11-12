@@ -24,14 +24,17 @@
     @else
         <ol class="comms-list m-0 list-none border-t border-td-line p-0" aria-label="Notifications">
             @foreach ($items as $item)
-                <li @class(['comms-item grid gap-x-5 gap-y-2 border-b border-td-line py-4 sm:grid-cols-[minmax(0,1fr)_auto]', 'comms-item--unread' => ! $item['read']])>
+                <li @class(['comms-item grid gap-x-5 gap-y-2 border-b border-td-line py-4 sm:grid-cols-[minmax(0,1fr)_auto]', 'comms-item--unread' => ($item['unread_marker'] ?? null) === 'unread'])>
                     <div class="min-w-0">
                         <p class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-td-ink-2">
-                            @unless ($item['read'])
+                            @if (($item['unread_marker'] ?? null) === 'unread')
                                 <span class="inline-flex items-center gap-1.5 font-semibold text-td-primary">
                                     <span class="inline-block size-2 rounded-full bg-td-primary" aria-hidden="true"></span>Unread
                                 </span>
-                            @endunless
+                            @elseif (($item['unread_marker'] ?? null) === 'earlier')
+                                {{-- An older update about a subject already marked Unread above: counted once (D-2306). --}}
+                                <span class="font-semibold">Earlier update</span>
+                            @endif
                             <span>{{ $item['category_label'] }}</span>
                             @if ($item['created_at'])
                                 <time datetime="{{ $item['created_at'] }}" title="{{ \App\Domain\Student\Support\Times::stamp($item['created_at'], 'j F Y, H:i') }}">
@@ -41,9 +44,10 @@
                         </p>
                         {{-- The title is the way in (R-47 polish D-2022, critic A 24: seven solid green "Open" buttons
                              competed). It submits the row's form, which marks it read and goes to the page. --}}
-                        <h2 @class(['m-0 mt-1 text-base leading-snug text-td-ink text-pretty', 'font-bold' => ! $item['read'], 'font-semibold' => $item['read']])>
+                        <h2 @class(['m-0 mt-1 text-base leading-snug text-td-ink text-pretty', 'font-bold' => ($item['unread_marker'] ?? null) === 'unread', 'font-semibold' => ($item['unread_marker'] ?? null) !== 'unread'])>
                             @if ($item['url'])
-                                <button type="submit" form="comms-open-{{ $item['id'] }}" class="comms-item__open">{{ $item['title'] }}<x-td.icon name="arrow-right" /></button>
+                                {{-- A no-break space glues the arrow to the title's last word, so it never wraps onto a line of its own (D-2306). --}}
+                                <button type="submit" form="comms-open-{{ $item['id'] }}" class="comms-item__open">{{ $item['title'] }}&nbsp;<x-td.icon name="arrow-right" /></button>
                             @else
                                 {{ $item['title'] }}
                             @endif

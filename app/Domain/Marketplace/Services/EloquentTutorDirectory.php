@@ -17,6 +17,7 @@ class EloquentTutorDirectory implements TutorDirectory
     public function approved(array $filters = []): array
     {
         return TutorProfile::query()
+            ->withExists(['qualificationRecords as has_verified_record' => fn ($q) => $q->where('status', 'verified')]) // D-2302, one statement
             ->with(['user', 'teachingScopes', 'subjects'])
             ->where('status', TutorProfileStatus::Approved->value)
             ->when($filters['subject_id'] ?? null, fn ($q, $id) => $q->whereHas('subjects', fn ($s) => $s->where('subjects.id', $id)))

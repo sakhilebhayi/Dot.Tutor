@@ -6,6 +6,7 @@ use App\Domain\Marketplace\Contracts\AcademicScopePort;
 use App\Domain\Marketplace\Contracts\BatchLanguageLookup;
 use App\Domain\Marketplace\Contracts\LanguageProfilePort;
 use App\Domain\Marketplace\Enums\OfferingType;
+use App\Domain\Marketplace\Enums\QualificationStatus;
 use App\Domain\Marketplace\Enums\ReviewStatus;
 use App\Domain\Marketplace\Enums\SeatStatus;
 use App\Domain\Marketplace\Models\TutorOffering;
@@ -64,6 +65,8 @@ class MatchingService
 
         $candidates = TutorProfile::query()
             ->with(['user', 'teachingScopes', 'availabilityWindows', 'blockedDates', 'offerings' => fn ($q) => $q->where('is_active', true)->with('subjects')])
+            // One status for "a record verified, no level yet" (D-2302), read in the same statement for every candidate.
+            ->withExists(['qualificationRecords as has_verified_record' => fn ($q) => $q->where('status', QualificationStatus::Verified->value)])
             ->where('status', TutorProfileStatus::Approved->value)
             ->whereHas('subjects', fn ($q) => $q->where('subjects.id', $need->subjectId)->where('subjects.is_active', true))
             ->when($learner, fn ($q) => $q->where(fn ($w) => $w->whereNull('user_id')->orWhere('user_id', '!=', $learner->id)))
@@ -195,7 +198,11 @@ class MatchingService
 
         // verification level
         $level = $profile->verificationLevel();
-        $verNote = $level ? $level->label().': '.$level->description() : 'Not yet verified by Dot.Tutor.';
+        $verNote = match (true) {
+            $level !== null => $level->label().': '.$level->description(),
+            TutorPresenter::hasVerifiedRecord($profile) => TutorPresenter::CHECKED_LABEL.'.',
+            default => 'Not yet verified by Dot.Tutor.',
+        };
         $terms['verification'] = $this->term('verification', $weights, $level?->matchingWeight() ?? 0.0, $verNote);
         $reasons[] = $verNote;
 

@@ -178,10 +178,21 @@
                 @if ($nextOpen === [])
                     <p style="margin:0" class="st-muted">No open hours in the next two weeks.</p>
                 @else
-                    <ul style="margin:0;padding-left:1.1rem;list-style:disc" class="st-stack st-stack--tight">
-                        @foreach ($nextOpen as $slot)<li><time datetime="{{ $slot->utc()->toIso8601String() }}">{{ Times::when($slot) }}</time></li>@endforeach
+                    {{-- Each time opens booking with it chosen (fix round D-2309), on the first lesson-type offering. --}}
+                    @php $bookOffering = $offerings->first(fn ($o) => in_array($o['type'], $lessonTypes, true)); @endphp
+                    <ul class="st-slotchips" aria-label="Next open times">
+                        @foreach ($nextOpen as $slot)
+                            @php $iso = $slot->utc()->toIso8601String(); @endphp
+                            <li>
+                                @if ($bookOffering)
+                                    <a class="st-slotchip" href="{{ route('learn.book', ['offering' => $bookOffering['id'], 'at' => $iso]) }}" aria-label="{{ $guest ? 'Sign in to book' : 'Book' }} {{ Times::when($slot) }}: {{ $bookOffering['title'] }}"><time datetime="{{ $iso }}">{{ Times::when($slot) }}</time></a>
+                                @else
+                                    <time class="st-slotchip st-slotchip--plain" datetime="{{ $iso }}">{{ Times::when($slot) }}</time>
+                                @endif
+                            </li>
+                        @endforeach
                     </ul>
-                    <p class="st-small" style="margin:var(--td-space-2) 0 0">One-hour openings. {{ Times::zoneNote() }}</p>
+                    <p class="st-small" style="margin:var(--td-space-2) 0 0">One-hour openings{{ $bookOffering ? '; choose one to book "'.$bookOffering['title'].'" at that time' : '' }}. {{ Times::zoneNote() }}</p>
                 @endif
             </x-td.panel>
 

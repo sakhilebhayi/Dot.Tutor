@@ -74,11 +74,23 @@ final class Inbox
             ->get()
             ->groupBy('notification_id');
 
-        return $list->map(function (DatabaseNotification $n) use ($deliveries) {
+        // The unread count is one per subject (collapse key), so only the newest unread row of a subject carries the
+        // "Unread" marker; its older unread updates say "Earlier update" (fix round D-2306: 3 unread, 7 markers).
+        $seenSubjects = [];
+
+        return $list->map(function (DatabaseNotification $n) use ($deliveries, &$seenSubjects) {
             $data = (array) $n->data;
             $type = (string) ($data['type'] ?? 'general');
             $category = (string) ($data['category'] ?? $this->categories->categoryFor($type));
             $expiresAt = isset($data['expires_at']) ? Carbon::parse((string) $data['expires_at']) : null;
+            $key = is_string($data['collapse_key'] ?? null) && $data['collapse_key'] !== '' ? $data['collapse_key'] : null;
+            $marker = null;
+            if ($n->read_at === null) {
+                $marker = $key !== null && isset($seenSubjects[$key]) ? 'earlier' : 'unread';
+                if ($key !== null) {
+                    $seenSubjects[$key] = true;
+                }
+            }
 
             return [
                 'id' => $n->id,
@@ -91,6 +103,7 @@ final class Inbox
                 'url' => self::localUrl(isset($data['url']) ? (string) $data['url'] : null),
                 'calendar_url' => isset($data['ics_session_id']) ? route('comms.calendar.lesson', ['session' => (int) $data['ics_session_id']], false) : null,
                 'read' => $n->read_at !== null,
+                'unread_marker' => $marker,
                 'read_at' => $n->read_at?->toIso8601String(),
                 'created_at' => $n->created_at?->toIso8601String(),
                 'expired' => $expiresAt !== null && $expiresAt->isPast(),

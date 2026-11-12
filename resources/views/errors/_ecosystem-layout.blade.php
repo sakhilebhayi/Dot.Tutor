@@ -34,6 +34,8 @@
     <title>{{ $code }}: @yield('title') | Dot.Tutor</title>
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     @if ($hasVite)
+        {{-- A skipped page cross-fade (D-2311) is not an error; same guard as the shared head. --}}
+        <script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>(function(){function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});})();</script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
@@ -48,20 +50,14 @@
                         <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                         <span>Dot.Tutor</span>
                     </a>
-                    {{-- The same destinations as every public page (R-47 polish D-2016), written out so this page needs
-                         no session or database. --}}
-                    <nav class="td-public-nav" aria-label="Dot.Tutor">
-                        <a href="{{ url('/#how') }}">How matching works</a>
-                        <a href="{{ url('/#rooms') }}">Rooms by level</a>
-                        <a href="{{ url('/#languages') }}">Languages</a>
-                        <a href="{{ url('/#teach') }}">Teach</a>
-                    </nav>
+                    @include('layouts.partials.public-nav')
                     <div class="td-public-top__actions">
                         @if ($signedIn && Route::has('dashboard'))
                             <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}"><span>Your desk</span></a>
                         @elseif (Route::has('login'))
                             <a class="td-btn td-btn--primary" href="{{ route('login') }}"><span>Sign in</span></a>
                         @endif
+                        @include('layouts.partials.public-menu-button')
                     </div>
                 </div>
             </header>

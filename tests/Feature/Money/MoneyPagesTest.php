@@ -68,6 +68,24 @@ class MoneyPagesTest extends TestCase
         $this->actingAs($l2)->get("/money/receipts/{$second->id}")->assertOk()->assertSee('VAT number 4123456789')->assertSee('Includes VAT at 15%')->assertSee("R39.13", false);
     }
 
+    public function test_the_receipt_prints_through_a_button_stacks_on_phones_and_names_the_seller_only_when_configured(): void
+    {
+        // Fix round D-2307: no legal name configured, so nothing stands in for one.
+        config(['money.operator.legal_name' => null]);
+        [$session, $learner] = $this->lesson();
+        $this->paidLessonOrder($session, $learner);
+        $receipt = Receipt::firstOrFail();
+        $this->actingAs($learner)->get("/money/receipts/{$receipt->id}")->assertOk()
+            ->assertSee('data-td-print', false)->assertSee('Print or save as PDF')->assertSee('data-td-stack', false)
+            ->assertSee('data-stack="key">Paid', false)->assertDontSee('Sold by')->assertDontSee('BluePin');
+
+        config(['money.operator.legal_name' => 'Example Learning (Pty) Ltd']);
+        [$s2, $l2] = $this->lesson();
+        $this->paidLessonOrder($s2, $l2);
+        $second = Receipt::where('id', '!=', $receipt->id)->firstOrFail();
+        $this->actingAs($l2)->get("/money/receipts/{$second->id}")->assertOk()->assertSee('Sold by <strong>Example Learning (Pty) Ltd</strong>', false);
+    }
+
     public function test_tutor_earnings_page_and_finance_page_access(): void
     {
         [$session, $learner, $tutor] = $this->lesson();

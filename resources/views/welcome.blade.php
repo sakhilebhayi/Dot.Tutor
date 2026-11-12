@@ -77,7 +77,7 @@
                 <p class="lp-lede">We match tutors by subject, level and language, and show you why.</p>
                 <div class="lp-actions">
                     <x-td.button variant="primary" size="lg" :href="$findHref" icon-end="arrow-right">Find a tutor</x-td.button>
-                    <x-td.button size="lg" :href="$teachHref">Teach on Dot.Tutor</x-td.button>
+                    <x-td.button size="lg" :href="$teachHref" icon-end="arrow-right">Teach on Dot.Tutor</x-td.button>
                 </div>
                 <p class="lp-note">Sign in with your InfoDot account. Learners under 18 join with a parent or guardian.</p>
             </div>
@@ -192,7 +192,7 @@
                 <div class="lp-sheet__text">
                     <h3 id="sheet-teach" class="lp-sheet__title">Tutors build a practice</h3>
                     <p>Strong students tutor the grades behind them. Qualified teachers and lecturers run a business: lessons, groups, courses and study material, with bookings and earnings in one workspace.</p>
-                    <x-td.button :href="$teachHref" variant="primary">Apply to teach</x-td.button>
+                    <x-td.button :href="$teachHref" variant="primary" icon-end="arrow-right">Apply to teach</x-td.button>
                 </div>
                 <div class="lp-sheet__ladder" data-ui>
                     <p class="lp-sheet__ladder-head">Verification is earned with evidence, and shown exactly</p>
@@ -250,8 +250,8 @@
                 <h2 id="close-title" class="lp-h2">Bring the question you're stuck on</h2>
                 <p>Sign in with InfoDot, say what you need, and see who can teach it.</p>
                 <div class="lp-actions">
-                    <x-td.button variant="primary" size="lg" :href="$findHref">Find a tutor</x-td.button>
-                    <x-td.button size="lg" :href="$teachHref">Teach on Dot.Tutor</x-td.button>
+                    <x-td.button variant="primary" size="lg" :href="$findHref" icon-end="arrow-right">Find a tutor</x-td.button>
+                    <x-td.button size="lg" :href="$teachHref" icon-end="arrow-right">Teach on Dot.Tutor</x-td.button>
                 </div>
             </div>
         </div>

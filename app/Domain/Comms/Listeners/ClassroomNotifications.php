@@ -41,7 +41,7 @@ final class ClassroomNotifications
             $key = 'lesson:'.$session->id.':starting:'.$session->starts_at->timestamp;
             $what = $this->m->lessonWhat($session);
             $opens = CarbonImmutable::instance($this->access->opensAt($session));
-            $open = fn (User $reader) => $opens->isPast() ? 'The classroom is open.' : 'The classroom opens at '.$this->time($opens, $reader).'.';
+            $open = fn (User $reader) => $opens->isPast() ? 'The classroom is open.' : 'The classroom opens '.$this->dayAndTime($opens, $reader).'.';
             $data = $this->data($session, 'Open the classroom');
             $url = route('classroom.show', $session, false);
 
@@ -172,6 +172,19 @@ final class ClassroomNotifications
     {
         // Pointless once the lesson is over: a copy held by quiet hours or retries past the end is not sent.
         return ['session_id' => $session->id, 'expires_at' => $session->endsAt()->toIso8601String(), 'action_label' => $label];
+    }
+
+    /**
+     * "at 09:50 SAST" today, "on Sun 15 Nov at 09:50 SAST" on another day, in the reader's zone (fix round D-2312:
+     * an opening time with no day read as today for a lesson days away).
+     */
+    private function dayAndTime(\DateTimeInterface $at, User $reader): string
+    {
+        $when = $this->m->when(CarbonImmutable::instance($at), $reader);
+        $today = $this->m->when(CarbonImmutable::now(), $reader);
+        $day = fn (string $w) => substr($w, 0, (int) strpos($w, ' at '));
+
+        return $day($when) === $day($today) ? 'at '.$this->time($at, $reader) : 'on '.$when;
     }
 
     private function time(\DateTimeInterface $at, User $reader): string

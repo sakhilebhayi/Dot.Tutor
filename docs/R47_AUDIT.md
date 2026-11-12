@@ -342,3 +342,14 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Ops rail (ops/65, 68, 75) | U | Last item under the footer at 900 px | Fits; scrolls to the current item (D-2404) |
 | Incident (ops/70) | U | No reported person, no protective action | Protect first with real Moderation actions and a live deadline (D-2405) |
 | Audit history (ops/68) | C | "User 3", "Reason: tutor_ended" | Names and phrases (D-2407) |
+### fix-public (fix round, 2026-11-13)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Public header under 56rem | Usability, a11y | The four section links were `display:none` with no other route | Menu button with a focus trap; scrolling row without script (D-2300) |
+| `/login` | Honesty | Pages said "Sign in with InfoDot"; the page had only a password form and nothing for new people | InfoDot launch link only when configured; "New here?" line (D-2301) |
+| `TutorPresenter::verification` | Wrong data | "Not yet verified" whenever no level was set, even with a record "Verified by Dot.Tutor" | One "checked, level pending" state (D-2302) |
+| `BookController::show` | Wrong times | The parsed request's window was dropped; every slot from 06:00 listed | Window carried and applied, "Show all times" (D-2304) |
+| `Comms\Inbox::present` | Contradiction | Count per subject, marker per row | Marker per subject (D-2306) |
+| `GuardianSafety` | Wrong data | Passed deadlines worded as future promises | Overdue / escalated wording from the record (D-2308) |
+
