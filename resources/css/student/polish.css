@@ -391,7 +391,13 @@
         cursor: pointer;
     }
 
+    .comms-item__tail {
+        white-space: nowrap;
+    }
+
+    /* Preflight makes svg a block; inline keeps the arrow beside the last word (fix round D-2306). */
     .comms-item__open .td-icon {
+        display: inline-block;
         margin-left: 0.3em;
         transition: transform var(--td-dur-short) var(--td-ease-out);
     }
