@@ -3,6 +3,7 @@
 namespace App\Domain\Community\Services;
 
 use App\Domain\Academic\Models\SubjectOffering;
+use App\Domain\Community\Events\JoinRequested;
 use App\Domain\Community\Models\Room;
 use App\Domain\Community\Models\RoomMember;
 use App\Domain\Community\Support\CommunityRefusal;
@@ -147,6 +148,7 @@ class TutorRooms
 
         if ($room->join_rule === Room::APPROVAL) {
             $member = $this->upsert($room, $user, RoomMember::PENDING);
+            JoinRequested::dispatch(JoinRequested::ROOM, $room->id, $user->id, $member->id);
 
             return ['status' => 'pending', 'member' => $member, 'message' => 'Your request is with the tutor.'];
         }
