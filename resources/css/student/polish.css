@@ -190,7 +190,16 @@
 /* Booking: a strip of days, then one day's times (D-2017). The chosen day radio shows its panel through :has();
    a browser without :has lists every day, which still works. */
 @layer components {
+    /* A fieldset grows to its widest content unless told otherwise; the day strip scrolls inside it instead. */
+    .st-picker {
+        min-inline-size: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
     .st-daystrip {
+        scrollbar-width: thin;
         display: flex;
         gap: var(--td-space-2);
         overflow-x: auto;
