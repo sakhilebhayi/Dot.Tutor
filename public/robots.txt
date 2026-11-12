@@ -1,2 +1,11 @@
 User-agent: *
-Disallow:
+Disallow: /learn
+Disallow: /teach
+Disallow: /ops
+Disallow: /money
+Disallow: /api/
+Disallow: /guardian
+Disallow: /account
+Disallow: /my/
+
+Sitemap: https://tutor.infodot.co.za/sitemap.xml

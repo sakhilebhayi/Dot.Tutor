@@ -38,6 +38,7 @@
     @endif
 </head>
 <body class="td-public">
+    <a class="td-skip" href="#main-content">Skip to content</a>
     <div class="td-guest">
         <div>
             <div class="td-guest-band" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -47,11 +48,19 @@
                         <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                         <span>Dot.Tutor</span>
                     </a>
+                    {{-- The same destinations as every public page (R-47 polish D-2016), written out so this page needs
+                         no session or database. --}}
+                    <nav class="td-public-nav" aria-label="Dot.Tutor">
+                        <a href="{{ url('/#how') }}">How matching works</a>
+                        <a href="{{ url('/#rooms') }}">Rooms by level</a>
+                        <a href="{{ url('/#languages') }}">Languages</a>
+                        <a href="{{ url('/#teach') }}">Teach</a>
+                    </nav>
                     <div class="td-public-top__actions">
                         @if ($signedIn && Route::has('dashboard'))
-                            <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}">Your desk</a>
+                            <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}"><span>Your desk</span></a>
                         @elseif (Route::has('login'))
-                            <a class="td-btn" href="{{ route('login') }}">Sign in</a>
+                            <a class="td-btn td-btn--primary" href="{{ route('login') }}"><span>Sign in</span></a>
                         @endif
                     </div>
                 </div>
@@ -73,7 +82,8 @@
                 </div>
             </div>
 
-            @if (! empty($discover))
+            {{-- A page that was not found offers this site's own routes, not the other Dot platforms (critic A 22). --}}
+            @if (! empty($discover) && ! View::hasSection('local-routes'))
                 <nav class="err__eco" aria-labelledby="eco-title">
                     <h2 id="eco-title" class="err__eco-title">While you're here, the rest of the Dot Ecosystem ({{ count($discover) }})</h2>
                     <ul>
@@ -85,14 +95,7 @@
             @endif
         </main>
 
-        <footer class="td-public-foot">
-            <div class="td-wrap td-public-foot__legal" style="border-top:0">
-                <span>&copy; {{ date('Y') }} Dot.Tutor.</span>
-                @if (Route::has('contact'))
-                    <a href="{{ route('contact') }}">Contact support</a>
-                @endif
-            </div>
-        </footer>
+        @include('layouts.partials.public-foot', ['credits' => []])
     </div>
 </body>
 </html>

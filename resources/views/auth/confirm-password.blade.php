@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Confirm your password">
     <x-authentication-card title="Confirm your password">
         <x-slot name="logo">
             <x-authentication-card-logo />

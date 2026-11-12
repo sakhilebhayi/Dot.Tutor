@@ -75,6 +75,7 @@ class RouteAuthorizationMapTest extends TestCase
         'marketplace.find' => 'public tutor search: approved tutors only, guests rate-limited (tutor-guest-search)',
         'match.search' => 'the find form\'s redirect to /find-a-tutor (reads only the chosen level; rate-limited)',
         'marketplace.tutors.show' => 'an approved tutor\'s public storefront (404 otherwise; contact details hidden from guests)',
+        'sitemap' => 'sitemap.xml: public pages and approved storefronts only (D-2014)',
         'marketplace.tutors.photo' => 'an approved tutor\'s profile photo (404 for anyone else\'s unapproved profile)',
         'boost.browser-logs' => 'Laravel Boost, development only (not installed with --no-dev)',
     ];

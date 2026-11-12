@@ -17,7 +17,7 @@
             @auth
                 <x-td.button variant="primary" :href="route('dashboard')">Your desk</x-td.button>
             @else
-                @if (Route::has('login'))
+                @if (Route::has('login') && ! request()->routeIs('login'))
                     <x-td.button variant="primary" :href="route('login')">Sign in</x-td.button>
                 @endif
             @endauth
