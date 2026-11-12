@@ -107,7 +107,7 @@ class GuardianSafety
         [$status, $tone, $next] = match (true) {
             $incident !== null && $incident->status === Incident::OPEN => [
                 'Being looked at urgently', 'danger',
-                'A safeguarding officer must take this on'.$this->by($incident->respond_by).'. If nobody does, it is raised to more senior staff automatically.',
+                $this->openIncidentNext($incident),
             ],
             $incident !== null && $incident->status === Incident::ACKNOWLEDGED => [
                 'A safeguarding officer is handling it', $urgent ? 'danger' : 'warning',
@@ -122,11 +122,15 @@ class GuardianSafety
             ],
             $r->status === Report::ESCALATED => [
                 'Being looked at urgently', 'danger',
-                'It was passed to a senior safeguarding officer'.$this->by($r->respond_by).'.',
+                $r->respond_by?->isPast()
+                    ? 'It was passed to a senior safeguarding officer, who is overdue: they should have looked at it'.$this->by($r->respond_by).'.'
+                    : 'It was passed to a senior safeguarding officer'.$this->by($r->respond_by).'.',
             ],
             $r->status === Report::OPEN => [
                 'Waiting for a safety officer', $urgent ? 'danger' : 'warning',
-                'A safety officer is due to look at it'.$this->by($r->respond_by).'.',
+                $r->respond_by?->isPast()
+                    ? 'Overdue: a safety officer should have looked at it'.$this->by($r->respond_by).'.'
+                    : 'A safety officer is due to look at it'.$this->by($r->respond_by).'.',
             ],
             $r->status === Report::ACTIONED => [
                 'Acted on', 'success', 'A safety officer reviewed it and took action.',
@@ -173,7 +177,7 @@ class GuardianSafety
     {
         $open = in_array($incident->status, self::OPEN_INCIDENT, true);
         [$status, $next] = match ($incident->status) {
-            Incident::OPEN => ['Being looked at urgently', 'A safeguarding officer must take this on'.$this->by($incident->respond_by).'.'],
+            Incident::OPEN => ['Being looked at urgently', $this->openIncidentNext($incident)],
             Incident::ACKNOWLEDGED => ['A safeguarding officer is handling it', 'The officer looks into what happened and decides what to do. This page shows when the case is closed.'],
             Incident::REFERRED => ['Referred outside Dot.Tutor', 'A safeguarding officer referred this to an outside authority, for example the police or social services.'],
             default => ['Closed', 'A safeguarding officer closed the case.'],
@@ -226,6 +230,33 @@ class GuardianSafety
             'open' => $active,
             'actions' => [],
         ];
+    }
+
+    /**
+     * What happens next on a case nobody has taken on yet, said as what is true now (fix round D-2308): a deadline
+     * still ahead is a promise; one that passed is "overdue"; an automatic escalation says when it happened.
+     */
+    private function openIncidentNext(Incident $incident): string
+    {
+        $due = $incident->respond_by;
+        $escalatedAt = (int) $incident->escalation_level > 0
+            ? $incident->events()->where('type', 'escalated')->reorder()->orderByDesc('id')->value('created_at')
+            : null;
+        $raised = $escalatedAt !== null
+            ? 'Nobody took it on in time, so it was raised to more senior staff at '.$this->clock(\Illuminate\Support\Carbon::parse($escalatedAt)).'. '
+            : '';
+
+        if ($due !== null && $due->isPast()) {
+            return $raised.'Overdue: a safeguarding officer should have taken this on'.$this->by($due).'. It is being raised to more senior staff now.';
+        }
+
+        return $raised.($raised === '' ? 'A safeguarding officer must take this on' : 'A senior safeguarding officer must take it on')
+            .$this->by($due).'.'.($raised === '' ? ' If nobody does, it is raised to more senior staff automatically.' : '');
+    }
+
+    private function clock(CarbonInterface $at): string
+    {
+        return $at->copy()->timezone(config('tutor.timezone'))->format('H:i \o\n D j M');
     }
 
     private function by(?CarbonInterface $at): string

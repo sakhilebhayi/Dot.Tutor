@@ -34,17 +34,24 @@
             @endforelse
         </x-td.panel>
 
+        @php
+            // A report already shown as an urgent banner above is not listed a second time (fix round D-2308).
+            $urgentKeys = array_column($c['urgent'], 'key');
+            $otherSafety = array_values(array_filter($c['safety'], fn ($row) => ! in_array($row['key'], $urgentKeys, true)));
+        @endphp
         <x-td.panel title="Reports and safety notices" flush>
             @if ($c['safety'] === [])
                 <x-td.state kind="success" title="No reports and no warnings" />
+            @elseif ($otherSafety === [])
+                <p class="m-0 px-5 pt-4 text-td-ink-2">{{ count($urgentKeys) === 1 ? 'The report above is the only one.' : 'The reports above are the only ones.' }}</p>
             @else
                 <ul class="gd-rows">
-                    @foreach (array_slice($c['safety'], 0, 3) as $row)
+                    @foreach (array_slice($otherSafety, 0, 3) as $row)
                         @include('guardian.partials.safety-row', ['row' => $row])
                     @endforeach
                 </ul>
             @endif
-            <div class="px-5 py-4"><x-td.button :href="route('safety.guardian.dashboard')" variant="quiet" icon-end="arrow-right">{{ count($c['safety']) > 3 ? 'All '.count($c['safety']).' on the Safety page' : 'Open the Safety page' }}</x-td.button></div>
+            <div class="px-5 py-4"><x-td.button :href="route('safety.guardian.dashboard')" variant="quiet" icon-end="arrow-right">{{ count($otherSafety) > 3 ? 'All '.count($c['safety']).' on the Safety page' : 'Open the Safety page' }}</x-td.button></div>
         </x-td.panel>
 
         <x-td.panel title="Upcoming lessons" flush>
