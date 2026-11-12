@@ -35,8 +35,10 @@
 {{-- No font preloads (R-47 D-1613): on 3G the two preloaded fonts (87 KB) competed with the render-blocking stylesheet
      and held first paint back by 0.3 s (Fast 3G) to 1.1 s (Slow 3G). The faces load after the stylesheet with
      font-display: swap, so text shows at once in the fallback face. --}}
-{{-- Applies a theme the person chose on this device before first paint (the design-system theme script keeps it). --}}
-<script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');try{var t=localStorage.getItem('td-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}</script>
+{{-- Applies a theme the person chose on this device before first paint (the design-system theme script keeps it).
+     The page cross-fade (shells.css, D-2311) is skipped when a navigation interrupts it or the tab is hidden; its
+     promises are caught here so a skipped fade is not reported as an error. --}}
+<script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');try{var t=localStorage.getItem('td-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);</script>
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @if ($livewire ?? false)
     @livewireStyles
