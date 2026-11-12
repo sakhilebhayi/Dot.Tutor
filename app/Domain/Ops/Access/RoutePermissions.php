@@ -50,7 +50,6 @@ final class RoutePermissions
         'ops.reviews.bookings' => [P::BOOKINGS_VIEW],
         'ops.reviews.booking' => [P::BOOKINGS_VIEW],
         'ops.academic' => [P::ACADEMIC_MANAGE],
-        'ops.academic.*' => [P::ACADEMIC_MANAGE],
         'ops.subjects' => [P::ACADEMIC_MANAGE],
         'ops.languages' => [P::ACADEMIC_MANAGE],
         'ops.payments.refund' => [P::FINANCE_REFUND],

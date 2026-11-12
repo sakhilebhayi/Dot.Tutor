@@ -9,6 +9,7 @@ use App\Domain\Ops\Http\Middleware\OperatorRouteGuard;
 use App\Domain\Ops\Support\OpsShellNavigation;
 use App\Models\User;
 use App\View\ShellNavigation;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -31,7 +32,13 @@ class TutorOpsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->app->make(Router::class)->pushMiddlewareToGroup('web', OperatorRouteGuard::class);
+        // Before route-model binding, so a refused role learns nothing about which records exist.
+        $router = $this->app->make(Router::class);
+        $web = $router->getMiddlewareGroups()['web'] ?? [];
+        $at = array_search(SubstituteBindings::class, $web, true);
+        $router->middlewareGroup('web', $at === false
+            ? [...$web, OperatorRouteGuard::class]
+            : [...array_slice($web, 0, $at), OperatorRouteGuard::class, ...array_slice($web, $at)]);
 
         // For someone who holds roles, the domains' "any platform operator" gates answer from the role. A legacy
         // full-access operator (no roles yet) and everyone else fall through to the domain's own rule.
