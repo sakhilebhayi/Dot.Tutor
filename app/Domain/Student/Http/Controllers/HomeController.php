@@ -48,6 +48,7 @@ class HomeController extends Controller
             'work' => $work,
             'toReview' => $toReview,
             'insights' => $agenda->insights($user),
+            'questions' => $agenda->unansweredInMyRooms($user),
             'aiConfigured' => app()->bound(AiGateway::class) ? app(AiGateway::class)->configured() : false,
         ]);
     }

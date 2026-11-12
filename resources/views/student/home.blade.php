@@ -163,6 +163,26 @@
                 @endif
             </x-td.panel>
 
+            @if (Route::has('rooms.index'))
+                <x-td.panel title="Questions waiting in your rooms" flush>
+                    <x-slot:actions><x-td.button variant="quiet" size="sm" :href="route('rooms.index')">My rooms</x-td.button></x-slot:actions>
+                    @if ($questions->isEmpty())
+                        <x-td.state kind="empty" title="No unanswered questions">Questions from classmates in your rooms show here when nobody has answered yet. Helping someone is a good way to learn.</x-td.state>
+                    @else
+                        <ul class="st-list">
+                            @foreach ($questions as $question)
+                                <li class="st-row">
+                                    <div>
+                                        <p class="st-row__title"><a href="{{ route('rooms.posts.show', $question) }}">{{ $question->title ?: \Illuminate\Support\Str::limit($question->body, 80) }}</a></p>
+                                        <p class="st-row__meta">{{ $question->room?->displayName() ?? 'Room' }} · {{ Times::when($question->created_at) }}</p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </x-td.panel>
+            @endif
+
             <x-td.panel title="What your answers show">
                 @if ($insights['sentences'] === [])
                     <p style="margin:0">Answer a few practice questions or a quiz and this says what is going well and what needs more practice, topic by topic.</p>

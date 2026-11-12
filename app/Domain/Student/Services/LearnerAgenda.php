@@ -113,6 +113,29 @@ class LearnerAgenda
             ])->values()->all();
     }
 
+    /**
+     * Questions in rooms this learner belongs to that nobody has answered yet (community domain), newest first.
+     * Empty when the community domain is not installed.
+     *
+     * @return Collection<int, \App\Domain\Community\Models\Post>
+     */
+    public function unansweredInMyRooms(User $user, int $limit = 5): Collection
+    {
+        if (! class_exists(\App\Domain\Community\Models\Post::class) || ! class_exists(\App\Domain\Community\Models\RoomMember::class)) {
+            return collect();
+        }
+        $post = \App\Domain\Community\Models\Post::class;
+        $roomIds = \App\Domain\Community\Models\RoomMember::query()->where('user_id', $user->id)->where('status', 'active')->pluck('room_id')->all();
+
+        return $post::query()->with('room')
+            ->whereIn('room_id', $roomIds ?: [0])
+            ->whereNull('parent_id')->where('kind', $post::QUESTION)->where('status', $post::VISIBLE)
+            ->whereNull('resolved_at')->where('author_id', '!=', $user->id)
+            ->whereDoesntHave('children', fn ($q) => $q->where('kind', $post::ANSWER)->where('status', $post::VISIBLE))
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->limit($limit)->get();
+    }
+
     /** @return array{label: string, based_on: array<string, mixed>, sentences: list<string>} */
     public function insights(User $user): array
     {
