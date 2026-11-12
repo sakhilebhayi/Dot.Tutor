@@ -2,6 +2,9 @@
 
 namespace App\Domain\Comms;
 
+use App\Domain\Classroom\Events\ClassroomOpened;
+use App\Domain\Classroom\Events\LessonStartingSoon;
+use App\Domain\Classroom\Events\LessonSummaryPublished;
 use App\Domain\Comms\Calendar\LessonCalendar;
 use App\Domain\Comms\Console\DeliverCommand;
 use App\Domain\Comms\Console\PruneCommand;
@@ -11,6 +14,8 @@ use App\Domain\Comms\Contracts\MinorRouting;
 use App\Domain\Comms\Events\StudyGroupUpdated;
 use App\Domain\Comms\Listeners\AccountNotifications;
 use App\Domain\Comms\Listeners\BookingEventsObserver;
+use App\Domain\Comms\Listeners\ClassroomNotifications;
+use App\Domain\Comms\Listeners\CommunityNotifications;
 use App\Domain\Comms\Listeners\LearningNotifications;
 use App\Domain\Comms\Listeners\MoneyNotifications;
 use App\Domain\Comms\Listeners\SourceNotificationListener;
@@ -19,6 +24,9 @@ use App\Domain\Comms\Notify\NotifyClient;
 use App\Domain\Comms\Sms\NullSmsSender;
 use App\Domain\Comms\Sms\SmsSender;
 use App\Domain\Comms\Support\SafetyMinorRouting;
+use App\Domain\Community\Events\AnswerPosted;
+use App\Domain\Community\Events\JoinRequested;
+use App\Domain\Community\Events\QuestionResolved;
 use App\Domain\Learning\Models\Assignment;
 use App\Domain\Learning\Models\Enrolment;
 use App\Domain\Learning\Models\LibraryResource;
@@ -98,6 +106,14 @@ class TutorCommsServiceProvider extends ServiceProvider
         Event::listen(OrderPaid::class, [MoneyNotifications::class, 'orderPaid']);
         Event::listen(OrderRefunded::class, [MoneyNotifications::class, 'orderRefunded']);
         Event::listen(StudyGroupUpdated::class, [StudyGroupNotifications::class, 'handle']);
+        // Classroom (D-812). ClassroomEnded and FollowUpAssigned are deliberately not listened to (D-1832, D-1833).
+        Event::listen(LessonStartingSoon::class, [ClassroomNotifications::class, 'lessonStartingSoon']);
+        Event::listen(ClassroomOpened::class, [ClassroomNotifications::class, 'classroomOpened']);
+        Event::listen(LessonSummaryPublished::class, [ClassroomNotifications::class, 'lessonSummaryPublished']);
+        // Community rooms and Q&A (dispatched after commit).
+        Event::listen(AnswerPosted::class, [CommunityNotifications::class, 'answerPosted']);
+        Event::listen(QuestionResolved::class, [CommunityNotifications::class, 'questionResolved']);
+        Event::listen(JoinRequested::class, [CommunityNotifications::class, 'joinRequested']);
 
         $after = fn (string $class, string $method) => function ($model) use ($class, $method) {
             DB::afterCommit(fn () => app($class)->{$method}($model));
