@@ -169,4 +169,18 @@
         display: block;
         font-size: var(--td-text-sm);
     }
+
+    /* Chart text on phones (D-2211): the SVG scales down to about half, so its labels are set in larger user units to
+       land at 11 to 12 px on screen, and the x axis keeps every fourth label so they never collide. */
+    @media (max-width: 40rem) {
+        svg .td-chart__tick,
+        svg .td-chart__label,
+        svg .td-chart__value {
+            font-size: 22px;
+        }
+
+        svg .td-chart__label--thin {
+            display: none;
+        }
+    }
 }
