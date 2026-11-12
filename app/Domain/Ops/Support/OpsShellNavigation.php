@@ -23,6 +23,9 @@ class OpsShellNavigation extends ShellNavigation
 
         $user = request()->user();
         $access = app(OpsAccess::class);
+        if (! $access->isOperator($user)) {
+            return $sections; // Shells never authorise; routes do. Only an operator's rail is narrowed by role.
+        }
         $routeFor = $this->hrefToRoute();
 
         return collect($sections)
