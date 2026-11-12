@@ -59,8 +59,8 @@
     .ops-columns__bar { fill: color-mix(in oklch, var(--td-primary) 55%, var(--td-surface)); }
     .ops-columns__bar--current { fill: var(--td-primary); }
     .ops-columns__grid { stroke: var(--td-line); stroke-width: 1; }
-    .ops-columns__axis { fill: var(--td-ink-2); font-size: 12px; font-variant-numeric: tabular-nums; }
-    .ops-columns__value { fill: var(--td-ink); font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .ops-columns__axis { fill: var(--td-ink-2); font-size: var(--td-text-xs); font-variant-numeric: tabular-nums; }
+    .ops-columns__value { fill: var(--td-ink); font-size: var(--td-text-xs); font-weight: 650; font-variant-numeric: tabular-nums; }
     .ops-columns__hit { fill: transparent; }
     .ops-columns__hit:hover + .ops-columns__bar, .ops-columns g:hover .ops-columns__bar { fill: var(--td-primary-hover); }
 
