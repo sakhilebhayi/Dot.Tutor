@@ -4,7 +4,6 @@
             <x-authentication-card-logo />
         </x-slot>
 
-        <h1 class="mb-4 font-display text-xl font-semibold text-[var(--ink)]">Sign in</h1>
 
         <x-validation-errors class="mb-4" />
 

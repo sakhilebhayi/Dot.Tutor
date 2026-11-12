@@ -4,7 +4,6 @@
             <x-authentication-card-logo />
         </x-slot>
 
-        <h1 class="mb-4 font-display text-xl font-semibold text-[var(--ink)]">Confirm your password</h1>
 
         <div class="mb-4 text-sm text-[var(--moss)]">
             {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
