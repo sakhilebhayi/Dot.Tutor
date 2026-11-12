@@ -36,10 +36,18 @@ Send one yourself: `app(\App\Domain\Comms\NotificationRouter::class)->send(new C
 | Qualification or level decision (`VerificationDecision`) | tutor | `tutor_verification_decided` |
 | Report reviewed (`Report` to actioned/dismissed) | reporter (and guardians); never what happened to the other person | `report_updated` (safety) |
 | Account warned or suspended; safeguarding incident (existing notices) | the person and a minor's guardians; operators (urgent) | `account_warned`, `incident_alert` (safety) |
-| `StudyGroupUpdated` (community dispatches it) | members except the actor; collapses per group | `study_group_update` (community) |
+| `StudyGroupUpdated` (community dispatches it from `StudyGroups::schedule` and `cancelSession` for group sessions) | members except the actor; collapses per group | `study_group_update` (community) |
+| `LessonStartingSoon` (classroom:sweep, about 15 min before) | tutor and learner(s), classroom link; no guardian copy (as the 1 h reminder); shares the booking's collapse key with the reminders (D-1830) | `lesson_starting` (reminders) |
+| `ClassroomOpened` | the others in the lesson: learners when the tutor walked in, the tutor (and other group learners) when a learner did; never the opener (D-1831) | `classroom_open` (lessons) |
+| `ClassroomEnded` | nobody (deliberate: `lesson_completed` and the summary say it, D-1832) | none |
+| `LessonSummaryPublished` | learners and a minor's guardians, linking to `classroom.after`; not the tutor (D-1833) | `lesson_summary` (lessons) |
+| `FollowUpAssigned` | nobody from this event: the `Assignment` observer's `assignment_set` is the one notice (D-1834) | (`assignment_set`) |
+| `Community\Events\AnswerPosted` (a visible answer, or a held one when released) | the question's author, unless they answered themselves; one unread notice per question (D-1835) | `community_answer` (community) |
+| `Community\Events\QuestionResolved` (answer accepted, or marked resolved) | the accepted answer's author unless they acted; the asker when a tutor resolved it (D-1836) | `community_answer_accepted`, `community_question_resolved` (community) |
+| `Community\Events\JoinRequested` (approval rule: study group or free tutor room) | the organiser or the room's tutor; one unread notice per group or room with the waiting count (D-1837) | `community_join_request` (community) |
 | Product news (none is sent today) | adults only, off by default | `product_update` (updates, marketing) |
 
-Tests: `BookingNotificationsTest`, `DomainSourcesTest`, `RemindersAndCalendarTest`.
+Tests: `BookingNotificationsTest`, `DomainSourcesTest`, `RemindersAndCalendarTest`, `ClassroomNotificationsTest`, `CommunityNotificationsTest`.
 
 ## 3. Channels
 

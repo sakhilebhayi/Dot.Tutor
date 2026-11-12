@@ -29,7 +29,7 @@ Owner: community agent (decisions D-700 to D-716). Code: `app/Domain/Community/*
 | Meaningful indicators only (no likes, followers, leaderboards) | Built | asserted in the Q&A test and on the My rooms screen |
 | Polling with ETag and 304 | Built | `test_room_activity_answers_304_while_nothing_changed` |
 | Live discussion (real-time chat) | Not built. Polling shows "new activity" every 30 s; no websockets on the host. Room conversations exist through safety's messaging (rooms are now found by `RoomDirectory`) | n/a |
-| Notifications of answers and replies | Not built (comms domain, wave 2) | n/a |
+| Notifications of answers, accepted answers, resolved questions, join requests and group sessions | Built (qa, D-1835 to D-1839): community raises `AnswerPosted`, `QuestionResolved`, `JoinRequested` (after commit) and `StudyGroupUpdated`; comms sends. Replies under discussions are not announced | `tests/Feature/Comms/CommunityNotificationsTest` |
 
 ## 2. Rooms
 
@@ -101,7 +101,7 @@ Screens, in the learner shell with the ds kit: My rooms, level hub, subject room
 - **marketplace**: reads `TutorDirectory::approved` and the `marketplace.find` route; reads `TutorProfile::isApproved()` to know who is a tutor.
 - **learning**: reads published `LibraryResource` and `Course` rows and `LibraryService::canSee`; links to `learning.library.*` and `learning.courses.show`.
 - **tutor UI (D-1200)**: community registers the route name `teach.rooms` (the workspace nav already points at it). If the tutor UI agent builds its own page under that name, keep one and link the other.
-- **comms (D-1000)**: no notifications are sent for answers, acceptances, approvals or group sessions yet; events to hook: post created (answer), question resolved, group join request, session scheduled.
+- **comms (D-1000)**: answers, acceptances, resolutions, join requests (approval rule) and group sessions (scheduled, cancelled) are announced through the events in `app/Domain/Community/Events` and `Comms\Events\StudyGroupUpdated` (D-1835 to D-1839). Not announced: replies under discussions, tutor-room workshops.
 
 ## 11. Owner items and limits
 
