@@ -10,6 +10,7 @@ import { initShelf } from './shelf.js';
 import { initConfirm } from './confirm.js';
 import { initTableStacks } from './table-stack.js';
 import { initTabOverflow } from './tabs-overflow.js';
+import { initCountdowns } from './countdown.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -22,6 +23,7 @@ function boot(root = document) {
     initConfirm();
     initTableStacks(root);
     initTabOverflow(root);
+    initCountdowns(root);
 }
 
 if (document.readyState === 'loading') {

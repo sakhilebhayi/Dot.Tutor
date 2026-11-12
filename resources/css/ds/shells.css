@@ -370,6 +370,12 @@
     min-width: 0;
 }
 
+/* A step set on the content only (the dense tutor pages): the text size follows it, the shell does not (D-2403). */
+.td-main[data-td-step] {
+    font-size: var(--td-text-base);
+    line-height: var(--td-leading);
+}
+
 .td-page {
     width: 100%;
     max-width: var(--td-container);
@@ -502,6 +508,22 @@
 /* Operations: the rail reads as a different room without leaving the system. */
 .td-app--operations .td-rail {
     background: var(--td-sunken);
+}
+
+/* Fourteen destinations under five groups must fit a 900 px desk screen above the pinned user footer (D-2404):
+   36 px rows (above the 24 px target floor) and tighter group gaps. Shorter screens scroll the list on its own,
+   and the drawer script brings the current item into view. */
+.td-app--operations .td-nav-link {
+    min-height: 2.25rem;
+}
+
+.td-app--operations .td-rail__section {
+    margin-block: var(--td-space-3) 2px;
+}
+
+.td-app--operations .td-rail__nav {
+    min-height: 0;
+    overscroll-behavior: contain;
 }
 
 /* Guest and auth pages (layouts/guest). */
