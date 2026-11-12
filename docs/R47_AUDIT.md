@@ -296,3 +296,14 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Accessibility | 81 of 904 page states with serious violations; 180 with small targets; focus hidden | B | dark-shell colours, missing h1, names, targets | 0 serious of 910; 6 (inline exception) (D-1701 to D-1705) |
 | Young-learner copy | Flesch-Kincaid up to 4.8 on the young step | I | long sentences | shortened on the young step's own pages; rest recorded (D-1708, D-1709) |
 
+
+### Polish: learner, young and public (polish-learner, 2026-11-12)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Order line 08:00, notification 10:00 SAST | B | purchasable titles formatted from the UTC wall clock | reader's zone everywhere, zone named (D-2001) |
+| /find-a-tutor, /t/{id} redirect guests | I | no public discovery | public, approved only, contact redacted, rate-limited (D-2003) |
+| Find list headline, offering text raw | S | tutor free text skipped `view_contact` on these two surfaces | redacted for guests and minors (D-2005) |
+| No description, canonical, OG, sitemap | I | public meta missing | added (D-2014) |
+| Legal text contradicts the product | C | "session marketplace", "We do not vet" | rewritten to the product; lawyer review owed (D-2015) |
+| Booking page 13,113 px on a phone | U | every slot of 14 days | day strip, 2,249 px (D-2017) |

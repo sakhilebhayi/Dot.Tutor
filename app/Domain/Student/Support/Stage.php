@@ -26,6 +26,20 @@ final class Stage
         'cambridge-advanced' => 'fet',
     ];
 
+    /** South African school phases by the grades they cover, the way learners say them (R-47 polish D-2026). */
+    private const PLAIN = [
+        'foundation' => 'Foundation Phase, Grades R to 3',
+        'intermediate' => 'Intermediate Phase, Grades 4 to 6',
+        'senior' => 'Senior Phase, Grades 7 to 9',
+        'fet' => 'FET, Grades 10 to 12',
+    ];
+
+    /** "FET, Grades 10 to 12" instead of "Further Education and Training Phase"; other stages keep their name. */
+    public static function label(?string $stageCode, ?string $name): string
+    {
+        return ($stageCode !== null ? (self::PLAIN[$stageCode] ?? null) : null) ?? (string) $name;
+    }
+
     public static function colour(?string $stageCode): ?string
     {
         return $stageCode === null ? null : (self::COLOURS[$stageCode] ?? null);
