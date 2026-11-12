@@ -1,6 +1,6 @@
 # R-47 Dot.Tutor: final implementation report
 
-For the owner. Written 2026-11-12 from the trunk `feat/r47-tutor` at `f51859a` (the merge of the guardian polish wave). It follows section 27 of the brief (`docs/R47_BRIEF.md`) item by item, in order, and then adds the definition of done, external services, the jury, owner steps and two sections the coordinator fills in (marked **PLACEHOLDER**).
+For the owner. Written 2026-11-12 from the trunk `feat/r47-tutor`; final numbers are from `2b3e2d8`, the merge of the last polish branch. It follows section 27 of the brief (`docs/R47_BRIEF.md`) item by item, in order, and then adds the definition of done, external services, the jury, owner steps and the deployment record.
 
 Every claim points at its evidence: a test file, a domain document section, or a browser end-to-end spec in `tests/e2e/specs`. Where the evidence is weaker than a test or a browser check, the item is marked Partial at most. Nothing here is a legal compliance claim.
 
@@ -14,7 +14,7 @@ Every claim points at its evidence: a test file, a domain document section, or a
 
 ## At a glance
 
-- The app was a booking tool with 293 tests and no rooms, courses, payments, languages, child safety or matching. It is now one platform with 15 domains under `app/Domain`, 26 new migrations (all additive), 356 recorded decisions and 993 PHP tests (986 pass, 7 skipped, 0 fail on SQLite).
+- The app was a booking tool with 293 tests and no rooms, courses, payments, languages, child safety or matching. It is now one platform with 15 domains under `app/Domain`, 26 new migrations (all additive), 396 recorded decisions and 1,016 PHP tests (1,009 pass, 7 skipped, 0 fail on both SQLite and PostgreSQL).
 - All six brief journeys (student, tutor, course creator, learning community, multilingual, safety) pass in a real Chrome against stubs of Paystack, InfoDot, Anthropic and SMTP, with the internet refused. Nine failure scenarios pass too.
 - Nothing has been run against a live Paystack account, a real Anthropic key, a real mail server, a TURN relay, a real phone, Safari or Firefox, or a screen reader.
 - The site is safe to deploy in its honest "off" state: free lessons, courses, library, rooms and the classroom work at once. Paid lessons need Paystack keys, mail and tutor offerings first (owner steps, section 29).
@@ -77,7 +77,7 @@ Sources: `docs/R47_UI_STUDENT.md`, `tests/Feature/Student/StudentScreensTest.php
 
 Not built: reschedule as one action (the marketplace has none); a learner's own time zone (platform time SAST is shown and labelled, D-1104).
 
-Jury round 1 raised learner issues: a wall of slot buttons on the booking page, the same seven reasons repeated on every match card, a two-hour difference between an order line and its notification, adult wording on the young step, and the team switcher shown to learners. Commits addressing these exist on `feat/r47-polish-learner`, which was not merged at `f51859a`. See section 27.
+Jury round 1 raised learner issues: a wall of slot buttons on the booking page, the same seven reasons repeated on every match card, a two-hour difference between an order line and its notification, adult wording on the young step, and the team switcher shown to learners. They are fixed on `feat/r47-polish-learner`, merged. See section 27.
 
 ## 4. Tutor experience improvements
 
@@ -98,7 +98,7 @@ Sources: `docs/R47_UI_TUTOR.md`, `tests/Feature/Teach/*` (13 tests), E2E specs 0
 
 Not built: reschedule; referral rewards; storefront view analytics (no tracking added); recurring subscriptions; mixed bundles of lessons and digital items as a screen; editing a lesson in place and reordering sections in the course builder.
 
-Jury round 1 raised tutor issues: phone tables hiding money and actions, two shells for one tutor (the legacy `/tutor/profile` and `/tutor/availability`), three different verification wordings, a legacy line saying payment happens outside the platform, earnings rows naming the tutor instead of the learner, an 80-pill subject picker, and developer words on operator screens. Commits addressing these exist on `feat/r47-polish-teach`, not merged at `f51859a`. See section 27.
+Jury round 1 raised tutor issues: phone tables hiding money and actions, two shells for one tutor (the legacy `/tutor/profile` and `/tutor/availability`), three different verification wordings, a legacy line saying payment happens outside the platform, earnings rows naming the tutor instead of the learner, an 80-pill subject picker, and developer words on operator screens. They are fixed on `feat/r47-polish-teach`, merged. See section 27.
 
 ## 5. Academic room architecture
 
@@ -371,14 +371,15 @@ Estimated host capacity: about 30 one-to-one lessons at once per CPU core (secti
 
 ## 18. Test results
 
-Numbers as recorded by the agents. The coordinator should refresh the PostgreSQL line on the final trunk (see note).
+Final run by the coordinator on the integrated trunk `2b3e2d8` (all waves and all three polish branches merged), 2026-11-12.
 
 | Suite | Result | Where recorded |
 |---|---|---|
-| PHP, SQLite in memory | **993 tests, 986 pass, 7 skipped, 0 fail** at `f51859a` (baseline 293 / 286 / 7). The 7 skips are Jetstream features turned off (registration, email verification, team invitations, 2FA settings) | `docs/R47_POLISH_GUARDIAN.md` section 6 |
-| PHP, PostgreSQL 16 | Last recorded full run: **956 tests, 949 pass, 7 skipped, 0 fail** (after the security merge, `7dcbf18`). Not re-recorded after QA, perf and polish added tests. CI runs it on every pull request | `docs/R47_PERF.md` section 6 |
-| JavaScript (`node --test tests/js/*.test.mjs`, 5 files) | 14 pass | `docs/R47_POLISH_GUARDIAN.md` section 6 |
-| Browser end to end (`node tests/e2e/run.mjs`) | 9 spec files, 17 tests, all pass after the guardian polish merge: 6 journeys with 53 evidenced steps, 9 failure scenarios, the two-browser classroom (16 checks), the route sweep (263 GET routes, 13 roles, 390 and 1440 px, 6,396 page loads, 0 problems). No outbound internet attempt | `docs/R47_QA.md` sections 4 to 7 |
+| PHP, SQLite in memory | **1,016 tests, 1,009 pass, 7 skipped, 0 fail** (baseline 293 / 286 / 7). The 7 skips are Jetstream features turned off (registration, email verification, team invitations, 2FA settings) | coordinator run on `2b3e2d8` |
+| PHP, PostgreSQL 16 (`bin/test-pgsql.sh`, throwaway database) | **1,016 tests, 1,009 pass, 7 skipped, 0 fail** | coordinator run on `2b3e2d8` |
+| JavaScript (`node --test tests/js/*.test.mjs`, 7 files) | **18 pass, 0 fail** | coordinator run on `2b3e2d8` |
+| Build and caches | `npm run build`, `php artisan view:cache` and `route:cache` pass | coordinator run on `2b3e2d8` |
+| Browser end to end (`node tests/e2e/run.mjs`) | **All 9 spec files pass**: 6 journeys with 53 evidenced steps, 9 failure scenarios, the two-browser classroom (16 checks), the route sweep (266 GET routes, 249 swept, 13 roles at 390 and 1440 px, 6,474 page loads, 0 problems; 17 skipped for want of a parameter value). No outbound internet attempt | coordinator run on `2b3e2d8`; method in `docs/R47_QA.md` |
 | Two-browser WebRTC | Peer connections "connected", video and audio both ways, chat, whiteboard, notes, attendance | E2E 08 |
 | Accessibility (axe, real Chrome) | 910 page states, **0 serious or critical** (was 81 states, 1,746 nodes); keyboard 185 checks at 390 and 161 at 1440, 0 failed; reduced motion 22 checks, 0 failed; young step at AAA contrast, 0 violations | `docs/R47_A11Y.md` section 2 |
 | Upgrade rehearsal on a populated pre-R-47 database | PASS on SQLite and PostgreSQL, 60+ checks each: no row lost, cents exact, subject ids kept | `docs/R47_OPERATIONS.md` section 8 |
@@ -537,7 +538,7 @@ In order of value to learners and tutors:
 
 - 113 commits on the trunk between 2026-11-10 and 2026-11-12; 1,294 files changed against the last `main` (`2aa8daf`).
 - Waves: 1 (design system, academic, marketplace, safety, money, learning), 2 (community, classroom, ai, comms, student UI, tutor UI, ops and guardian UI, integration), 3 (deploy, security, QA, perf and accessibility), then polish.
-- 356 decisions recorded in `docs/R47_DECISIONS.md`.
+- 396 decisions recorded in `docs/R47_DECISIONS.md`.
 - Owner runbook: `docs/R47_OPERATIONS.md`. Personal information record: `docs/R47_PRIVACY.md`.
 
 ## 26. Jury
@@ -563,20 +564,22 @@ A polish wave was started to address these (next section).
 
 ## 27. Polish wave and round 2
 
-> **PLACEHOLDER for the coordinator.** Fill in once every polish branch is merged and the round-2 jury has scored.
+Three polish agents worked the two critics' fix lists in parallel, each owning separate files. All three are merged (trunk `2b3e2d8`); final counts are in section 18. Each fix, with the file or the reason it was not done, is in the agent's own doc.
 
-Known at the time of writing (`f51859a`):
-
-| Branch | State | What it covers |
+| Branch | Doc and decisions | What changed |
 |---|---|---|
-| `feat/r47-polish-guardian` | **Merged** (`f51859a`). 13 new tests; full PHP suite 993 / 986 / 7 / 0; E2E all pass | Guardian navigation and phone bar, the real Safety page, urgent band first and "1 urgent report" badge, recent decisions, one money format (`Money::format()`), plain-zero figures (`TD Figures`), classroom "Ended" chip, plain connection words for learners, Join under the preview (D-2100 to D-2108, `docs/R47_POLISH_GUARDIAN.md`) |
-| `feat/r47-polish-learner` | Not merged at `f51859a` | Commits for: learner times in the reader's zone with labelled order lines; public tutor search and storefronts for signed-out visitors; public page meta, sitemap, legal pages and 404; booking by day then times; learner and young-step copy; FET in plain words; progress without "Other" |
-| `feat/r47-polish-teach` | Not merged at `f51859a` | Commits for: one tutor shell (legacy pages forward to the workspace); searchable subject picker and grouped level checkboxes; earnings rows naming the learner; "All rights reserved" as the default licence; stacked row cards on phones for tutor and ops tables; tab edge fades; one tutor standing component; integer chart ticks; plain operator language |
+| `feat/r47-polish-guardian` | `docs/R47_POLISH_GUARDIAN.md`, D-2100 to D-2108 | Guardians get their own navigation and phone bar (Children, Approvals, Safety, Messages, Payments). `/safety/guardian` is a real Safety page: one row per report, case or notice about their own children, with status, next step and the 10111 and Childline numbers, never the report text or the reporter. An open urgent report is a red band at the top and the child's badge reads "1 urgent report". Approvals keep a "Recent decisions" list. One money format (`Money::format()`, "R1 250.00"). Digits come from a plain-zero face, so R250.00 no longer reads "R25Ø.ØØ". Classroom: an ended lesson shows "Ended", no relay or TURN words for learners, Join directly under the preview on a phone |
+| `feat/r47-polish-learner` | `docs/R47_POLISH_LEARNER.md`, D-2000 to D-2028 | **Bug fixed:** an order line stored a UTC time (08:00) while the notification said 10:00 SAST; times now use the reader's zone and say which zone. **Public discovery:** `/find-a-tutor`, `/t/{id}` and `/u/{handle}` work signed out, approved tutors only, contact details hidden, booking and reporting still need sign-in, guest search rate-limited. Unique titles and descriptions, canonical links, Open Graph and Twitter tags, a self-hosted share image, `sitemap.xml`, `robots.txt`. Legal pages restyled and rewritten to match the product (a lawyer must review). Useful 404. Booking as a day strip then that day's times (13,113 px to 2,249 px on a phone). Match cards state shared reasons once. Young-learner copy for a 10-year-old. Team switcher only for people in more than one team |
+| `feat/r47-polish-teach` | `docs/R47_POLISH_TEACH.md`, D-2200 to D-2214 | One stacked row-card pattern for tutor and ops tables on phones (key figure first, action always visible). Tabs that scroll with the active one in view. One tutor shell: `/tutor/profile` and `/tutor/availability` forward to the workspace and the calendar is the only hours editor. One status component (Listed, qualification, cleared for under-18s) worded the same for tutors and operators. "Payment is arranged outside the platform" and the duplicate hourly rate removed. Searchable grouped subject picker; grouped level checkboxes that work on touch. Earnings rows name the learner and what was sold. Materials default to "All rights reserved". Plain operator language, integer chart ticks, a compact team page. Also fixed: after any upload the next page loaded without its script (D-2214) |
 
-To fill in:
-- Merge result and final test counts (SQLite, PostgreSQL, JS, E2E) after all three branches.
-- Which jury items remain open, item by item.
-- Round 2 scores per critic and the weighted overall.
+Left open from the critics' lists (each recorded in the polish docs):
+- Guardians have no "Message [child]" button: safety refuses direct adult and minor conversations, so the button would do nothing.
+- Guests cannot file reports; young learners have no after-school-only slot filter.
+- Assigning roles to several operators at once needs a bulk endpoint; it is one person at a time.
+- Order lines saved before the time-zone fix still show the UTC time; correcting old rows is an owner decision.
+- Legal text needs a lawyer's review before launch.
+
+**Round 2 jury:** run after the release on a fresh capture of the final trunk with new critics that never saw round 1. Scores are recorded in the deployment follow-up below.
 
 ## 28. Deployment
 
