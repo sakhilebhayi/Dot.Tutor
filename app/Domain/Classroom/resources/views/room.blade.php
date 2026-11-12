@@ -8,6 +8,16 @@
     $tutorName = $session->tutorProfile?->user?->name ?? 'the tutor';
     $lobbyOpen = $admission->allowed || $admission->code === 'too_early';
     $codeTone = in_array($admission->code, ['too_early', 'not_confirmed'], true) ? 'info' : 'warning';
+    // The state chip says what is true before anyone joins (D-2106): an ended, closed or cancelled lesson is not
+    // "Not joined". The tutor of an ended lesson may reopen it by joining again, so their chip says Ended too.
+    $over = in_array($admission->code, ['ended', 'lesson_over', 'closed'], true) || ($role === 'tutor' && $classroom->isEnded());
+    [$chipText, $chipState] = match (true) {
+        $admission->code === 'lesson_over' && $session->status === 'cancelled' => ['Cancelled', 'ended'],
+        $admission->code === 'closed' => ['Closed', 'ended'],
+        $over => ['Ended', 'ended'],
+        $admission->code === 'too_early' => ['Not open yet', 'idle'],
+        default => ['Not joined', 'idle'],
+    };
     $withWhom = $role === 'tutor'
         ? ($session->isGroup() ? count($people) - 1 .' booked '.(count($people) - 1 === 1 ? 'learner' : 'learners') : 'with '.($session->student?->name ?? 'your learner'))
         : 'with '.$tutorName;
@@ -25,7 +35,7 @@
                 </p>
             </div>
             <div class="cr-head__aside">
-                <span id="cr-status" class="cr-status" role="status" aria-live="polite" data-state="idle">Not joined</span>
+                <span id="cr-status" class="cr-status" role="status" aria-live="polite" data-state="{{ $chipState }}">{{ $chipText }}</span>
                 <span id="cr-clock" class="cr-clock" hidden aria-label="Time in the lesson">00:00</span>
                 <span id="cr-net" class="cr-net" hidden><x-classroom::icon name="wifi" /><span class="cr-net__word">Measuring</span></span>
             </div>
@@ -46,6 +56,12 @@
                 @endif
             </x-td.notice>
         @endunless
+
+        @if ($role === 'tutor' && $admission->allowed && $classroom->isEnded())
+            <x-td.notice tone="info" title="You ended this lesson">
+                <p>Joining again reopens it for everyone booked in, until <time datetime="{{ $admission->closesAt?->toIso8601String() }}">{{ $admission->closesAt?->copy()->timezone($tz)->format('H:i') }}</time>. <a class="td-link" href="{{ route('classroom.after', $session) }}">Open the lesson record</a> for attendance, the summary and the files.</p>
+            </x-td.notice>
+        @endif
 
         @if ($approvals !== [])
             <section class="cr-approvals" aria-labelledby="cr-approvals-h">
@@ -80,9 +96,18 @@
                         <button type="button" id="cr-lobby-cam" class="cr-ctl" aria-pressed="true" aria-label="Camera on"><x-classroom::icon name="video" /></button>
                     </div>
                 </div>
+                {{-- On a phone the Join button sits directly under the preview (D-2107); at desk width it sits under the checks. --}}
+                <div class="cr-lobby__join">
+                    <div class="cr-actions">
+                        <x-td.button id="cr-join" variant="primary" size="lg" icon="video" :disabled="! $admission->allowed" data-opens="{{ $admission->opensAt?->toIso8601String() }}">
+                            {{ $role === 'guardian' ? 'Join to watch' : ($role === 'tutor' && $classroom->isEnded() ? 'Reopen the lesson' : 'Join the lesson') }}
+                        </x-td.button>
+                    </div>
+                    <p id="cr-lobby-msg" class="cr-lobby__msg" role="status"></p>
+                    <p class="cr-muted cr-lobby__privacy">Only you see the preview. Nobody sees or hears you until you join.</p>
+                </div>
                 <div class="cr-lobby__form">
                     <h2 class="cr-h2" id="cr-lobby-h">Check your camera and microphone</h2>
-                    <p class="cr-muted">Only you see this preview. Nobody sees or hears you until you join.</p>
                     <div class="td-field"><label class="td-label" for="cr-sel-cam">Camera</label><span class="td-select-wrap"><select class="td-select" id="cr-sel-cam"><option>Looking for cameras</option></select><x-td.icon name="chevron-down" /></span></div>
                     <div class="td-field">
                         <label class="td-label" for="cr-sel-mic">Microphone</label>
@@ -95,14 +120,8 @@
                         <div><dt>Browser</dt><dd id="cr-check-browser">Checking</dd></div>
                         <div><dt>Camera</dt><dd id="cr-check-cam">Checking</dd></div>
                         <div><dt>Microphone</dt><dd id="cr-check-mic">Checking</dd></div>
-                        <div><dt>Connection</dt><dd>{{ $relay ? 'Direct, with a relay server when needed.' : 'Direct only. No relay server is set up, so some school and office networks cannot connect.' }}</dd></div>
+                        <div><dt>Connection</dt><dd>@if ($role === 'tutor'){{ $relay ? 'Direct, with a relay server when needed.' : 'Direct only. No relay server is set up, so some school and office networks cannot connect.' }}@else{{ $relay ? 'Ready.' : 'Some school and office networks block video calls. If yours does, the classroom offers the tutor\'s meeting link.' }}@endif</dd></div>
                     </dl>
-                    <p id="cr-lobby-msg" class="cr-lobby__msg" role="status"></p>
-                    <div class="cr-actions">
-                        <x-td.button id="cr-join" variant="primary" size="lg" icon="video" :disabled="! $admission->allowed" data-opens="{{ $admission->opensAt?->toIso8601String() }}">
-                            {{ $role === 'guardian' ? 'Join to watch' : 'Join the lesson' }}
-                        </x-td.button>
-                    </div>
                     <noscript><p class="cr-muted">The classroom needs JavaScript and a recent browser (Chrome, Edge, Firefox or Safari).</p></noscript>
                 </div>
             </section>
@@ -219,23 +238,28 @@
                 <p class="cr-muted">The in-browser classroom holds {{ config('classroom.max_in_room') }} people at once: each browser sends its video straight to every other one.</p>
             </section>
 
-            <section aria-labelledby="cr-fallback-h">
-                <h2 class="cr-h2" id="cr-fallback-h">If the classroom cannot connect</h2>
-                <p>Browsers connect to each other directly. @if ($relay)When that fails, a relay server carries the lesson; if even that cannot reach someone, @else No relay server is set up yet, so a few networks (some schools, offices and mobile carriers) block the connection. When that happens @endif the room says so and offers {{ $role === 'tutor' ? 'your' : "the tutor's" }} own meeting link.</p>
-                @if ($role === 'tutor')
-                    <form method="POST" action="{{ route('classroom.link', $session) }}" class="cr-inline-form">
-                        @csrf
-                        <x-td.field label="Your meeting link (Google Meet, Teams, Zoom or similar)" for="external_url" hint="An https link. Learners see it only inside this lesson's classroom." optional :error="$errors->first('external_url')">
-                            <x-td.input name="external_url" type="url" :value="old('external_url', $classroom->external_url)" placeholder="https://" :hint="true" />
-                        </x-td.field>
-                        <x-td.button type="submit">Save the link</x-td.button>
-                    </form>
-                @elseif ($classroom->external_url)
-                    <p><a class="td-link" href="{{ $classroom->external_url }}" rel="noopener noreferrer" target="_blank">Open the tutor's meeting link<x-classroom::icon name="external-link" /></a> (opens outside Dot.Tutor).</p>
-                @else
-                    <p class="cr-muted">Your tutor has not added a meeting link.</p>
-                @endif
-            </section>
+            @unless ($over)
+                <section aria-labelledby="cr-fallback-h">
+                    <h2 class="cr-h2" id="cr-fallback-h">If the classroom cannot connect</h2>
+                    @if ($role === 'tutor')
+                        <p>Browsers connect to each other directly. @if ($relay)When that fails, a relay server carries the lesson; if even that cannot reach someone, @else No relay server is set up yet, so a few networks (some schools, offices and mobile carriers) block the connection. When that happens @endif the room says so and offers your own meeting link.</p>
+                        <form method="POST" action="{{ route('classroom.link', $session) }}" class="cr-inline-form">
+                            @csrf
+                            <x-td.field label="Your meeting link (Google Meet, Teams, Zoom or similar)" for="external_url" hint="An https link. Learners see it only inside this lesson's classroom." optional :error="$errors->first('external_url')">
+                                <x-td.input name="external_url" type="url" :value="old('external_url', $classroom->external_url)" placeholder="https://" :hint="true" />
+                            </x-td.field>
+                            <x-td.button type="submit">Save the link</x-td.button>
+                        </form>
+                    @else
+                        <p>Some school and office networks block video calls. If the connection cannot be made, use your tutor's meeting link instead.</p>
+                        @if ($classroom->external_url)
+                            <p><a class="td-link" href="{{ $classroom->external_url }}" rel="noopener noreferrer" target="_blank">Open the tutor's meeting link<x-classroom::icon name="external-link" /></a> (opens outside Dot.Tutor).</p>
+                        @else
+                            <p class="cr-muted">Your tutor has not added a meeting link yet.</p>
+                        @endif
+                    @endif
+                </section>
+            @endunless
 
             <section aria-labelledby="cr-privacy-h">
                 <h2 class="cr-h2" id="cr-privacy-h">Recording and privacy</h2>

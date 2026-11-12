@@ -283,7 +283,7 @@ Restrained on screens people work in, committed on the landing. The ground is sh
 Two self-hosted families under the SIL Open Font License, no third-party hosts.
 
 - **Archivo** (Omnibus-Type), instanced to width 62-100 and weight 500-800, set condensed at width 75 for headings: the spine-label voice. Sentence case, never tracked capitals.
-- **Atkinson Hyperlegible Next** (Braille Institute) for everything people read and operate. Its letterforms keep I, l and 1 and O and 0 apart, which matters for early readers, maths and codes. Figures are tabular everywhere so prices, times and marks line up.
+- **Atkinson Hyperlegible Next** (Braille Institute) for everything people read and operate. Its letterforms keep I, l and 1 and O and 0 apart, which matters for early readers, maths and codes. Figures are tabular everywhere so prices, times and marks line up. Its zero is slashed by design (no plain alternate), which made prices read as "R25Ø.ØØ" (both jury critics, polish wave), so the digits 0 to 9 come from Archivo at its normal width through a digits-only face, `TD Figures`, first in the text stack and matched to Atkinson's cap height and line metrics (D-2103). Money is written one way: the symbol against the figure, "R1 250.00" (D-2104).
 - **Scale:** meta 13, label 14, body 16, lead 18, title 22, page title 28, section 32 to 48, display 44 to 96 (fluid). Headings are one weight and one colour; no accented word inside a heading.
 - **Young step:** body 19, lead 21, title 26, leading 1.7, measure 52ch. **Dense step:** body 15, leading 1.45.
 - Tshivenda's dotted and circumflex-below letters fall back to the system face; legible, not a perfect match.

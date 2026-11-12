@@ -396,12 +396,16 @@ class Classroom {
         if (this.phase === 'live') { this.renderTiles(); this.renderPeople(); }
     }
 
-    /** The honest fallback: no relay exists, so say so and offer the tutor's own meeting link. */
+    /**
+     * The honest fallback: say the connection could not be made and offer the tutor's own meeting link. The tutor
+     * is told why (no relay server); learners and guardians are told plainly, without infrastructure words (D-2108).
+     */
     cannotConnect(peer) {
         const actions = [{ label: 'Try again', run: () => { peer.retry(); this.clearBanner(`dead-${peer.id}`); } }];
         if (this.externalUrl) actions.unshift({ label: this.role === 'tutor' ? 'Open your meeting link' : "Open the tutor's meeting link", href: this.externalUrl });
-        const tail = this.relay ? 'Even the relay server could not reach them.'
-            : 'No relay server is set up yet, so some networks (schools, offices, some mobile data) block a direct connection.';
+        const tail = this.role !== 'tutor' ? 'Some school and office networks block video calls.'
+            : this.relay ? 'Even the relay server could not reach them.'
+                : 'No relay server is set up yet, so some networks (schools, offices, some mobile data) block a direct connection.';
         const link = this.externalUrl ? '' : (this.role === 'tutor' ? ' Add your own meeting link below the classroom to offer a way round it.' : ' Ask the tutor to add a meeting link.');
         this.banner(`dead-${peer.id}`, `Your browser could not connect to ${peer.name}. ${tail}${link}`, 'danger', 0, actions);
     }

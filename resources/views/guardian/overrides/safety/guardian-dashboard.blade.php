@@ -1,3 +1,3 @@
-{{-- Ops restyle of safety's guardian dashboard page (GET /safety/guardian): the same guardian home, with the money
-     orders added from the guardian view service. JSON callers of that route are unaffected. --}}
-@include('guardian.home', app(\App\Domain\Ops\Guardian\GuardianView::class)->for(request()->user()))
+{{-- Safety's guardian dashboard page (GET /safety/guardian) is the guardian's Safety page (D-2101): reports, cases
+     and notices about their own children. JSON callers of that route are unaffected. --}}
+@include('guardian.safety', app(\App\Domain\Ops\Guardian\GuardianView::class)->for(request()->user()))

@@ -10,9 +10,9 @@ use JsonSerializable;
  * decimals are parsed as strings, percentages are basis points with half-up rounding, and arithmetic
  * across currencies is refused.
  *
- * format() writes "R 1 250.00" for ZAR (and "USD 1 250.00" otherwise), with a narrow no-break space
- * (U+202F) between the symbol and the figure and between thousands, so an amount never wraps across
- * lines on a small screen.
+ * format() is the one display format for money everywhere (D-2104): the symbol against the figure ("R1 250.00",
+ * "$12.50", "−R50.00"), a narrow no-break space (U+202F) between thousands so an amount never wraps on a small
+ * screen, and the ISO code with a space only for a currency without a symbol here ("XOF 1 250").
  */
 final readonly class Money implements JsonSerializable
 {
@@ -21,7 +21,11 @@ final readonly class Money implements JsonSerializable
     /** Currencies whose minor unit is not 1/100. Everything else is two decimals. */
     private const ZERO_DECIMAL = ['JPY', 'KRW', 'UGX', 'RWF', 'XOF', 'XAF'];
 
-    private const SYMBOLS = ['ZAR' => 'R'];
+    /** Symbols written against the figure. A currency not listed is written as its code and a space. */
+    public const SYMBOLS = ['ZAR' => 'R', 'USD' => '$', 'EUR' => '€', 'GBP' => '£', 'NAD' => 'N$', 'BWP' => 'P', 'KES' => 'KSh', 'NGN' => '₦'];
+
+    /** The minus sign for a negative amount (U+2212, the same width as a figure in tabular figures). */
+    public const MINUS = "\u{2212}";
 
     public function __construct(public int $minor, public string $currency)
     {
@@ -205,15 +209,15 @@ final readonly class Money implements JsonSerializable
         return $sign.intdiv($abs, $unit).'.'.str_pad((string) ($abs % $unit), $decimals, '0', STR_PAD_LEFT);
     }
 
-    /** "R 1 250.00" with narrow no-break spaces; "-R 50.00" for a negative amount. */
+    /** "R1 250.00" with a narrow no-break space between thousands; "−R50.00" for a negative amount. */
     public function format(): string
     {
         $decimal = ltrim($this->toDecimalString(), '-');
         [$whole, $fraction] = array_pad(explode('.', $decimal, 2), 2, null);
         $grouped = implode(self::NNBSP, array_map('strrev', array_reverse(str_split(strrev($whole), 3))));
-        $symbol = self::SYMBOLS[$this->currency] ?? $this->currency;
+        $symbol = self::SYMBOLS[$this->currency] ?? $this->currency.' ';
 
-        return ($this->minor < 0 ? '-' : '').$symbol.self::NNBSP.$grouped.($fraction === null ? '' : '.'.$fraction);
+        return ($this->minor < 0 ? self::MINUS : '').$symbol.$grouped.($fraction === null ? '' : '.'.$fraction);
     }
 
     /**

@@ -38,6 +38,28 @@ return [
         ],
     ],
 
+    // Guardians (polish-guardian, D-2100): chosen by App\Domain\Ops\Guardian\GuardianShell inside the learner frame.
+    'guardian' => [
+        [
+            'label' => null,
+            'items' => [
+                ['label' => 'Children', 'route' => 'guardian.home', 'icon' => 'users', 'match' => ['guardian.home', 'guardian.child'], 'bottom' => true],
+                ['label' => 'Approvals', 'route' => 'guardian.approvals', 'icon' => 'clipboard-check', 'match' => 'guardian.approvals', 'bottom' => true],
+                ['label' => 'Safety', 'route' => 'safety.guardian.dashboard', 'icon' => 'shield-check', 'match' => 'safety.guardian.dashboard', 'bottom' => true],
+                ['label' => 'Messages', 'route' => ['messages.index', 'safety.conversations.index'], 'icon' => 'message-square', 'match' => ['messages.*', 'safety.conversations.*'], 'bottom' => true],
+                ['label' => 'Payments', 'route' => 'guardian.payments', 'icon' => 'receipt', 'match' => 'guardian.payments'],
+            ],
+        ],
+        [
+            'label' => 'You',
+            'items' => [
+                ['label' => 'Notifications', 'route' => 'comms.inbox', 'icon' => 'bell', 'match' => ['comms.inbox*', 'comms.preferences*']],
+                ['label' => 'Your learning', 'route' => 'learn.home', 'icon' => 'graduation-cap', 'match' => 'learn.home'],
+                ['label' => 'Account', 'route' => 'profile.show', 'icon' => 'settings', 'match' => 'profile.show'],
+            ],
+        ],
+    ],
+
     'workspace' => [
         [
             'label' => null,

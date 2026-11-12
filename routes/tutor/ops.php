@@ -94,4 +94,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Guardians (brief section 15): phone-first, in the learner shell. Decisions post to the safety domain.
     Route::get('/guardian', [GuardianController::class, 'home'])->name('guardian.home');
     Route::get('/guardian/children/{learner}', [GuardianController::class, 'child'])->whereNumber('learner')->name('guardian.child');
+    Route::get('/guardian/approvals', [GuardianController::class, 'approvals'])->name('guardian.approvals');
+    Route::get('/guardian/payments', [GuardianController::class, 'payments'])->name('guardian.payments');
 });
