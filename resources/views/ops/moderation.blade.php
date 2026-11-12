@@ -1,7 +1,7 @@
 @php
     use App\Domain\Ops\Http\Controllers\ContentController;
     use App\Domain\Learning\Enums\QualityTier;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $tabs = collect(ContentController::TABS)->map(fn ($label, $key) => ['label' => $label, 'href' => route('ops.moderation', ['tab' => $key]), 'current' => $tab === $key, 'count' => $counts[$key] ?? null])->values()->all();
     $names = fn ($u) => $u ? \App\Domain\Community\Support\Names::short($u) : 'Deleted account';
 @endphp

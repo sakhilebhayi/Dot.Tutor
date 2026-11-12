@@ -1,6 +1,6 @@
 @php
     use App\Domain\Safety\Enums\ReportPriority;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $priorityTone = ['critical' => 'danger', 'high' => 'warning', 'normal' => 'neutral', 'low' => 'neutral'];
     $priorityText = ['critical' => 'Child safety · 1 hour', 'high' => 'High · 4 hours', 'normal' => 'Normal · 24 hours', 'low' => 'Low · 72 hours'];
     $critical = $reports->filter(fn ($r) => $r->priority === ReportPriority::Critical);

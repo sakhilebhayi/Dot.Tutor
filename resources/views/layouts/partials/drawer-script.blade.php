@@ -6,6 +6,18 @@
         var root = document.documentElement;
         var drawer = document.getElementById('app-sidebar');
         var opener = document.querySelector('[data-shell-open]');
+
+        // A long rail scrolls on its own: keep the current item in view on load (R-47 fix D-2404).
+        var railNav = drawer && drawer.querySelector('.td-rail__nav');
+        var currentItem = railNav && railNav.querySelector('[aria-current="page"]');
+        if (currentItem && railNav.scrollHeight > railNav.clientHeight) {
+            var navBox = railNav.getBoundingClientRect();
+            var itemBox = currentItem.getBoundingClientRect();
+            if (itemBox.bottom > navBox.bottom || itemBox.top < navBox.top) {
+                railNav.scrollTop += itemBox.top - navBox.top - (navBox.height - itemBox.height) / 2;
+            }
+        }
+
         if (!drawer || !opener) { return; }
 
         var closer = drawer.querySelector('[data-shell-close]');

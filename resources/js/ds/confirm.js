@@ -7,7 +7,8 @@ export function initConfirm() {
     document.documentElement.dataset.tdConfirm = 'on';
     document.addEventListener('submit', (event) => {
         const form = event.target;
-        const question = form instanceof HTMLFormElement ? form.dataset.confirm : undefined;
+        // The pressed button may carry its own question (a form with a harmless and a serious button).
+        const question = form instanceof HTMLFormElement ? (event.submitter?.dataset.confirm ?? form.dataset.confirm) : undefined;
         if (question && !window.confirm(question)) {
             event.preventDefault();
         }

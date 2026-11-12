@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations title="Support">
     <x-td.page-head title="Support" lede="Each support request is its own conversation. Minors can always reach support, even before a guardian consents; their guardians see the thread and contact details are hidden." />
     <x-td.panel flush>

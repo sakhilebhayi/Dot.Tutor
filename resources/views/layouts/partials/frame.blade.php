@@ -3,7 +3,14 @@
      $bottom (bottom-bar items, learner only), $step (young|standard|dense), $title, $topTitle (HTML or null),
      $content (the page), $livewire (bool). --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($step !== 'standard') data-td-step="{{ $step }}" @endif>
+@php
+    // The tutor workspace has one shell size: a dense page tightens its own content, never the rail and top bar
+    // (R-47 fix D-2403; critic B saw smaller nav and icons on the dense /teach pages). Young and operations keep the
+    // step on the whole document.
+    $contentStep = $shell === 'workspace' && $step === 'dense' ? 'dense' : null;
+    $rootStep = $step !== 'standard' && $contentStep === null ? $step : null;
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($rootStep) data-td-step="{{ $rootStep }}" @endif>
 <head>
     @include('layouts.partials.head', ['title' => $title, 'livewire' => $livewire])
 </head>
@@ -95,7 +102,7 @@
 
     {{ $legacyNav ?? '' }}
 
-    <div class="td-main content-wrap" data-shell-behind>
+    <div class="td-main content-wrap" data-shell-behind @if ($contentStep) data-td-step="{{ $contentStep }}" @endif>
         <main id="main-content" class="td-page" tabindex="-1">
             {{ $content }}
         </main>

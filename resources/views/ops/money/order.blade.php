@@ -1,6 +1,6 @@
 @php
     use App\Domain\Money\Money;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $m = fn ($minor) => Money::of((int) $minor, $order->currency)->format();
 @endphp
 <x-layouts::operations title="Order {{ \Illuminate\Support\Str::limit($order->uuid, 8, '') }}">

@@ -1,5 +1,5 @@
 @php
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $tabs = [
         ['label' => 'Evidence to review', 'href' => route('ops.verification', ['tab' => 'evidence']), 'current' => $tab === 'evidence', 'count' => $counts['evidence']],
         ['label' => 'Tutor applications', 'href' => route('ops.verification', ['tab' => 'applications']), 'current' => $tab === 'applications', 'count' => $counts['applications']],

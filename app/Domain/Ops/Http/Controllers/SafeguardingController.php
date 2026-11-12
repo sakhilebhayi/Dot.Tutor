@@ -4,6 +4,7 @@ namespace App\Domain\Ops\Http\Controllers;
 
 use App\Domain\Ops\Access\OpsPermission as P;
 use App\Domain\Safety\Audit;
+use App\Domain\Safety\Contracts\Moderatable;
 use App\Domain\Safety\Enums\IntegrityKind;
 use App\Domain\Safety\Enums\ReportPriority;
 use App\Domain\Safety\Enums\ScreeningKind;
@@ -101,10 +102,31 @@ class SafeguardingController extends OpsController
         ]);
     }
 
-    public function incident(Incident $incident): View
+    public function incident(Incident $incident, AccountStanding $standing): View
     {
+        $incident->load(['owner:id,name', 'reports.reportedUser:id,name', 'reports.reportable']);
+
+        // Who is reported and what can be done first (D-2405): the same Moderation actions the report page posts to
+        // (hide the reported content, suspend the reported person). Staff see a name and whether the person is under
+        // 18, never contact details; the account page holds the rest behind its own permission.
+        $reported = $incident->reports->map(function (Report $report) use ($standing) {
+            $person = $report->reportedUser;
+            $lastContent = ModerationAction::query()->where('report_id', $report->id)->whereIn('action', ['hide', 'restore'])->orderByDesc('id')->first();
+
+            return [
+                'report' => $report,
+                'person' => $person,
+                'minor' => $person !== null && $standing->isMinor($person),
+                'suspended' => $person !== null && AccountRestriction::query()->inEffect()->where('user_id', $person->id)->where('kind', AccountRestriction::SUSPENSION)->exists(),
+                'canHide' => $report->reportable instanceof Moderatable,
+                'hidden' => $lastContent?->action === 'hide',
+                'hiddenAt' => $lastContent?->action === 'hide' ? $lastContent->created_at : null,
+            ];
+        });
+
         return view('ops.safeguarding.incident', [
-            'incident' => $incident->load(['owner:id,name', 'reports']),
+            'incident' => $incident,
+            'reported' => $reported,
             'events' => $incident->events()->get(),
             'actors' => User::query()->whereIn('id', $incident->events()->pluck('actor_id')->filter()->unique())->pluck('name', 'id'),
             'learner' => $incident->learner_id ? User::query()->find($incident->learner_id) : null,

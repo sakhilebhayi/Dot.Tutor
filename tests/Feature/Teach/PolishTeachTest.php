@@ -134,7 +134,7 @@ class PolishTeachTest extends TestCase
         $this->assertSame('Thandi', PlainWords::actor(60, 'user:60', [60 => 'Thandi']));
         $this->assertSame('Account 61', PlainWords::actor(61, 'user:61', []));
         $this->assertSame('The system', PlainWords::actor(null, 'system', []));
-        $this->assertSame('Amount minor: 5000; Held: yes', PlainWords::details(['amount_minor' => 5000, 'held' => true]));
+        $this->assertSame('Amount: R50.00; Held: yes', PlainWords::details(['amount_minor' => 5000, 'held' => true])); // R-47 fix D-2407: money formatted
 
         $this->assertSame([0, 1, 2], ChartScale::nice(1)['ticks']);
         $this->assertSame([0, 2, 4, 6], ChartScale::nice(4)['ticks']);

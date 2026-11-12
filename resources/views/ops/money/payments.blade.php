@@ -1,13 +1,13 @@
 @php
     use App\Domain\Money\Money;
     use App\Domain\Ops\Http\Controllers\MoneyController;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $m = fn ($minor, $cur = null) => Money::of((int) $minor, $cur ?: Money::defaultCurrency())->format();
     $tabs = collect(MoneyController::TABS)->map(fn ($label, $key) => ['label' => $label, 'href' => route('ops.payments', ['tab' => $key]), 'current' => $tab === $key, 'count' => $counts[$key] ?? null])->values()->all();
     $statusTone = ['paid' => 'success', 'partially_refunded' => 'info', 'refunded' => 'info', 'pending_payment' => 'neutral', 'awaiting_guardian' => 'info', 'cancelled' => 'neutral', 'expired' => 'neutral', 'guardian_refused' => 'warning'];
 @endphp
 <x-layouts::operations title="Orders and payments">
-    <x-td.page-head title="Orders and payments" lede="Every order, payment, refund, card dispute and exception. Money moves only through Paystack and the ledger; nothing on this screen edits an amount." />
+    <x-td.page-head title="Orders and payments" :lede="'Every order, payment, refund, card dispute and exception. Money moves only through Paystack and the ledger; nothing on this screen edits an amount. '.\App\Domain\Student\Support\Times::zoneNote()" />
 
     @if (! $paystack['configured'])
         <x-td.notice tone="warning" title="Paystack is not configured" class="mb-5">No secret key is set, so learners cannot pay online and refunds cannot be sent. Set PAYSTACK_SECRET_KEY (test key first).</x-td.notice>
