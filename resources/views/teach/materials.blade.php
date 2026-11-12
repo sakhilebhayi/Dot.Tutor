@@ -44,7 +44,18 @@
                     <x-td.check type="radio" name="ownership" value="own_work" :checked="true">My own work</x-td.check>
                     <x-td.check type="radio" name="ownership" value="third_party">Someone else's (open licence or official source only)</x-td.check>
                 </fieldset>
-                <x-td.field label="Licence" for="licence" hint="All rights reserved keeps your rights; CC BY lets others reuse it with credit."><x-td.select name="licence" :options="collect($licences)->mapWithKeys(fn ($l) => [$l->value => $l->label()])->all()" :hint="true" /></x-td.field>
+                {{-- The most protective honest licence is the default (D-2208): a tutor opts in to letting others reuse their work. --}}
+                @php
+                    $licenceWords = [
+                        'all_rights_reserved' => 'All rights reserved: learners may use it, nobody may copy or share it',
+                        'cc_by' => 'CC BY 4.0: anyone may reuse it with credit to you',
+                        'cc_by_sa' => 'CC BY-SA 4.0: reuse with credit, under the same licence',
+                        'public_domain' => 'Public domain: no rights kept',
+                        'official_source' => 'Official source: a department or exam body published it',
+                    ];
+                    $licenceOptions = collect($licenceWords)->only(collect($licences)->map->value->all())->all();
+                @endphp
+                <x-td.field label="Licence" for="licence" hint="Keeps all your rights unless you choose an open licence."><x-td.select name="licence" :options="$licenceOptions" value="all_rights_reserved" :hint="true" /></x-td.field>
                 <x-td.field label="Source link" for="source_url" optional hint="Required for someone else's work and for official papers (https)."><x-td.input name="source_url" type="url" maxlength="2048" :hint="true" /></x-td.field>
                 <x-td.field label="Price (ZAR)" for="price" optional hint="Leave empty or 0 for free. Only your own work can be sold."><x-td.input name="price" inputmode="decimal" :hint="true" /></x-td.field>
                 <x-td.file-picker name="file" label="Choose the file" :max-kb="(int) config('learning.max_upload_kb')" hint="PDF, Word, PowerPoint or Excel without macros, OpenDocument, images or MP4/WebM. Images are re-saved to remove hidden details." />
