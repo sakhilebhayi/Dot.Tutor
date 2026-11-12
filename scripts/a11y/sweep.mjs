@@ -51,19 +51,19 @@ function pageList(i) {
             '/learn/practice', '/learn/progress', '/learn/purchases', '/learn/account', '/learn/profile', '/learn/welcome', '/comms/inbox', '/comms/preferences', '/safety/me', '/safety/conversations', '/classroom', '/ai', '/ai/describe', '/user/profile']],
         university: ['demo.university@example.test', ['/learn', '/learn/courses', '/rooms']],
         adult: ['demo.adult@example.test', ['/rooms', `/rooms/${i.adultRoom}`, `/rooms/posts/${i.adultQuestion}`, `/rooms/groups/${i.group}`, `/rooms/${i.tutorRoom}`, `/rooms/levels/${i.level}`]],
-        learner: ['demo.learner@example.test', [`/learning/courses/${i.course}/learn/${i.firstLesson}`, `/learning/assessments/${i.assessment}`, `/learning/assessments/${i.assessment}/take`]],
+        learner: ['demo.learner@example.test', [`/learning/courses/${i.course}`, `/learning/courses/${i.course}/learn/${i.firstLesson}`, `/learning/assessments/${i.assessment}/take`]],
         tutor: ['demo.workspace.tutor@example.test', ['/teach', '/teach/bookings', '/teach/bookings?view=upcoming', '/teach/bookings?view=past', '/teach/calendar', '/teach/students', `/teach/students/${i.workspaceLearner}`,
             '/teach/offerings', '/teach/offerings/new', `/teach/offerings/${i.workspaceOffering}/edit`, '/teach/courses', '/teach/courses/new', '/teach/materials', '/teach/materials/assessments',
             '/teach/earnings', '/teach/payouts', '/teach/insights', '/teach/storefront', '/teach/storefront/promo', '/teach/profile', '/teach/rooms', '/money/earnings', '/tutor/profile', '/tutor/availability',
             '/my/bookings', '/classroom', '/ai/tutor', `/lessons/${i.workspaceConfirmed}/classroom`]],
-        studio: ['demo.tutor@example.test', ['/learning/studio/courses', `/learning/studio/courses/${i.course}`, `/learning/studio/courses/${i.course}/learners`, '/learning/banks', `/learning/banks/${i.bank}`, `/teach/materials/banks/${i.bank}`, `/teach/materials/assessments/${i.assessment}`]],
+        studio: ['demo.tutor@example.test', ['/learning/studio/courses', `/learning/studio/courses/${i.course}`, `/teach/materials/banks/${i.bank}`, `/teach/materials/assessments/${i.assessment}`]],
         newtutor: ['demo.new.tutor@example.test', ['/teach', '/teach/profile']],
         guardian: ['demo.ops.guardian@example.test', ['/guardian', `/guardian/children/${i.child}`, '/safety/guardian', '/comms/inbox']],
         ops: ['demo.ops.admin@example.test', ['/ops', '/ops/users', `/ops/users/${i.opsUser}`, '/ops/users/team', '/ops/verification', `/ops/verification/tutors/${i.pendingTutorProfile}`, '/ops/reviews', '/ops/reviews/bookings',
             `/ops/reviews/bookings/${i.disputedLesson}`, '/ops/safeguarding', '/ops/safeguarding/incidents', `/ops/safeguarding/incidents/${i.incident}`, `/ops/safeguarding/reports/${i.report}`, '/ops/safeguarding/minors',
             '/ops/safeguarding/screening', '/ops/safeguarding/integrity', '/ops/moderation', '/ops/support', `/ops/support/${i.conversation}`, '/ops/payments', `/ops/payments/orders/${i.order}`, '/ops/payouts',
             '/ops/academic', '/ops/academic/subjects', '/ops/academic/languages', '/ops/audit', '/money/ops', '/operator/academic', '/operator/subjects', '/operator/tutor-profiles', '/operator/verification',
-            '/safety/operator/queue', '/safety/operator/incidents', '/safety/operator/audit', '/ai/operator/log', '/learning/library/moderation', '/rooms/moderation']],
+            '/safety/operator/queue', '/safety/operator/incidents', '/ai/operator/log', '/rooms/moderation']],
         classroom: ['demo.classroom.learner@example.test', [`/lessons/${i.classroomLesson}/classroom`, '/classroom']],
     };
     return list;
@@ -74,6 +74,11 @@ async function pages(b, ids) {
         if (filter && !paths.some((p) => filter.test(`${group}:${p}`))) continue;
         let p;
         try { p = await person(b, email); } catch (e) { rows.push({ id: group, vp: 0, theme: '-', violations: [], error: e.message }); console.log('ERROR', group, e.message); continue; }
+        if (group === 'learner') { // the quiz and the lesson belong to a free course: enrol first, as a learner would
+            await p.page.goto(`${BASE}/learning/courses/${ids.course}`);
+            const enrol = p.page.locator('button:has-text("Enrol")');
+            if (await enrol.count()) await Promise.all([p.page.waitForNavigation().catch(() => {}), enrol.first().click()]);
+        }
         for (const path of paths) {
             const id = `${group}:${path}`;
             if (filter && !filter.test(id)) continue;

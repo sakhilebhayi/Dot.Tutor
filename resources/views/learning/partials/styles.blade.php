@@ -38,6 +38,7 @@
     .ln th, .ln td { text-align: left; padding: .5rem .4rem; border-top: 1px solid var(--td-line); vertical-align: top; }
     .ln fieldset { border: 1px solid var(--td-line); border-radius: 8px; padding: .75rem 1rem 1rem; margin: 0 0 1rem; }
     .ln legend { padding: 0 .4rem; font-weight: 600; color: var(--td-ink); }
+    .ln label:has(> input[type=checkbox]), .ln label:has(> input[type=radio]) { display: flex; gap: .5rem; align-items: center; min-height: 24px; font-size: .9rem; font-weight: 400; }
     .ln .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     .ln ::selection { background: var(--td-primary-soft); }
 </style>

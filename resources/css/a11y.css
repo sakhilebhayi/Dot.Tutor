@@ -14,6 +14,11 @@
         padding-block: 3px;
     }
 
+    /* A short link laid out as a block or flex item ("All" in a filter row) is at least 24 px wide too. */
+    .td-link {
+        min-inline-size: 24px;
+    }
+
     summary {
         min-block-size: 24px;
     }
