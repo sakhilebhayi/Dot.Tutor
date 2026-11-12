@@ -121,3 +121,4 @@ require __DIR__.'/tutor/integration.php';
 require __DIR__.'/tutor/ai.php';
 require __DIR__.'/tutor/comms.php';
 require __DIR__.'/tutor/community.php';
+require __DIR__.'/tutor/teach.php';
