@@ -74,7 +74,8 @@ class ClassroomNotificationsTest extends TestCase
 
         $learnerNotice = $this->inbox($teen, 'lesson_starting')->sole();
         $this->assertSame('Mathematics lesson with Tutor Thandi starts soon', $learnerNotice->data['title']);
-        $this->assertStringContainsString('The classroom opens at', $learnerNotice->data['message']);
+        // "at HH:MM" today, "on Ddd j M at HH:MM" when the opening falls on another day (D-2312).
+        $this->assertMatchesRegularExpression('/The classroom opens (at \d\d:\d\d|on \w{3} \d{1,2} \w{3} at \d\d:\d\d)/', $learnerNotice->data['message']);
         $this->assertSame('booking-'.$session->id, $learnerNotice->data['collapse_key']);
         $this->assertSame($this->inbox($teen, 'lesson_reminder')->sole()->data['collapse_key'], $learnerNotice->data['collapse_key']);
         $this->assertCount(0, $this->inbox($guardian, 'lesson_starting')); // like the hour reminder: the learner's

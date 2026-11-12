@@ -16,6 +16,9 @@ Round-2 cards: `scratchpad/tutor-jury-r2/critic-A.md` (6.39) and `critic-B.md` (
 | 8 | A 9: deadline still a promise after it passed; report listed twice | "Overdue ..." or "raised to more senior staff at ..." from the incident's own record; the urgent report is not repeated on the child page | `Ops\Guardian\GuardianSafety`, `guardian/child` |
 | 9 | A 6, B 4: result cards 360 to 470 px, "Next open times" not links | Two-row card; next times are links into booking with the time chosen (find results and storefront) | `student/find/index`, `student/storefront`, `student/polish.css` |
 | 10 | A 8, B 10: colour-only hover, hard cut between pages | Nav bar draws in, arrows on the landing's secondary actions, policy links thicken; 180 ms CSS cross-fade under no-preference, skipped-fade promises caught | `ds/shells.css`, `welcome`, `student/polish.css`, `layouts/partials/head` |
+| 11 | Coordinator (after fix-ops) | The classroom "starts soon" notification names the day when the room opens on another day | `Comms\Listeners\ClassroomNotifications` |
+
+After merging fix-ops: `TutorStanding` is fix-ops' version (`levelWaiting()`, the same "Qualification checked, level pending" words); the public badge keeps reading `TutorPresenter::verification`. One edge stays: a verified record of a kind that supports no level reads "checked, level pending" on the public profile but "not verified" in `TutorStanding` (fix-ops' rule).
 
 ### Not done, and why
 
