@@ -22,7 +22,7 @@ class LearningComposer
             'languageOptions' => Language::query()->active()->orderBy('sort')->get(['code', 'name_en', 'name_native'])
                 ->mapWithKeys(fn ($l) => [$l->code => $l->name_native.($l->name_native !== $l->name_en ? ' ('.$l->name_en.')' : '')])->all(),
             'subjectOptions' => Subject::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
-            'aiConfigured' => app()->bound(AiGateway::class) && app(AiGateway::class)->configured(),
+            'aiConfigured' => class_exists(AiGateway::class) && app(AiGateway::class)->configured(),
         ]);
     }
 }

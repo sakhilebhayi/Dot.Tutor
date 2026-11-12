@@ -54,9 +54,9 @@
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
                 <div class="avatar-xl">{{ strtoupper(substr(optional($tutorProfile->user)->name ?? '?', 0, 1)) }}</div>
                 <div>
-                    <div style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#f4f4f5;">
+                    <h1 style="margin:0;font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#f4f4f5;">
                         {{ optional($tutorProfile->user)->name ?? 'Unnamed tutor' }}
-                    </div>
+                    </h1>
                     @if($tutorProfile->headline)
                     <div style="font-size:0.85rem;color:#d4d4d8;margin-top:0.1rem;">{{ app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutorProfile->user, (string) $tutorProfile->headline)['text'] }}</div>
                     @endif

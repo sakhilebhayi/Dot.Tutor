@@ -4,6 +4,7 @@ namespace Tests\Feature\Student;
 
 use App\Domain\Academic\Contracts\LanguageProfile;
 use App\Domain\Academic\Models\Country;
+use App\Domain\Ai\Contracts\AiTutor;
 use App\Domain\Learning\Models\FlashcardSet;
 use App\Domain\Student\Models\StudentPreference;
 use App\Models\TutorSession;
@@ -43,6 +44,19 @@ class StudentScreensTest extends TestCase
             ->assertSee('Tell us what you need')
             ->assertSee('No lessons booked')
             ->assertDontSee('data-td-step="young"', false);
+    }
+
+    public function test_home_says_the_study_assistant_is_on_only_when_ai_is_configured(): void
+    {
+        // QA regression: the check asked the container whether the concrete AiGateway was "bound" (never), so the
+        // home page said the assistant was off even with AI switched on and a key set.
+        $learner = $this->person('Assistant Learner');
+        $this->learnerProfile($learner, 19);
+        config(['ai.enabled' => false]);
+        $this->actingAs($learner)->get(route('learn.home'))->assertOk()->assertSee('not switched on for Dot.Tutor yet');
+        config(['ai.enabled' => true, 'ai.anthropic.api_key' => 'sk-ant-test-not-used']);
+        $this->app->forgetInstance(AiTutor::class);
+        $this->actingAs($learner)->get(route('learn.home'))->assertOk()->assertSee('Ask the assistant')->assertDontSee('not switched on for Dot.Tutor yet');
     }
 
     public function test_a_grade_3_learner_gets_the_young_step_and_a_university_learner_does_not(): void

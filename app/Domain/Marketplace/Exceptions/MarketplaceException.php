@@ -14,4 +14,13 @@ class MarketplaceException extends RuntimeException
     {
         parent::__construct($message);
     }
+
+    /**
+     * A 4xx refusal is the rule's answer ("that group lesson is full", "not waiting for payment"), not a fault, so it
+     * is not written to the error log; anything raised with a 5xx status is still reported.
+     */
+    public function report(): bool
+    {
+        return $this->status < 500;
+    }
 }

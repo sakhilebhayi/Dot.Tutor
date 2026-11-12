@@ -3,6 +3,8 @@
 namespace App\Domain\Community\Services;
 
 use App\Domain\Academic\Contracts\LanguageProfile;
+use App\Domain\Community\Events\AnswerPosted;
+use App\Domain\Community\Events\QuestionResolved;
 use App\Domain\Community\Models\Post;
 use App\Domain\Community\Models\PostReport;
 use App\Domain\Community\Models\PostRevision;
@@ -63,7 +65,7 @@ class Posts
 
         $text = $this->prepareText($author, $room, $data['title'] ?? null, $data['body']);
 
-        return DB::transaction(function () use ($author, $room, $kind, $data, $parent, $group, $publish, $resourceId, $text) {
+        $post = DB::transaction(function () use ($author, $room, $kind, $data, $parent, $group, $publish, $resourceId, $text) {
             if (! $room->isTutorRoom() && $this->access->activeMembership($author, $room) === null && ! $this->access->isOperator($author)) {
                 $this->rooms->joinSubjectRoom($author, $room);
             }
@@ -91,6 +93,13 @@ class Posts
 
             return $post;
         });
+
+        // Only an answer others can see is announced (a held one is announced when a moderator releases it).
+        if ($post->kind === Post::ANSWER && $post->isVisible()) {
+            AnswerPosted::dispatch($post->id);
+        }
+
+        return $post;
     }
 
     /** @param array{title?: ?string, body: string} $data */
@@ -152,6 +161,7 @@ class Posts
             'resolved_by_id' => $actor->id,
             'last_activity_at' => now(),
         ])->save();
+        QuestionResolved::dispatch($question->id, $actor->id, $answer->id);
 
         return $question->fresh();
     }
@@ -166,6 +176,9 @@ class Posts
         $question->forceFill($resolved
             ? ['resolved_at' => $question->resolved_at ?? now(), 'resolved_by_id' => $actor->id, 'last_activity_at' => now()]
             : ['resolved_at' => null, 'resolved_by_id' => null, 'accepted_answer_id' => null, 'last_activity_at' => now()])->save();
+        if ($resolved) {
+            QuestionResolved::dispatch($question->id, $actor->id, $question->accepted_answer_id);
+        }
 
         return $question->fresh();
     }
@@ -239,6 +252,10 @@ class Posts
             'held_reason' => $heldReason,
             'note_given' => filled($note),
         ]);
+
+        if ($decision === 'release' && $post->kind === Post::ANSWER && $post->isVisible()) {
+            AnswerPosted::dispatch($post->id);
+        }
 
         return $post->fresh();
     }

@@ -2,15 +2,17 @@
 
 namespace App\Domain\Marketplace\Services;
 
+use App\Domain\Marketplace\Contracts\AcademicScopePort;
 use App\Domain\Marketplace\Contracts\LanguageProfilePort;
 use App\Domain\Marketplace\Contracts\TutorDirectory;
+use App\Domain\Marketplace\Models\TutorTeachingScope;
 use App\Enums\TutorProfileStatus;
 use App\Models\TutorProfile;
 
 /** Marketplace's own TutorDirectory: approved tutors only, with scope, languages and verification. */
 class EloquentTutorDirectory implements TutorDirectory
 {
-    public function __construct(private TutorPresenter $presenter, private LanguageProfilePort $languages) {}
+    public function __construct(private TutorPresenter $presenter, private LanguageProfilePort $languages, private AcademicScopePort $academic) {}
 
     public function approved(array $filters = []): array
     {
@@ -23,9 +25,37 @@ class EloquentTutorDirectory implements TutorDirectory
             ->get()
             ->filter(fn (TutorProfile $p) => empty($filters['language']) || collect($this->languagesOf($p))->contains('code', $filters['language']))
             ->filter(fn (TutorProfile $p) => empty($filters['level_id']) || $p->teachingScopes->isEmpty()
-                || $p->teachingScopes->contains(fn ($s) => $s->level_min_id === null || in_array((int) $filters['level_id'], [$s->level_min_id, $s->level_max_id], true)))
+                || $p->teachingScopes->contains(fn (TutorTeachingScope $s) => $this->scopeCovers($s, (int) $filters['level_id'])))
             ->map(fn (TutorProfile $p) => $this->card($p))
             ->values()->all();
+    }
+
+    /**
+     * A scope covers a level when the level sits inside its range (inclusive) in the same curriculum, as matching
+     * reads it. Comparing the level id with the two range ends only (the earlier rule) left out every level inside a
+     * range: a Grade 10 to 12 tutor was not listed for Grade 11 rooms (QA, browser run). Without the academic data
+     * the ends are all that can be checked.
+     */
+    private function scopeCovers(TutorTeachingScope $scope, int $levelId): bool
+    {
+        if ($scope->level_min_id === null && $scope->level_max_id === null) {
+            return true;
+        }
+        $minId = (int) ($scope->level_min_id ?? $scope->level_max_id);
+        $maxId = (int) ($scope->level_max_id ?? $scope->level_min_id);
+        if (in_array($levelId, [$minId, $maxId], true)) {
+            return true;
+        }
+        if (! $this->academic->isAvailable()) {
+            return false;
+        }
+        $curriculum = $this->academic->levelCurriculum($levelId);
+        if ($curriculum === null || $this->academic->levelCurriculum($minId) !== $curriculum) {
+            return false;
+        }
+        [$rank, $min, $max] = [$this->academic->levelRank($levelId), $this->academic->levelRank($minId), $this->academic->levelRank($maxId)];
+
+        return $rank !== null && $min !== null && $max !== null && $rank >= $min && $rank <= $max;
     }
 
     public function find(int $tutorProfileId): ?array

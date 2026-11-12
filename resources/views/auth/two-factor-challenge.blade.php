@@ -4,6 +4,8 @@
             <x-authentication-card-logo />
         </x-slot>
 
+        <h1 class="mb-4 font-display text-xl font-semibold text-[var(--ink)]">Two-step check</h1>
+
         <div x-data="{ recovery: false }">
             <div class="mb-4 text-sm text-[var(--moss)]" x-show="! recovery">
                 {{ __('Please confirm access to your account by entering the authentication code provided by your authenticator application.') }}

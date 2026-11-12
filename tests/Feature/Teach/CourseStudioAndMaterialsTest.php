@@ -106,6 +106,8 @@ class CourseStudioAndMaterialsTest extends TestCase
         $this->actingAs($tutor)->post(route('teach.materials.assessments.assign', $assessment->id), ['learner_id' => $student->id])->assertSessionHas('success');
         $this->actingAs($tutor)->post(route('teach.materials.assessments.assign', $assessment->id), ['learner_id' => $stranger->id])->assertSessionHas('error');
         $this->assertSame([$student->id], Assignment::query()->pluck('learner_id')->all());
+        // Regression (QA, browser run): the assessment page lists who it is assigned to (it was a 500 once assigned).
+        $this->actingAs($tutor)->get(route('teach.materials.assessments.show', $assessment->id))->assertOk()->assertSee('Anele');
 
         // Another tutor cannot open the bank or the assessment.
         [$other] = $this->tutorReadyToTeach('Other Tutor', 20000);

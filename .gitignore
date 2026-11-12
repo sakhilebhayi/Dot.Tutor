@@ -30,3 +30,8 @@ Thumbs.db
 /.taste-skill
 /.hallmark/screens
 /.impeccable/review
+
+# Browser end-to-end suite output (screenshots, logs, evidence)
+/tests/e2e/out
+/tests/e2e/classroom/node_modules
+/tests/e2e/classroom/shots

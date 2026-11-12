@@ -2,6 +2,8 @@
 
 namespace App\Domain\Community\Services;
 
+use App\Domain\Comms\Events\StudyGroupUpdated;
+use App\Domain\Community\Events\JoinRequested;
 use App\Domain\Community\Models\GroupMember;
 use App\Domain\Community\Models\GroupResource;
 use App\Domain\Community\Models\GroupTask;
@@ -96,6 +98,7 @@ class StudyGroups
 
         if ($group->join_rule === Room::APPROVAL) {
             $member = GroupMember::updateOrCreate(['group_id' => $group->id, 'user_id' => $user->id], ['role' => 'member', 'status' => GroupMember::PENDING]);
+            JoinRequested::dispatch(JoinRequested::GROUP, $group->id, $user->id, $member->id);
 
             return ['status' => 'pending', 'member' => $member];
         }
@@ -171,7 +174,7 @@ class StudyGroups
             throw CommunityRefusal::because('in_the_past', 'Choose a time in the future.', 422);
         }
 
-        return StudySession::create([
+        $session = StudySession::create([
             'room_id' => $group === null ? $room->id : null,
             'group_id' => $group?->id,
             'created_by_id' => $actor->id,
@@ -182,12 +185,23 @@ class StudyGroups
             'where_note' => isset($data['where_note']) ? $this->clean($room, $actor, $data['where_note']) : null,
             'uid' => Str::uuid()->toString(),
         ]);
+
+        if ($group !== null) {
+            $this->announce($group, $session, $actor, 'session_scheduled', $session->title.', '.$this->sessionTime($session).' ('.$session->duration_minutes.' minutes).');
+        }
+
+        return $session;
     }
 
     public function cancelSession(User $actor, StudySession $session): void
     {
         $this->mustOrganiseSession($actor, $session);
+        $wasCancelled = $session->cancelled_at !== null;
         $session->forceFill(['cancelled_at' => now()])->save();
+
+        if (! $wasCancelled && $session->group_id !== null) {
+            $this->announce($session->group, $session, $actor, 'session_changed', $session->title.' on '.$this->sessionTime($session).' is cancelled.');
+        }
     }
 
     /** The organiser records who attended, after the session started. @param list<int> $userIds */
@@ -335,6 +349,27 @@ class StudyGroups
         $session->group_id !== null
             ? $this->mustOrganise($actor, $session->group)
             : ($this->access->canManage($actor, $session->room) ?: throw CommunityRefusal::because('not_allowed', 'Only the tutor who runs this room can do that.', 403));
+    }
+
+    /**
+     * Tell the group's members (comms leaves out the organiser who did it) after the write commits. The summary holds
+     * only the session's own (already cleaned) title and time, never a member's name.
+     */
+    private function announce(StudyGroup $group, StudySession $session, User $actor, string $kind, string $summary): void
+    {
+        $memberIds = GroupMember::query()->where('group_id', $group->id)->where('status', GroupMember::ACTIVE)->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $event = new StudyGroupUpdated($group->id, (string) $group->name, $kind, $summary, $memberIds, $actor->id,
+            route('rooms.groups.show', $group, false), 'session:'.$session->id.':'.$kind);
+
+        DB::afterCommit(fn () => event($event));
+    }
+
+    /** "Tue 17 Nov at 15:00 SAST", in the time zone the session was scheduled in. */
+    private function sessionTime(StudySession $session): string
+    {
+        $local = CarbonImmutable::instance($session->starts_at)->setTimezone($session->timezone ?: config('app.timezone'));
+
+        return $local->format('D j M').' at '.$local->format('H:i T');
     }
 
     /** Short texts in a room for minors (or by a minor) have contact details hidden, like posts. */

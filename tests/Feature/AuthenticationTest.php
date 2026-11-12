@@ -27,7 +27,8 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // A plain account is a learner: their home is /learn (D-1801), not the legacy dashboard.
+        $response->assertRedirect(route('learn.home', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

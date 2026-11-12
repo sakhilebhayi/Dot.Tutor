@@ -55,7 +55,7 @@ return [
         ],
         'reminders' => [
             'label' => 'Lesson reminders',
-            'description' => 'A day before and an hour before each confirmed lesson.',
+            'description' => 'A day before and an hour before each confirmed lesson, and when its classroom is about to open.',
             'channels' => ['push', 'email'],
             'defaults' => ['push' => true, 'email' => true],
         ],
@@ -90,8 +90,8 @@ return [
             'defaults' => ['push' => false, 'email' => true],
         ],
         'community' => [
-            'label' => 'Study groups',
-            'description' => 'Updates from study groups you belong to.',
+            'label' => 'Rooms and study groups',
+            'description' => 'Answers to your questions, your answers accepted, requests to join what you run, and sessions in your study groups.',
             'channels' => ['push', 'email'],
             'defaults' => ['push' => true, 'email' => false],
         ],
@@ -126,6 +126,10 @@ return [
         'lesson_completed' => 'lessons',
         'lesson_review_invitation' => 'lessons',
         'lesson_reminder' => 'reminders',
+        // Classroom (D-812: comms listens)
+        'lesson_starting' => 'reminders',
+        'classroom_open' => 'lessons',
+        'lesson_summary' => 'lessons',
         'seat_confirmed' => 'lessons',
         'seat_cancelled' => 'lessons',
         // Safety
@@ -153,8 +157,12 @@ return [
         // Marketplace accounts
         'tutor_application_decided' => 'tutor_account',
         'tutor_verification_decided' => 'tutor_account',
-        // Community (wave 2 emits StudyGroupUpdated)
+        // Community (StudyGroupUpdated, AnswerPosted, QuestionResolved, JoinRequested)
         'study_group_update' => 'community',
+        'community_answer' => 'community',
+        'community_answer_accepted' => 'community',
+        'community_question_resolved' => 'community',
+        'community_join_request' => 'community',
         // Product news (marketing; never to minors)
         'product_update' => 'updates',
     ],
