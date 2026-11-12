@@ -2,6 +2,8 @@
 
 namespace App\Domain\Marketplace\Support;
 
+use App\Domain\Money\Money;
+
 /**
  * Decimal <-> integer minor units until the money agent's Money value object
  * lands. Exponent per ISO 4217; the currencies this platform names are listed,
@@ -29,11 +31,11 @@ final class MinorUnits
         return number_format($minor / (10 ** $exp), $exp, '.', '');
     }
 
-    /** "ZAR 350.00": code first, no symbol guessing (same as App\Support\Money). */
+    /** "R350.00": the one money display format (App\Domain\Money\Money::format(), D-2104). */
     public static function format(?int $minor, ?string $currency): string
     {
-        $currency = $currency ?: (string) config('tutor.currency');
+        $currency = strtoupper($currency ?: (string) config('tutor.currency'));
 
-        return $minor === null ? '' : $currency.' '.number_format($minor / (10 ** self::exponent($currency)), self::exponent($currency));
+        return $minor === null ? '' : Money::of($minor, $currency)->format();
     }
 }

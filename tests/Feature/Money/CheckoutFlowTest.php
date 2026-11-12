@@ -42,7 +42,7 @@ class CheckoutFlowTest extends TestCase
         $this->actingAs($learner)->postJson('/api/tutor/money/quote', ['items' => [$this->bookingItem($session) + ['price_minor' => 1]]])
             ->assertOk()
             ->assertJsonPath('total.amount_minor', 45000)
-            ->assertJsonPath('total.formatted', "R\u{202F}450.00")
+            ->assertJsonPath('total.formatted', "R450.00")
             ->assertJsonPath('lines.0.type', 'booking');
         $this->assertSame(0, Order::count());
     }

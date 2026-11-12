@@ -902,7 +902,8 @@
     .td-stats dd {
         margin: 0;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
+        /* Normal width, so a tile's figures are the same drawing as the figures in tables and text (D-2103). */
+        font-stretch: 100%;
         font-weight: 700;
         font-size: var(--td-text-xl);
         line-height: 1.1;

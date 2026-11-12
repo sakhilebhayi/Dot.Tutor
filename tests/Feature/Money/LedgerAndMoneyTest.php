@@ -25,9 +25,9 @@ class LedgerAndMoneyTest extends TestCase
         $this->assertSame(125050, Money::fromDecimal('1250.50')->minor);
         $this->assertSame(1001, Money::fromDecimal('10.005')->minor);
         $this->assertSame(-350, Money::fromDecimal('-3.5')->minor);
-        $this->assertSame("R\u{202F}1\u{202F}250.50", Money::of(125050)->format());
-        $this->assertSame("-R\u{202F}0.05", Money::of(-5)->format());
-        $this->assertSame("USD\u{202F}1\u{202F}000\u{202F}000.00", Money::of(100000000, 'USD')->format());
+        $this->assertSame("R1\u{202F}250.50", Money::of(125050)->format());
+        $this->assertSame("\u{2212}R0.05", Money::of(-5)->format());
+        $this->assertSame("$1\u{202F}000\u{202F}000.00", Money::of(100000000, 'USD')->format());
         $this->assertSame('1250.50', Money::of(125050)->toDecimalString());
         $this->assertSame(3750, Money::of(25000)->percentBps(1500)->minor);
         $this->assertSame(2, Money::of(15)->percentBps(1500)->minor, '2.25 rounds to 2');
