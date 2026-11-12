@@ -4,8 +4,10 @@ namespace Tests\Feature\Security;
 
 use App\Domain\Marketplace\Services\TutorPresenter;
 use App\Domain\Safety\Services\ContactRedactor;
+use App\Models\LessonResource;
 use App\Models\TutorSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\Learning\LearningFixtures;
 use Tests\Feature\Safety\BuildsSafetyState;
@@ -108,5 +110,27 @@ class ContentAndContactTest extends TestCase
         $second = $this->postJson("/api/tutor/learning/assessments/{$assessment}/attempts")->json('data.attempt_id');
         $passed = $this->postJson("/api/tutor/learning/attempts/{$second}/submit", ['answers' => [$question => 'a']])->assertOk();
         $this->assertStringContainsString('Factorise', $passed->getContent(), 'Once passed, the explanation is shown');
+    }
+
+    public function test_a_photo_shared_on_a_lesson_loses_its_location_metadata(): void
+    {
+        Storage::fake('lesson-resources');
+        $learner = $this->adult('Learner');
+        $profile = $this->makeTutor();
+        $session = $this->makeSession($profile, $learner, $this->makeSubject('Maths'), ['status' => 'confirmed']);
+
+        $image = imagecreatetruecolor(8, 8);
+        ob_start();
+        imagejpeg($image);
+        $jpeg = (string) ob_get_clean();
+        $exif = "Exif\0\0GPS-LATITUDE-26.2041";
+        $withExif = substr($jpeg, 0, 2)."\xFF\xE1".pack('n', strlen($exif) + 2).$exif.substr($jpeg, 2);
+        $file = UploadedFile::fake()->createWithContent('homework.jpg', $withExif);
+
+        $this->actingAs($learner)->post(route('resources.store', $session), ['title' => 'My homework', 'file' => $file])->assertRedirect();
+
+        $stored = LessonResource::query()->firstOrFail();
+        $this->assertSame('jpg', $stored->file_type);
+        $this->assertStringNotContainsString('GPS-LATITUDE', Storage::disk('lesson-resources')->get($stored->file_path));
     }
 }
