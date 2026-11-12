@@ -21,6 +21,7 @@ use App\Domain\Safety\Services\Guardians;
 use App\Models\Subject;
 use App\Models\TutorAvailabilityWindow;
 use App\Models\TutorProfile;
+use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Carbon;
@@ -122,6 +123,18 @@ switch ($cmd) {
         $born = app(LearnerProfiles::class)->birthDateFor($learner);
         $link = app(Guardians::class)->accept($invite['invitation'], (string) ($query['token'] ?? ''), $guardian, $born->setDay(15));
         $out = ['id' => $guardian->id, 'email' => $guardian->email, 'link_id' => $link->id];
+        break;
+
+    case 'confirmed-lesson':
+        // A paid, confirmed online lesson starting in a few minutes (the student journey, spec 01, books and pays one
+        // in the browser), as DemoClassroomSeeder writes it, for the two-browser classroom check.
+        $session = TutorSession::query()->create([
+            'tutor_profile_id' => $in['profile_id'], 'student_id' => $in['learner_id'], 'subject_id' => Subject::query()->where('slug', 'mathematics')->value('id'),
+            'delivery' => 'online', 'rate' => 250, 'rate_minor' => 25000, 'price_minor' => 25000, 'currency' => 'ZAR', 'kind' => TutorSession::KIND_ONE_TO_ONE,
+            'status' => 'confirmed', 'payment_status' => 'paid', 'starts_at' => now()->addMinutes((int) ($in['in_minutes'] ?? 5)), 'duration_minutes' => 60,
+            'notes' => 'E2E classroom lesson',
+        ]);
+        $out = ['id' => $session->id];
         break;
 
     case 'published-course':
