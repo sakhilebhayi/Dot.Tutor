@@ -37,3 +37,10 @@ Both critics took the slashed zero for a monospace. It is the body face itself: 
 - **polish-learner / ds**: `layouts/learner.blade.php` now takes its scope, nav and bottom bar from `GuardianShell::frame($step)` (falls back to the learner nav). If you change that file, keep the call. The team switcher (critic A13) is still in the shared frame for guardians too; it is yours to remove for all three roles.
 - **polish-teach / everyone**: money text must come from `Money::format()` or `x-td.money`; do not hand-build "R " strings. Tile values (`.td-stats dd`) are at normal width now.
 - **classroom**: learner-facing copy must not name relay or TURN servers; the tutor's copy may.
+
+## 6. Checks run (2026-11-12, after `git merge feat/r47-tutor`, already up to date at d5fe666)
+
+- `php artisan test --compact`: 993 tests, 986 pass, 7 skipped, 0 fail (branch point 980 / 973 / 7; +13 new).
+- `node --test tests/js/*.test.mjs`: 14 pass. `npm run build` clean. `php artisan view:cache` and `route:cache` pass (then cleared). Pint clean.
+- E2E `node tests/e2e/run.mjs` (all nine specs, since 09 signs in as the journeys' people): all pass, including 06 safety journey, 08 classroom WebRTC (two browsers connected, media both ways) and 09 route sweep (every GET route as every role at 390 and 1440, 0 problems).
+- Browser, headless Chrome at 1440 and 390: guardian home, child, Safety, Approvals, Payments, Messages; classroom pre-join as learner and tutor; figures on ops overview and payments, tutor today, earnings and offerings, learner home, purchases and find. No horizontal overflow, no console errors.
