@@ -8,6 +8,8 @@ import { initComboboxes } from './combobox.js';
 import { initFilePickers } from './file-picker.js';
 import { initShelf } from './shelf.js';
 import { initConfirm } from './confirm.js';
+import { initTableStacks } from './table-stack.js';
+import { initTabOverflow } from './tabs-overflow.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -18,6 +20,8 @@ function boot(root = document) {
     initFilePickers(root);
     initShelf(root);
     initConfirm();
+    initTableStacks(root);
+    initTabOverflow(root);
 }
 
 if (document.readyState === 'loading') {

@@ -105,8 +105,8 @@
                 @if ($decisions->isEmpty())
                     <x-td.state kind="empty" title="No decisions yet">Every verification decision is kept here and cannot be edited.</x-td.state>
                 @else
-                    <x-td.table caption="Verification decisions, newest first" caption-hidden dense>
-                        <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col">Change</th><th scope="col">Reason</th></tr></thead>
+                    <x-td.table caption="Verification decisions, newest first" caption-hidden dense stack>
+                        <thead><tr><th scope="col">When</th><th scope="col" data-stack="title">What</th><th scope="col">Change</th><th scope="col" data-stack="wide">Reason</th></tr></thead>
                         <tbody>
                             @foreach ($decisions as $d)
                                 <tr>

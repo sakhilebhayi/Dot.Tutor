@@ -10,8 +10,8 @@
                 <x-slot:actions><x-td.button href="{{ route('teach.courses.create') }}" variant="primary" size="sm">Start your first course</x-td.button></x-slot:actions>
             </x-td.state></div>
         @else
-            <x-td.table caption="Your courses" caption-hidden dense>
-                <thead><tr><th scope="col">Course</th><th scope="col">State</th><th scope="col" class="is-num">Lessons</th><th scope="col">Price</th><th scope="col" class="is-num">Learners</th><th scope="col" class="is-num">Paid sales</th><th scope="col" class="is-num">You kept</th></tr></thead>
+            <x-td.table caption="Your courses" caption-hidden dense stack>
+                <thead><tr><th scope="col">Course</th><th scope="col">State</th><th scope="col" class="is-num">Lessons</th><th scope="col">Price</th><th scope="col" class="is-num">Learners</th><th scope="col" class="is-num">Paid sales</th><th scope="col" class="is-num" data-stack="key">You kept</th></tr></thead>
                 <tbody>
                     @foreach ($courses as $c)
                         @php $sale = $sales->get($c->id); @endphp

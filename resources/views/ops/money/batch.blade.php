@@ -19,8 +19,8 @@
             @if ($payouts->isEmpty())
                 <x-td.state kind="empty" title="Nobody to pay in this batch">No tutor had at least the minimum available with a bank account on file.</x-td.state>
             @else
-                <x-td.table caption="Payouts in this batch" caption-hidden>
-                    <thead><tr><th scope="col">Tutor</th><th scope="col">Reference</th><th scope="col">Account</th><th scope="col">State</th><th scope="col" class="is-num">Amount</th><th scope="col"><span class="td-sr">Actions</span></th></tr></thead>
+                <x-td.table caption="Payouts in this batch" caption-hidden stack>
+                    <thead><tr><th scope="col">Tutor</th><th scope="col">Reference</th><th scope="col">Account</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Amount</th><th scope="col" data-stack="action"><span class="td-sr">Actions</span></th></tr></thead>
                     <tbody>
                         @foreach ($payouts as $p)
                             <tr>

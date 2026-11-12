@@ -131,7 +131,7 @@
             @if ($courses->isEmpty())
                 <x-td.state kind="empty" title="No published courses yet" />
             @else
-                <x-td.table caption="Published courses, newest first" caption-hidden dense>
+                <x-td.table caption="Published courses, newest first" caption-hidden dense stack>
                     <thead><tr><th scope="col">Course</th><th scope="col">Creator</th><th scope="col">Price</th><th scope="col">Published</th></tr></thead>
                     <tbody>
                         @foreach ($courses as $c)

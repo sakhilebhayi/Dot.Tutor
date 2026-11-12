@@ -108,8 +108,8 @@
             @if ($restrictions->isEmpty() && $actions->isEmpty())
                 <x-td.state kind="empty" title="No warnings, suspensions or moderation actions">This person's record is clear.</x-td.state>
             @else
-                <x-td.table caption="Restrictions and moderation actions, newest first" caption-hidden dense>
-                    <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col">Reason</th><th scope="col">State</th></tr></thead>
+                <x-td.table caption="Restrictions and moderation actions, newest first" caption-hidden dense stack>
+                    <thead><tr><th scope="col">When</th><th scope="col" data-stack="title">What</th><th scope="col" data-stack="wide">Reason</th><th scope="col">State</th></tr></thead>
                     <tbody>
                         @foreach ($restrictions as $r)
                             <tr>

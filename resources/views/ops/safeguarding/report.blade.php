@@ -10,7 +10,7 @@
                     <dt>State</dt><dd>{{ ucfirst($report->status) }}{{ $report->resolution ? ': '.$report->resolution : '' }}</dd>
                     <dt>Filed by</dt><dd>{{ $report->reporter?->name ?? 'Deleted account' }}</dd>
                     <dt>About</dt><dd>@if ($report->reportedUser)<a href="{{ route('ops.users.show', $report->reportedUser) }}">{{ $report->reportedUser->name }}</a>@else — @endif</dd>
-                    <dt>Content</dt><dd>{{ class_basename(str_replace('.', '\\', (string) $report->reportable_type)) }} {{ $report->reportable_id }}</dd>
+                    <dt>Content</dt><dd>{{ \App\Domain\Ops\Support\PlainWords::thing($report->reportable_type) }} {{ $report->reportable_id }}</dd>
                     <dt>A minor involved</dt><dd>{{ $report->involves_minor ? 'Yes' : 'No' }}</dd>
                     <dt>Incident</dt><dd>@if ($report->incident)<a href="{{ route('ops.safeguarding.incidents.show', $report->incident) }}">{{ $report->incident->reference }}</a> ({{ $report->incident->status }})@else None @endif</dd>
                 </dl>

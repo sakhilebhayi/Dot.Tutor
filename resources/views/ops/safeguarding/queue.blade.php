@@ -25,14 +25,14 @@
                 {{ $show === 'open' ? 'Reports filed by learners, guardians and tutors appear here with their response time.' : 'Reports appear here once actioned or dismissed.' }}
             </x-td.state>
         @else
-            <x-td.table caption="{{ $show === 'open' ? 'Open reports, most urgent first' : 'Closed reports, latest first' }}" caption-hidden>
-                <thead><tr><th scope="col">Priority</th><th scope="col">What</th><th scope="col">About</th><th scope="col">{{ $show === 'open' ? 'Respond by' : 'Outcome' }}</th><th scope="col"><span class="td-sr">Open</span></th></tr></thead>
+            <x-td.table caption="{{ $show === 'open' ? 'Open reports, most urgent first' : 'Closed reports, latest first' }}" caption-hidden stack>
+                <thead><tr><th scope="col">Priority</th><th scope="col" data-stack="title">What</th><th scope="col">About</th><th scope="col" data-stack="key">{{ $show === 'open' ? 'Respond by' : 'Outcome' }}</th><th scope="col" data-stack="action"><span class="td-sr">Open</span></th></tr></thead>
                 <tbody>
                     @foreach ($reports as $r)
                         <tr>
                             <td>@include('ops.partials.tag', ['text' => $priorityText[$r->priority->value], 'tone' => $priorityTone[$r->priority->value]])</td>
                             <td>{{ $r->category->label() }}@if ($r->involves_minor) <span class="text-sm ops-muted">· a minor is involved</span>@endif
-                                <div class="text-sm ops-muted">{{ class_basename(str_replace('.', '\\', (string) $r->reportable_type)) }} · filed {{ $r->created_at->timezone($tz)->format('j M H:i') }}</div></td>
+                                <div class="text-sm ops-muted">{{ \App\Domain\Ops\Support\PlainWords::thing($r->reportable_type) }} · filed {{ $r->created_at->timezone($tz)->format('j M H:i') }}</div></td>
                             <td>{{ $r->reportedUser?->name ?? '—' }}</td>
                             <td class="ops-num text-sm">
                                 @if ($show === 'open')

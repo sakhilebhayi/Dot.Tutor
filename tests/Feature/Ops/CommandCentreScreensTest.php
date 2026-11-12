@@ -113,7 +113,8 @@ class CommandCentreScreensTest extends TestCase
         $this->get(route('ops.safeguarding.minors'))->assertOk()->assertSee('Lerato Child');
         $this->get(route('ops.safeguarding.screening'))->assertOk()->assertSee('Approved tutors without a current screening');
         $this->get(route('ops.safeguarding.integrity'))->assertOk();
-        $this->get(route('ops.audit'))->assertOk()->assertSee('safety.report.filed');
+        // Plain words on the operator screen (D-2209): the action as a sentence, never "user:60" for a person.
+        $this->get(route('ops.audit'))->assertOk()->assertSee('Report filed')->assertDontSee('user:');
         $this->get(route('ops.audit', ['verify' => 1]))->assertOk()->assertSee('Chain intact');
 
         $this->get(route('ops.moderation'))->assertOk()->assertSee('How do I factorise?')->assertSee('Learner under 13');

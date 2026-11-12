@@ -73,8 +73,8 @@
             @if ($languages->isEmpty())
                 <x-td.state kind="empty" title="No tutor has listed a teaching language">Tutors list the languages they teach in from their workspace.</x-td.state>
             @else
-                <x-td.table caption="Tutors' teaching languages, unverified first" caption-hidden dense>
-                    <thead><tr><th scope="col">Tutor</th><th scope="col">Teaches in</th><th scope="col">Declared level</th><th scope="col">State</th><th scope="col"><span class="td-sr">Action</span></th></tr></thead>
+                <x-td.table caption="Tutors' teaching languages, unverified first" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Tutor</th><th scope="col">Teaches in</th><th scope="col">Declared level</th><th scope="col">State</th><th scope="col" data-stack="action"><span class="td-sr">Action</span></th></tr></thead>
                     <tbody>
                         @foreach ($languages as $ul)
                             <tr>
@@ -101,7 +101,7 @@
             @if ($tutors->isEmpty())
                 <x-td.state kind="empty" title="No approved tutors yet">Approved and suspended tutors are listed here.</x-td.state>
             @else
-                <x-td.table caption="Approved and suspended tutors" caption-hidden dense>
+                <x-td.table caption="Approved and suspended tutors" caption-hidden dense stack>
                     <thead><tr><th scope="col">Tutor</th><th scope="col">State</th><th scope="col">Verification level</th></tr></thead>
                     <tbody>
                         @foreach ($tutors as $t)

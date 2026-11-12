@@ -1,18 +1,27 @@
-{{-- Audit entries (safety's append-only, hash-chained log). Context is metadata only; shown as key: value. --}}
+{{-- Audit entries (safety's append-only, hash-chained log), in plain words (D-2209): the person's name, the action as
+     a sentence (a link that shows only that kind), what it was about, and the details as label: value. --}}
+@php
+    $plain = \App\Domain\Ops\Support\PlainWords::class;
+    $actorNames = $entries->isEmpty() ? [] : \App\Models\User::query()->whereIn('id', $entries->pluck('actor_id')->filter()->unique())->pluck('name', 'id')->all();
+    $tz = config('tutor.timezone');
+@endphp
 <x-td.panel title="Audit history" flush>
     @if ($entries->isEmpty())
         <x-td.state kind="empty" title="No audit entries">Nothing has been recorded{{ isset($filtered) && $filtered ? ' for these filters' : '' }}.</x-td.state>
     @else
-        <x-td.table :caption="$caption" caption-hidden dense>
-            <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">About</th><th scope="col">Details</th></tr></thead>
+        <x-td.table :caption="$caption" caption-hidden dense stack>
+            <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col" data-stack="title">Action</th><th scope="col">About</th><th scope="col" data-stack="wide">Details</th></tr></thead>
             <tbody>
                 @foreach ($entries as $e)
                     <tr>
-                        <td class="ops-num text-sm" style="white-space:nowrap">{{ $e->created_at?->timezone(config('tutor.timezone'))->format('j M Y H:i:s') }}</td>
-                        <td class="text-sm">{{ $e->actor_label ?: ($e->actor_id ? 'User '.$e->actor_id : 'System') }}</td>
-                        <td class="text-sm"><code>{{ $e->action }}</code></td>
-                        <td class="text-sm">{{ $e->subject_type ? class_basename(str_replace('.', '\\', $e->subject_type)).' '.$e->subject_id : '—' }}</td>
-                        <td class="text-sm">{{ collect($e->context ?? [])->map(fn ($v, $k) => $k.': '.(is_scalar($v) || $v === null ? var_export($v, true) : json_encode($v)))->take(6)->join('; ') }}</td>
+                        <td class="ops-num text-sm" style="white-space:nowrap">{{ $e->created_at?->timezone($tz)->format('j M Y H:i:s') }}</td>
+                        <td class="text-sm">{{ $plain::actor($e->actor_id, $e->actor_label, $actorNames) }}</td>
+                        <td class="text-sm">
+                            <a href="{{ route('ops.audit', ['action' => $e->action]) }}">{{ $plain::action($e->action) }}</a>
+                            @if ($area = $plain::area($e->action))<span class="block ops-muted">{{ $area }}</span>@endif
+                        </td>
+                        <td class="text-sm">{{ $e->subject_type ? $plain::thing($e->subject_type).' '.$e->subject_id : '' }}</td>
+                        <td class="text-sm">{{ $plain::details($e->context ?? []) }}</td>
                     </tr>
                 @endforeach
             </tbody>

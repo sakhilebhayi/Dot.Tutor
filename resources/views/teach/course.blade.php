@@ -291,7 +291,7 @@
                 @if ($learners->isEmpty())
                     <div class="p-5"><x-td.state kind="empty" title="No learners yet">After you publish, learners who enrol appear here with how far they are. You see their name, version and progress only.</x-td.state></div>
                 @else
-                    <x-td.table caption="Learners in this course" caption-hidden dense>
+                    <x-td.table caption="Learners in this course" caption-hidden dense stack>
                         <thead><tr><th scope="col">Learner</th><th scope="col">Enrolled</th><th scope="col" class="is-num">Version</th><th scope="col">Progress</th><th scope="col">Completed</th></tr></thead>
                         <tbody>
                             @foreach ($learners as $l)

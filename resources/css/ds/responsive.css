@@ -1,0 +1,129 @@
+/*
+ * Phone patterns for the work screens (polish-teach, D-2202 and D-2203). Tokens only; no new colours.
+ *
+ * 1. Stacked rows (x-td.table stack, resources/js/ds/table-stack.js): under 40rem a data table becomes a list of
+ *    row cards. Line 1 is the title with the key figure (You keep, Total, Respond by) at the right; the other fields
+ *    follow as small labelled pairs in two columns; the row's action runs across the foot, always on screen. Without
+ *    script the table keeps scrolling inside its labelled region.
+ * 2. Tab rows wider than the screen (resources/js/ds/tabs-overflow.js): the row scrolls in its own lane with scroll
+ *    snap, the current tab is brought into view, and each side that has more tabs fades out as the affordance.
+ */
+@layer components {
+    @media (max-width: 40rem) {
+        .td-table--stack.is-stackable,
+        .td-table--stack.is-stackable tbody,
+        .td-table--stack.is-stackable tfoot {
+            display: block;
+        }
+
+        .td-table--stack.is-stackable caption {
+            display: block;
+        }
+
+        .td-table--stack.is-stackable thead {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        .td-table--stack.is-stackable tr {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: var(--td-space-2) var(--td-space-4);
+            align-items: start;
+            padding: var(--td-row-pad-y) var(--td-row-pad-x);
+            border-bottom: 1px solid var(--td-line);
+        }
+
+        .td-table--stack.is-stackable tbody tr:hover {
+            background: transparent;
+        }
+
+        .td-table--stack.is-stackable :is(th, td) {
+            display: block;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            text-align: start;
+            overflow-wrap: anywhere;
+        }
+
+        /* Line 1: the title, and the key figure at the right edge. */
+        .td-table--stack.is-stackable [data-stack='title'] {
+            grid-column: 1;
+            grid-row: 1;
+            font-weight: 650;
+        }
+
+        .td-table--stack.is-stackable tr:not(:has(> [data-stack='key'])) > [data-stack='title'] {
+            grid-column: 1 / -1;
+        }
+
+        .td-table--stack.is-stackable [data-stack='key'] {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: end;
+            text-align: end;
+            font-weight: 700;
+        }
+
+        /* Everything else is a small labelled pair; long text and the action take the full width. */
+        .td-table--stack.is-stackable [data-label]:not([data-label='']):not([data-stack='title']):not([data-stack='action'])::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: 0.125rem;
+            color: var(--td-ink-2);
+            font-size: var(--td-text-xs, 0.8125rem);
+            font-weight: 600;
+        }
+
+        .td-table--stack.is-stackable :is([data-stack='wide'], [data-stack='action']) {
+            grid-column: 1 / -1;
+        }
+
+        .td-table--stack.is-stackable [data-stack='action'] {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--td-space-2);
+            align-items: center;
+        }
+
+        .td-table--stack.is-stackable [data-stack='action'] > form {
+            display: contents;
+        }
+
+        .td-table--stack.is-stackable [data-stack='action'] > div {
+            justify-content: flex-start;
+        }
+
+        .td-table--stack.is-stackable td:empty {
+            display: none;
+        }
+    }
+
+    /* Tab rows: snap, keep the indicator inside, and fade the side that has more. */
+    .td-tabs {
+        position: relative;
+        scroll-snap-type: x proximity;
+        scroll-padding-inline: var(--td-space-6);
+    }
+
+    .td-tabs .td-tab {
+        scroll-snap-align: start;
+    }
+
+    .td-tabs[data-more-end] {
+        mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+    }
+
+    .td-tabs[data-more-start] {
+        mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+    }
+
+    .td-tabs[data-more-start][data-more-end] {
+        mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    }
+}

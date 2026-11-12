@@ -12,8 +12,8 @@
             @if ($resources->isEmpty())
                 <div class="p-5"><x-td.state kind="empty" title="Nothing uploaded yet">Your own work can be free or sold; someone else's work only under an open licence or from an official source, never for sale. Past exam papers need the publisher's link and a reviewer's check.</x-td.state></div>
             @else
-                <x-td.table caption="Your library uploads" caption-hidden dense>
-                    <thead><tr><th scope="col">Title</th><th scope="col">Licence</th><th scope="col">Quality</th><th scope="col">State</th><th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Sales</th></tr></thead>
+                <x-td.table caption="Your library uploads" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Title</th><th scope="col">Licence</th><th scope="col">Quality</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Price</th><th scope="col" class="is-num">Sales</th></tr></thead>
                     <tbody>
                         @foreach ($resources as $r)
                             @php $sale = $sales->get($r->id); @endphp

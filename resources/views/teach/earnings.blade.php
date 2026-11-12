@@ -40,10 +40,10 @@
                 </x-td.state>
             </div>
         @else
-            <x-td.table caption="Earnings in this period" caption-hidden dense>
+            <x-td.table caption="Earnings in this period" caption-hidden dense stack>
                 <thead><tr>
-                    <th scope="col">Date</th><th scope="col">Item</th>
-                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num">You keep</th>
+                    <th scope="col">Date</th><th scope="col" data-stack="title">Item</th>
+                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num" data-stack="key">You keep</th>
                     <th scope="col">Status</th>
                 </tr></thead>
                 <tbody>

@@ -7,8 +7,8 @@
             @if ($incidents->isEmpty())
                 <x-td.state kind="success" title="No incidents">Critical reports open one automatically; you can also open one below.</x-td.state>
             @else
-                <x-td.table caption="Incidents, open and most escalated first" caption-hidden>
-                    <thead><tr><th scope="col">Reference</th><th scope="col">Severity</th><th scope="col">What</th><th scope="col">State</th><th scope="col">Timer</th></tr></thead>
+                <x-td.table caption="Incidents, open and most escalated first" caption-hidden stack>
+                    <thead><tr><th scope="col">Reference</th><th scope="col">Severity</th><th scope="col">What</th><th scope="col">State</th><th scope="col" data-stack="key">Timer</th></tr></thead>
                     <tbody>
                         @foreach ($incidents as $i)
                             <tr>
