@@ -2,11 +2,13 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Domain\Security\Services\AccountClosure;
 use App\Enums\SessionStatus;
 use App\Models\Team;
 use App\Models\TutorSession;
 use App\Models\User;
 use App\Services\TutorModeration;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Laravel\Jetstream\Contracts\DeletesTeams;
 use Laravel\Jetstream\Contracts\DeletesUsers;
@@ -23,14 +25,27 @@ class DeleteUser implements DeletesUsers
      */
     public function delete(User $user): void
     {
-        DB::transaction(function () use ($user) {
-            $this->preserveMarketplaceHistory($user);
-            $this->deleteTeams($user);
-            $user->deleteProfilePhoto();
-            $user->tokens->each->delete();
-            $user->notifications()->delete();
-            $user->delete();
-        });
+        try {
+            DB::transaction(function () use ($user) {
+                $this->preserveMarketplaceHistory($user);
+                $this->deleteTeams($user);
+                $user->deleteProfilePhoto();
+                $user->tokens->each->delete();
+                $user->notifications()->delete();
+                $user->delete();
+            });
+        } catch (QueryException $e) {
+            // Money and safeguarding records refuse to lose their person (foreign keys restrict): the account is
+            // closed instead of deleted (R-47 security S-21, D-1520).
+            if (! in_array((string) $e->getCode(), ['23000', '23503'], true)) {
+                throw $e;
+            }
+
+            DB::transaction(function () use ($user) {
+                $this->preserveMarketplaceHistory($user);
+                app(AccountClosure::class)->close($user->fresh());
+            });
+        }
     }
 
     /**

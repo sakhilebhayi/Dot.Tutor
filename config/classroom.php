@@ -56,4 +56,10 @@ return [
     'notes' => [
         'max_length' => 20000,
     ],
+
+    // Hosts a tutor's fallback meeting link may point at (R-47 security S-09). A link to a chat app (wa.me, t.me)
+    // or a personal page would hand a learner, possibly a child, an off-platform contact. A host matches itself and
+    // its subdomains (us02web.zoom.us). Comma-separated override: CLASSROOM_MEETING_HOSTS.
+    'meeting_hosts' => array_values(array_filter(array_map('trim', explode(',', (string) env('CLASSROOM_MEETING_HOSTS',
+        'meet.google.com,zoom.us,teams.microsoft.com,teams.live.com,whereby.com,meet.jit.si,webex.com'))))),
 ];

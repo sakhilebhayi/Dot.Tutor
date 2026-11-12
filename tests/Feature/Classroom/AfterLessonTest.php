@@ -147,8 +147,10 @@ class AfterLessonTest extends TestCase
         $this->actingAs($tutor)->post(route('classroom.link', $session), ['external_url' => 'http://meet.example.com/abc'])->assertSessionHasErrors('external_url');
         $this->actingAs($tutor)->post(route('classroom.link', $session), ['external_url' => 'javascript:alert(1)'])->assertSessionHasErrors('external_url');
         $this->actingAs($learner)->post(route('classroom.link', $session), ['external_url' => 'https://meet.example.com/abc'])->assertForbidden();
-        $this->actingAs($tutor)->post(route('classroom.link', $session), ['external_url' => 'https://meet.example.com/abc-defg'])->assertSessionHasNoErrors();
+        // Only meeting-room hosts (R-47 security S-09): a chat app link is refused.
+        $this->actingAs($tutor)->post(route('classroom.link', $session), ['external_url' => 'https://wa.me/27820000000'])->assertSessionHasErrors('external_url');
+        $this->actingAs($tutor)->post(route('classroom.link', $session), ['external_url' => 'https://meet.google.com/abc-defg-hij'])->assertSessionHasNoErrors();
 
-        $this->actingAs($learner)->get(route('classroom.show', $session))->assertSee('https://meet.example.com/abc-defg');
+        $this->actingAs($learner)->get(route('classroom.show', $session))->assertSee('https://meet.google.com/abc-defg-hij');
     }
 }

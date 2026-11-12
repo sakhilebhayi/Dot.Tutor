@@ -54,7 +54,8 @@ class GuardianLinkingTest extends TestCase
 
         $this->actingAs($guardian)->postJson(route('safety.guardians.accept.store', $invitation->id), [
             'token' => $token,
-            'birth_date' => now()->subYears(9)->toDateString(),
+            // The month an operator already verified (a different one is refused: R-47 security S-06).
+            'birth_date' => now()->subYears(9)->subMonths(2)->toDateString(),
             'consent' => '1',
             'recording_consent' => true,
         ])->assertCreated()->assertJsonPath('link.status', 'active');

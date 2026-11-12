@@ -12,6 +12,7 @@ use App\Domain\Academic\Models\Institution;
 use App\Domain\Academic\Models\LearnerProfile;
 use App\Domain\Academic\Models\SubjectOffering;
 use App\Domain\Academic\Services\LearnerProfiles;
+use App\Domain\Safety\Enums\AgeBand;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,13 +134,15 @@ class LearnerProfileTest extends TestCase
         $this->actingAs($this->learner)->put(route('academic.profile.update'), $this->payload(['institution_id' => $uct]));
         $this->assertNull(LearnerProfile::query()->value('institution_id'));
 
-        $this->actingAs($this->learner)->put(route('academic.profile.update'), $this->payload([
+        // A different learner: a declared 16-year-old cannot make themselves 20 (R-47 security S-04, D-1503).
+        $student = User::factory()->create();
+        $this->actingAs($student)->put(route('academic.profile.update'), $this->payload([
             'academic_level_id' => $this->level('za-higher-education', 'undergraduate-2')->id,
             'subjects' => [$this->subject('statistics')->id],
             'birth_year' => now()->subYears(20)->year,
             'institution_id' => $uct,
         ]))->assertSessionHasNoErrors();
-        $this->assertSame($uct, LearnerProfile::query()->value('institution_id'));
+        $this->assertSame($uct, LearnerProfile::query()->where('user_id', $student->id)->value('institution_id'));
     }
 
     public function test_validation_rejects_mismatched_structure_and_impossible_dates(): void
@@ -172,7 +175,7 @@ class LearnerProfileTest extends TestCase
         $profile = LearnerProfile::query()->firstOrFail();
 
         // Bound by the integration provider (R-47 D-1400): the safety rule bands the conservative birth date.
-        $expected = \App\Domain\Safety\Enums\AgeBand::fromBirthDate($profile->ageBandBirthDate())->value;
+        $expected = AgeBand::fromBirthDate($profile->ageBandBirthDate())->value;
         $this->assertSame($expected, app(LearnerProfiles::class)->ageBand($profile));
         $this->assertSame($profile->ageBandBirthDate()->toDateString(), app(LearnerProfiles::class)->birthDateFor($this->learner)->toDateString());
         $this->assertNull(app(LearnerProfiles::class)->birthDateFor(User::factory()->create()));

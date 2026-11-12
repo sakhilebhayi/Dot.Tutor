@@ -4,52 +4,46 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Baseline browser protections on every response. A header the route already set is left alone.
+ * Browser protections on every response (R-47 security S-29, D-1514). A header the route already set is left alone
+ * (private files send their own sandboxing policy).
  *
- * Enforced now: nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, a Permissions-Policy that denies the powerful
- * features this platform never uses, and HSTS on HTTPS requests only (no includeSubDomains / preload on purpose: the
- * sibling Dot platforms live on neighbouring subdomains and set their own).
- *
- * The Content-Security-Policy is REPORT-ONLY. The pages use inline scripts and styles, Alpine/Livewire and the Tailwind
- * CDN, so the policy allows 'unsafe-inline' and 'unsafe-eval' for now. Violations are reported to /csp-report, which
- * logs only the directive and the blocked host, so the origin list below can be checked against what the pages
- * really load before anything is enforced. Do not add an origin that no view loads.
+ * The Content-Security-Policy is ENFORCED and nonce-based: every page script is a built module from this origin or
+ * an inline script carrying the per-request nonce (Vite::cspNonce(), which @vite, Livewire and the layouts use).
+ * 'unsafe-eval' is added only on pages that run Livewire (its bundled Alpine evaluates expressions). Styles keep
+ * 'unsafe-inline' (style attributes throughout the views; no script can run from a style). Nothing loads from
+ * another host: fonts, icons and scripts are self-hosted (ds). The classroom page alone may use the camera, the
+ * microphone and screen sharing (WebRTC; STUN and peer connections are not governed by connect-src). Forms may
+ * send the browser on to Paystack's checkout and to InfoDot. SECURITY_CSP_REPORT_ONLY=true is the escape hatch.
  */
 class SecurityHeaders
 {
+    /** Route names whose page may ask for the camera, microphone and screen (the live classroom). */
+    private const MEDIA_ROUTES = ['classroom.show'];
+
     public function handle(Request $request, Closure $next): Response
     {
+        $nonce = Vite::useCspNonce();
+
         $response = $next($request);
+
+        $media = in_array($request->route()?->getName(), self::MEDIA_ROUTES, true);
 
         $headers = [
             'X-Content-Type-Options' => 'nosniff',
             'X-Frame-Options' => 'SAMEORIGIN',
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
-            'Permissions-Policy' => 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+            'Cross-Origin-Opener-Policy' => 'same-origin',
+            'Permissions-Policy' => $media
+                ? 'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()'
+                : 'camera=(), microphone=(), display-capture=(), geolocation=(), payment=(), usb=()',
         ];
 
-        $policy = implode('; ', [
-            "default-src 'self'",
-            // cdn.tailwindcss.com: the Tailwind Play CDN script in layouts/app.blade.php.
-            // unpkg.com: the Alpine 3.10.2 script tag on the welcome page (the only view that loads from it).
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com",
-            // fonts.googleapis.com: the Google Fonts stylesheets (all layouts, welcome page, error pages).
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            // fonts.gstatic.com: the font files those stylesheets point at.
-            "font-src 'self' https://fonts.gstatic.com",
-            // images.unsplash.com: the welcome and sign-in photographs (CSS background-image).
-            "img-src 'self' data: blob: https://images.unsplash.com",
-            "connect-src 'self' wss: https:",
-            "frame-ancestors 'self'",
-            "object-src 'none'",
-            "base-uri 'self'",
-            'report-uri /csp-report',
-        ]);
-
-        $headers[config('security.csp_report_only', true) ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'] = $policy;
+        $headers[config('security.csp_report_only', false) ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy']
+            = $this->policy($nonce, $this->runsLivewire($response));
 
         if ($request->isSecure() && config('security.hsts_seconds', 0) > 0) {
             $headers['Strict-Transport-Security'] = 'max-age='.(int) config('security.hsts_seconds');
@@ -62,5 +56,54 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    private function policy(string $nonce, bool $livewire): string
+    {
+        $formTargets = array_filter([
+            'https://checkout.paystack.com',
+            $this->origin((string) config('ecosystem.infodot.redeem_url')),
+            $this->origin((string) config('ecosystem.platforms.infodot.url', '')),
+        ]);
+
+        return implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'nonce-{$nonce}'".($livewire ? " 'unsafe-eval'" : ''),
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self' data:",
+            "img-src 'self' data: blob:",
+            "media-src 'self' blob:",
+            "connect-src 'self'",
+            "worker-src 'self'",
+            "manifest-src 'self'",
+            "frame-src 'none'",
+            "frame-ancestors 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self' ".implode(' ', array_unique($formTargets)),
+            'report-uri /csp-report',
+        ]);
+    }
+
+    private function runsLivewire(Response $response): bool
+    {
+        $type = (string) $response->headers->get('Content-Type');
+
+        if ($type !== '' && ! str_contains($type, 'text/html')) {
+            return false;
+        }
+
+        $content = method_exists($response, 'getContent') ? (string) $response->getContent() : '';
+
+        return str_contains($content, 'livewireScriptConfig') || str_contains($content, 'data-update-uri=');
+    }
+
+    private function origin(string $url): ?string
+    {
+        $parts = parse_url($url);
+
+        return isset($parts['scheme'], $parts['host']) && in_array($parts['scheme'], ['https', 'http'], true)
+            ? $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '')
+            : null;
     }
 }

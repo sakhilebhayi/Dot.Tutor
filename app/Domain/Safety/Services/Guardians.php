@@ -8,6 +8,7 @@ use App\Domain\Safety\Models\AgeRecord;
 use App\Domain\Safety\Models\Consent;
 use App\Domain\Safety\Models\GuardianInvitation;
 use App\Domain\Safety\Models\GuardianLink;
+use App\Domain\Safety\Notifications\GuardianAdded;
 use App\Domain\Safety\Notifications\GuardianInvited;
 use App\Domain\Safety\Support\ConsentText;
 use App\Models\User;
@@ -97,6 +98,12 @@ class Guardians
             throw ValidationException::withMessages(['invitation' => 'This invitation was sent to a different email address. Sign in with that address.']);
         }
 
+        // The address must be proven (InfoDot vouches for it at sign-in; a changed address loses its proof), or a
+        // learner sets a second account's email to their parent's and accepts as them (R-47 security S-01/S-06).
+        if (config('safety.guardians.require_matching_email') && $guardian->email_verified_at === null) {
+            throw ValidationException::withMessages(['invitation' => 'Your email address is not confirmed. Sign in again through InfoDot, then open the link.']);
+        }
+
         if ($guardian->id === $invitation->learner_id) {
             throw ValidationException::withMessages(['invitation' => 'A learner cannot be their own guardian.']);
         }
@@ -114,6 +121,9 @@ class Guardians
         }
 
         $learner = $invitation->learner;
+        $this->guardDeclaredBirthDate($learner, $learnerBirthDate);
+        $existingGuardianIds = GuardianLink::query()->active()->where('learner_id', $learner->id)
+            ->where('guardian_id', '!=', $guardian->id)->pluck('guardian_id')->all();
 
         $link = DB::transaction(function () use ($invitation, $guardian, $learner, $learnerBirthDate, $recordingConsent) {
             AgeRecord::create([
@@ -146,6 +156,11 @@ class Guardians
 
         app(Messenger::class)->syncGuardians($learner);
 
+        if ($existingGuardianIds !== []) {
+            Notification::send(User::query()->whereIn('id', $existingGuardianIds)->get(),
+                new GuardianAdded(Str::before(trim((string) $learner->name), ' ') ?: 'Your learner', $invitation->relationship));
+        }
+
         Audit::record($guardian, 'safety.guardian.linked', $link, [
             'learner_id' => $learner->id,
             'consent_version' => config('safety.guardians.consent_version'),
@@ -153,6 +168,24 @@ class Guardians
         ]);
 
         return $link;
+    }
+
+    /**
+     * A later guardian cannot move a date of birth an earlier guardian or an operator confirmed (R-47 security
+     * S-06): otherwise any adult the learner invites declares a nine-year-old to be seventeen, and the child's
+     * protections fall away. A different month goes to an operator, who records a verified date.
+     */
+    private function guardDeclaredBirthDate(User $learner, CarbonImmutable $learnerBirthDate): void
+    {
+        $confirmed = AgeRecord::query()->where('user_id', $learner->id)
+            ->whereIn('source', ['operator_verified', 'guardian_declared'])
+            ->orderByRaw("case when source = 'operator_verified' then 0 else 1 end")
+            ->orderBy('id')
+            ->first();
+
+        if ($confirmed !== null && $confirmed->birth_date->format('Y-m') !== $learnerBirthDate->format('Y-m')) {
+            throw ValidationException::withMessages(['birth_date' => 'This date of birth differs from the one already confirmed for this learner. Contact support to correct it.']);
+        }
     }
 
     public function revoke(GuardianLink $link, User $by, ?string $reason = null): void

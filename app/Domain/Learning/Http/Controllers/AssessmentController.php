@@ -2,6 +2,7 @@
 
 namespace App\Domain\Learning\Http\Controllers;
 
+use App\Domain\Community\Support\Names;
 use App\Domain\Learning\Contracts\Seams\AcademicScopeLookup;
 use App\Domain\Learning\Contracts\Seams\SafeguardingCheck;
 use App\Domain\Learning\Contracts\Seams\TutorStanding;
@@ -210,6 +211,6 @@ class AssessmentController extends LearningController
         Gate::authorize('manage', $assessment);
 
         return response()->json(['data' => $assessment->attempts()->with('user:id,name')->where('status', 'submitted')->orderByDesc('submitted_at')->get()
-            ->map(fn ($a) => ['id' => $a->id, 'learner' => $a->user?->name, 'score' => $a->score, 'max_score' => $a->max_score, 'percent' => $a->percent, 'passed' => $a->passed, 'late' => $a->late, 'submitted_at' => $a->submitted_at->toIso8601String()])]);
+            ->map(fn ($a) => ['id' => $a->id, 'learner' => $a->user ? Names::short($a->user) : null, 'score' => $a->score, 'max_score' => $a->max_score, 'percent' => $a->percent, 'passed' => $a->passed, 'late' => $a->late, 'submitted_at' => $a->submitted_at->toIso8601String()])]);
     }
 }

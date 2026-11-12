@@ -2,6 +2,7 @@
 
 namespace App\Domain\Learning\Http\Controllers;
 
+use App\Domain\Community\Support\Names;
 use App\Domain\Learning\Contracts\Seams\SafeguardingCheck;
 use App\Domain\Learning\Models\Course;
 use App\Domain\Learning\Models\CourseReview;
@@ -21,7 +22,7 @@ class CourseReviewController extends LearningController
 
         return response()->json(['data' => $course->reviews()->with('user:id,name')->where('status', 'published')->latest('id')->limit(50)->get()
             ->map(fn (CourseReview $r) => [
-                'rating' => $r->rating, 'body' => $r->body, 'learner' => $r->user?->name ?? 'Deleted account',
+                'rating' => $r->rating, 'body' => $r->body, 'learner' => $r->user ? Names::short($r->user) : 'Deleted account',
                 'created_at' => $r->created_at->toIso8601String(), 'verified_enrolment' => true,
             ])]);
     }

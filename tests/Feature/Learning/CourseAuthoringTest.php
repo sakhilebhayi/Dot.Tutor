@@ -193,7 +193,8 @@ class CourseAuthoringTest extends TestCase
         $this->postJson("/api/tutor/learning/courses/{$course->id}/lessons/{$this->lessonIds($course)[0]}/complete")->assertOk();
 
         $this->actingAs($tutor)->getJson("/api/tutor/learning/studio/courses/{$course->id}/learners")
-            ->assertOk()->assertJsonPath('data.0.learner', 'Ayanda Learner')->assertJsonPath('data.0.percent', 50);
+            // First name and initial only (R-47 security S-19).
+            ->assertOk()->assertJsonPath('data.0.learner', 'Ayanda L.')->assertJsonPath('data.0.percent', 50);
         $this->actingAs($learner)->getJson("/api/tutor/learning/studio/courses/{$course->id}/learners")->assertForbidden();
     }
 }

@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
 use Laravel\Jetstream\Events\AddingTeamMember;
 use Laravel\Jetstream\Events\TeamMemberAdded;
@@ -26,6 +27,11 @@ class AddTeamMember implements AddsTeamMembers
         $this->validate($team, $email, $role);
 
         $newTeamMember = Jetstream::findUserByEmailOrFail($email);
+
+        // Invitations are matched by email, so the address must be proven (R-47 security S-01).
+        if ($newTeamMember->email_verified_at === null) {
+            throw ValidationException::withMessages(['email' => __('This person has not confirmed their email address yet.')])->errorBag('addTeamMember');
+        }
 
         AddingTeamMember::dispatch($team, $newTeamMember);
 

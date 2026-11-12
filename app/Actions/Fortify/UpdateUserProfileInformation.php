@@ -31,9 +31,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
         } else {
+            // A changed address is no longer proven (R-47 security S-01): InfoDot sign-in matches accounts by email,
+            // and team invitations and guardian invitations are matched by email, so the proof goes with the change.
+            $changed = strtolower((string) $input['email']) !== strtolower((string) $user->email);
+
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'email_verified_at' => $changed ? null : $user->email_verified_at,
             ])->save();
         }
     }

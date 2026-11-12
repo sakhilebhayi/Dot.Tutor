@@ -10,6 +10,7 @@ use App\Domain\Classroom\Models\ClassroomAttendee;
 use App\Domain\Classroom\Models\ClassroomSignal;
 use App\Domain\Classroom\Support\Admission;
 use App\Domain\Classroom\Support\ClassroomException;
+use App\Domain\Community\Support\Names;
 use App\Domain\Marketplace\Exceptions\MarketplaceException;
 use App\Domain\Marketplace\Services\BookingFlow;
 use App\Domain\Safety\Contracts\AuditLog;
@@ -185,7 +186,7 @@ class ClassroomService
             ->orderBy('id')->get()
             ->map(fn (ClassroomAttendee $a) => [
                 'id' => $a->id,
-                'name' => $a->user?->name ?? 'Someone',
+                'name' => $a->user ? Names::short($a->user) : 'Someone',
                 'role' => $a->role,
                 'state' => $a->isPresent() ? 'joined' : 'lost',
                 'mic' => $a->mic_on, 'cam' => $a->cam_on, 'sharing' => $a->sharing, 'quality' => $a->quality,

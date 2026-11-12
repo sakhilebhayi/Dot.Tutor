@@ -27,14 +27,30 @@ class LessonResourceController extends Controller
             'file' => ['required', 'file', 'max:10240', 'mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,png,jpg,jpeg,txt,mp4,mp3'],
         ]);
 
-        $path = $validated['file']->store('', 'lesson-resources');
+        $file = $validated['file'];
+        // The type comes from the bytes, not the name; photos are re-encoded so camera and location metadata (a
+        // child's photo of homework taken at home) never reach the other side (R-47 security S-23).
+        $extension = $file->extension() ?: 'bin';
+        $mime = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($file->getRealPath());
+
+        if (in_array($mime, ['image/jpeg', 'image/png'], true) && function_exists('imagecreatefromstring')) {
+            $image = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
+            abort_if($image === false, 422, 'That image could not be read.');
+            ob_start();
+            $mime === 'image/png' ? imagepng($image) : imagejpeg($image, null, 88);
+            $path = Str::random(40).'.'.($mime === 'image/png' ? 'png' : 'jpg');
+            Storage::disk('lesson-resources')->put($path, (string) ob_get_clean());
+            $extension = $mime === 'image/png' ? 'png' : 'jpg';
+        } else {
+            $path = $file->store('', 'lesson-resources');
+        }
 
         LessonResource::create([
             'session_id' => $tutorSession->id,
             'uploader_id' => $request->user()->id,
             'title' => $validated['title'],
             'file_path' => $path,
-            'file_type' => $validated['file']->getClientOriginalExtension(),
+            'file_type' => $extension,
         ]);
 
         return redirect()

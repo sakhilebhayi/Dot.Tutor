@@ -14,6 +14,7 @@ use App\Domain\Community\Services\Rooms;
 use App\Domain\Community\Services\StudyGroups;
 use App\Domain\Community\Services\TutorRooms;
 use App\Domain\Safety\Models\AgeRecord;
+use App\Domain\Safety\Services\AgeResolver;
 use App\Domain\Safety\Services\Guardians;
 use App\Models\TutorProfile;
 use App\Models\User;
@@ -53,7 +54,8 @@ class DemoCommunitySeeder extends Seeder
             if (! app(Guardians::class)->isGuardianOf($guardian, $minor)) {
                 $invite = app(Guardians::class)->invite($minor, $guardian->email, 'parent');
                 parse_str((string) parse_url($invite['url'], PHP_URL_QUERY), $query);
-                app(Guardians::class)->accept($invite['invitation'], $query['token'], $guardian, CarbonImmutable::now()->subYears(15)->subMonths(2));
+                // The minor's recorded date of birth: a guardian cannot declare a different one (R-47 security S-06).
+                app(Guardians::class)->accept($invite['invitation'], $query['token'], $guardian, app(AgeResolver::class)->birthDate($minor) ?? CarbonImmutable::now()->subYears(15)->subMonths(2));
             }
         }
 

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/** Baseline browser protections are on every response, the CSP is report-only, and violation reports are collected safely. */
+/** Baseline browser protections are on every response, the CSP is enforced with a nonce, and violation reports are collected safely. */
 class SecurityHeadersTest extends TestCase
 {
     public function test_every_response_carries_the_enforced_headers(): void
@@ -27,12 +27,16 @@ class SecurityHeadersTest extends TestCase
         $this->get('/does-not-exist')->assertNotFound()->assertHeader('X-Frame-Options', 'SAMEORIGIN');
     }
 
-    public function test_the_policy_is_report_only_and_reports_to_the_collector(): void
+    public function test_the_policy_is_enforced_and_reports_to_the_collector(): void
     {
+        $this->assertStringContainsString("'csp_report_only' => (bool) env('SECURITY_CSP_REPORT_ONLY', false)", (string) file_get_contents(config_path('security.php')), 'enforced by default');
+        $this->assertStringContainsString("\nSECURITY_CSP_REPORT_ONLY=false\n", (string) file_get_contents(base_path('.env.example')));
+        config(['security.csp_report_only' => false]);
         $r = $this->get('/');
 
-        $policy = (string) $r->headers->get('Content-Security-Policy-Report-Only');
-        $this->assertFalse($r->headers->has('Content-Security-Policy'), 'nothing is enforced yet');
+        // R-47 security D-1514: enforced (it was report-only until every CDN was gone and the views carried nonces).
+        $policy = (string) $r->headers->get('Content-Security-Policy');
+        $this->assertFalse($r->headers->has('Content-Security-Policy-Report-Only'));
         $this->assertStringContainsString("default-src 'self'", $policy);
         $this->assertStringContainsString("frame-ancestors 'self'", $policy);
         $this->assertStringContainsString("object-src 'none'", $policy);
@@ -40,27 +44,44 @@ class SecurityHeadersTest extends TestCase
         $this->assertStringContainsString('report-uri /csp-report', $policy);
     }
 
-    public function test_the_policy_allows_the_origins_the_views_load(): void
-    {
-        $policy = (string) $this->get('/')->headers->get('Content-Security-Policy-Report-Only');
-
-        $this->assertMatchesRegularExpression("/script-src [^;]*https:\/\/cdn\.tailwindcss\.com/", $policy);
-        $this->assertMatchesRegularExpression("/script-src [^;]*https:\/\/unpkg\.com/", $policy, 'the welcome page loads Alpine from unpkg');
-        $this->assertMatchesRegularExpression("/style-src [^;]*https:\/\/fonts\.googleapis\.com/", $policy);
-        $this->assertMatchesRegularExpression("/font-src [^;]*https:\/\/fonts\.gstatic\.com/", $policy);
-        $this->assertMatchesRegularExpression("/img-src [^;]*data: blob: https:\/\/images\.unsplash\.com/", $policy);
-        $this->assertMatchesRegularExpression("/connect-src 'self' wss: https:;/", $policy);
-        $this->assertStringNotContainsString('placehold.co', $policy, 'only the design platform uses it, so it is not allowed here');
-    }
-
-    public function test_the_policy_can_be_switched_to_enforced_from_config(): void
+    public function test_scripts_need_the_page_nonce_and_nothing_loads_from_another_host(): void
     {
         config(['security.csp_report_only' => false]);
+        $r = $this->get('/');
+        $policy = (string) $r->headers->get('Content-Security-Policy');
+
+        $this->assertMatchesRegularExpression("/script-src 'self' 'nonce-([A-Za-z0-9]+)';/", $policy);
+        preg_match("/'nonce-([A-Za-z0-9]+)'/", $policy, $m);
+        $this->assertStringContainsString('nonce="'.$m[1].'"', (string) $r->getContent(), 'the page\'s inline scripts carry the same nonce');
+        $this->assertStringNotContainsString("'unsafe-inline' https", $policy);
+        $this->assertDoesNotMatchRegularExpression("/script-src [^;]*'unsafe-inline'/", $policy);
+        $this->assertDoesNotMatchRegularExpression("/script-src [^;]*'unsafe-eval'/", $policy, 'no Livewire on the landing page');
+        $this->assertDoesNotMatchRegularExpression('/(script|style|font|img|connect)-src [^;]*https?:/', $policy, 'no third-party host');
+        $this->assertStringContainsString("form-action 'self' https://checkout.paystack.com", $policy);
+
+        $this->assertNotSame($m[1], $this->getNonce($this->get('/')), 'a fresh nonce per response');
+    }
+
+    public function test_only_the_classroom_may_ask_for_the_camera(): void
+    {
+        $this->assertStringContainsString('camera=()', (string) $this->get('/')->headers->get('Permissions-Policy'));
+    }
+
+    public function test_the_policy_can_be_switched_to_report_only_from_config(): void
+    {
+        config(['security.csp_report_only' => true]);
 
         $r = $this->get('/');
 
-        $this->assertStringContainsString("default-src 'self'", (string) $r->headers->get('Content-Security-Policy'));
-        $this->assertFalse($r->headers->has('Content-Security-Policy-Report-Only'));
+        $this->assertStringContainsString("default-src 'self'", (string) $r->headers->get('Content-Security-Policy-Report-Only'));
+        $this->assertFalse($r->headers->has('Content-Security-Policy'));
+    }
+
+    private function getNonce($response): string
+    {
+        preg_match("/'nonce-([A-Za-z0-9]+)'/", (string) $response->headers->get('Content-Security-Policy'), $m);
+
+        return $m[1] ?? '';
     }
 
     public function test_hsts_is_sent_on_https_only_and_can_be_switched_off(): void

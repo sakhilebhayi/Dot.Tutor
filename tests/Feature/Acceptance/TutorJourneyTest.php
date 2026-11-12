@@ -82,7 +82,7 @@ class TutorJourneyTest extends TestCase
             ->assertJsonPath('balances.available.amount_minor', 25500)->assertJsonPath('balances.pending.amount_minor', 0);
 
         // Payout: the tutor's bank account, a finance batch, paid.
-        $this->actingAs($tutorUser)->putJson('/api/tutor/money/tutor/payout-account', [
+        $this->actingAs($tutorUser)->withSession(['tutor.signed_in_at' => time()])->putJson('/api/tutor/money/tutor/payout-account', [
             'holder_name' => 'L Khumalo', 'account_number' => '62001234567', 'bank_name' => 'First National Bank', 'bank_code' => '250655',
         ])->assertOk();
         $batch = $this->actingAs($this->operator)->postJson('/api/tutor/money/ops/payout-batches')->assertCreated()

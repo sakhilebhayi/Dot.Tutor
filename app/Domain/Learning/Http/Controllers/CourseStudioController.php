@@ -2,6 +2,7 @@
 
 namespace App\Domain\Learning\Http\Controllers;
 
+use App\Domain\Community\Support\Names;
 use App\Domain\Learning\Contracts\Seams\AcademicScopeLookup;
 use App\Domain\Learning\Contracts\Seams\TutorStanding;
 use App\Domain\Learning\Enums\AssessmentKind;
@@ -279,7 +280,7 @@ class CourseStudioController extends LearningController
                 $summary = $progress->summary($enrolment);
 
                 return [
-                    'learner' => $enrolment->user?->name ?? 'Deleted account',
+                    'learner' => $enrolment->user ? Names::short($enrolment->user) : 'Deleted account',
                     'enrolled_at' => $enrolment->created_at->toIso8601String(),
                     'version' => $enrolment->version?->number,
                     'completed_lessons' => $summary['completed'],
@@ -338,7 +339,8 @@ class CourseStudioController extends LearningController
             'title' => [$creating ? 'required' : 'sometimes', 'string', 'max:160'],
             'type' => [$creating ? 'required' : 'sometimes', Rule::in(LessonType::values())],
             'body' => ['nullable', 'string', 'max:100000'],
-            'external_url' => ['nullable', 'string', 'max:2048'],
+            // https only, whatever the lesson type: the link is rendered as an href (R-47 security S-17).
+            'external_url' => ['nullable', 'string', 'max:2048', 'url:https'],
             'assessment_id' => ['nullable', 'integer'],
             'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'is_preview' => ['nullable', 'boolean'],
