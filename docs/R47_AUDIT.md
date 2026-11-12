@@ -336,3 +336,9 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Chart axes (tutor/52, ops/57) | I | "0, 1, 1" ticks, 5 px phone labels | Integer nice ticks; readable phone text (D-2211) |
 | Team page (ops/66) | U | 5,230 px of checkbox rows | One line per operator; roles behind a disclosure (D-2212) |
 
+| Finance desk (ops/73) | C | Learner shell, UTC times, API path in copy | Forwards to ops payments; reader's zone on every ops time (D-2400) |
+| Verification state (tutor/50, 51; ops/67) | C | "Not verified" beside a verified record with no level | "Checked, level pending" everywhere; reviewer prompted (D-2401, D-2402) |
+| Workspace shell (tutor 45-57) | I | Dense step shrank the rail and top bar | Step on the content only (D-2403) |
+| Ops rail (ops/65, 68, 75) | U | Last item under the footer at 900 px | Fits; scrolls to the current item (D-2404) |
+| Incident (ops/70) | U | No reported person, no protective action | Protect first with real Moderation actions and a live deadline (D-2405) |
+| Audit history (ops/68) | C | "User 3", "Reason: tutor_ended" | Names and phrases (D-2407) |

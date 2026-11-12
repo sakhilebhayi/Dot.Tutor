@@ -63,7 +63,7 @@
 
         <div class="grid gap-6">
             <x-td.panel :title="$step === 'send' && $approved ? 'What is left' : $current['title']" :heading-level="2">
-                <p class="mb-5 text-td-ink-2">{{ $current['summary'] }}</p>
+                @unless ($step === 'send' && $approved)<p class="mb-5 text-td-ink-2">{{ $current['summary'] }}</p>@endunless
 
                 @switch($step)
                     @case('about')
