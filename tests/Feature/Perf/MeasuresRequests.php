@@ -23,7 +23,9 @@ trait MeasuresRequests
 
     protected function useDatabaseSessions(): void
     {
-        config(['session.driver' => 'database', 'session.touch_seconds' => 60]);
+        // The garbage-collection lottery (2 in 100 by default) would add a random "delete from sessions" to a measured
+        // request; it is housekeeping, not the request's cost, so it is switched off here.
+        config(['session.driver' => 'database', 'session.touch_seconds' => 60, 'session.lottery' => [0, 100]]);
         $this->app['session']->forgetDrivers();
         $this->listenToQueries();
     }
