@@ -336,3 +336,14 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Chart axes (tutor/52, ops/57) | I | "0, 1, 1" ticks, 5 px phone labels | Integer nice ticks; readable phone text (D-2211) |
 | Team page (ops/66) | U | 5,230 px of checkbox rows | One line per operator; roles behind a disclosure (D-2212) |
 
+### fix-public (fix round, 2026-11-13)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Public header under 56rem | Usability, a11y | The four section links were `display:none` with no other route | Menu button with a focus trap; scrolling row without script (D-2300) |
+| `/login` | Honesty | Pages said "Sign in with InfoDot"; the page had only a password form and nothing for new people | InfoDot launch link only when configured; "New here?" line (D-2301) |
+| `TutorPresenter::verification` | Wrong data | "Not yet verified" whenever no level was set, even with a record "Verified by Dot.Tutor" | One "checked, level pending" state (D-2302) |
+| `BookController::show` | Wrong times | The parsed request's window was dropped; every slot from 06:00 listed | Window carried and applied, "Show all times" (D-2304) |
+| `Comms\Inbox::present` | Contradiction | Count per subject, marker per row | Marker per subject (D-2306) |
+| `GuardianSafety` | Wrong data | Passed deadlines worded as future promises | Overdue / escalated wording from the record (D-2308) |
+
