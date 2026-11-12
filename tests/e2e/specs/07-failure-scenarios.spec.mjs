@@ -8,15 +8,15 @@ import {
     newContext, closeBrowser, closeLeftovers, world, one, sql, until, step, watch, hygiene, makePerson, evidenceLog, interceptCheckout,
     stub, stubPost, api, formPost, uniq, artisan, signIn,
 } from '../lib/harness.mjs';
-import { levelId, subjectId, acceptOnTeach, payOnLessonPage, firstSlotOn, setPracticeFor, dbTime } from '../lib/flows.mjs';
+import { levelId, subjectId, acceptOnTeach, payOnLessonPage, firstSlotOn, setPracticeFor, dbTime, chooseSlot, bookSubmit } from '../lib/flows.mjs';
 
 const ev = evidenceLog('07-failures');
 
 async function requestLesson(page, offeringId) {
     await page.goto(`/learn/book/${offeringId}`);
     const slot = await firstSlotOn(page, 2);
-    await page.check(`input[name=starts_at][value="${slot}"]`);
-    await Promise.all([page.waitForURL('**/learn/lessons/**'), page.locator('form[action*="/learn/book/"] button[type=submit]').last().click()]);
+    await chooseSlot(page, slot);
+    await Promise.all([page.waitForURL('**/learn/lessons/**'), bookSubmit(page).click()]);
     return Number(new URL(page.url()).pathname.split('/').pop());
 }
 

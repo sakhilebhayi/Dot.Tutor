@@ -18,6 +18,17 @@ export async function firstSlotOn(page, days = 2) {
     return hit;
 }
 
+/** Choose an open time on the book page: the day strip shows one day's times (R-47 polish D-2017), so pick its day first. */
+export async function chooseSlot(page, slot) {
+    const input = page.locator(`input[name=starts_at][value="${slot}"]`);
+    const day = await input.evaluate((el) => el.closest('.st-picker__day')?.dataset.day ?? null);
+    if (day !== null) await page.check(`#day-${day}`);
+    await input.check();
+}
+
+/** The booking form's submit (it sits beside the price, outside the form, with form="book-form"). */
+export const bookSubmit = (page) => page.locator('button[type=submit][form="book-form"], form[action*="/learn/book/"] button[type=submit]').last();
+
 /** The tutor accepts a request on /teach/bookings (Requests view). */
 export async function acceptOnTeach(tctx, lessonId) {
     const page = await tctx.newPage();
