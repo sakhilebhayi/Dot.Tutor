@@ -155,6 +155,20 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | JSON errors had four renderers with different codes | consistency | `access_denied_http_exception` vs `forbidden`, redirects for JSON calls outside `api/*` | One policy (D-1404) |
 | Academic ids without keys | data integrity | Orphans possible | Keys added (D-1406) |
 | Suite memory | CI | Fails at 128 MB on trunk | 512M (D-1405) |
+
+### Live classroom (classroom agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Live lessons | M | No classroom existed; `delivery = online` lessons had no place to meet and no attendance | `app/Domain/Classroom`: one classroom per booking, WebRTC mesh, signalling by polling (R47_CLASSROOM.md) |
+| `meet_live` gate and `live_lesson` approvals (safety) | P | Rules and data existed with no caller | Asked on every page and API call; approvals requested from the pre-join page; tested |
+| Recording consent (safety) | P | Stored, no recorder | Recording not built (no safe storage on the host); pages say so (D-805) |
+| `Permissions-Policy` | I | Denies camera and microphone app-wide, so a call could never start | The classroom page alone allows them for this origin; elsewhere unchanged (tested) |
+| `lesson_resources` | I | Upload limited to the lesson's two people by extension, no content sniffing; group learners could not see files | Classroom files sniff bytes, re-encode images, stream to everyone in the lesson (group seats and guardians included); the legacy controller is untouched |
+| Marketplace `start` and `complete` | F | Correct, but nothing in a lesson called them | Tutor joining starts the lesson; the after-lesson page completes it through `BookingFlow` |
+| Learning assignment | P | Only a controller (no service); "has taught" ignores group seats | Classroom seam mirrors the rules and counts a learner in the lesson as taught (D-810) |
+| Reminders | M | No lesson reminders | `LessonStartingSoon` event once per lesson for comms (D-812) |
+| External meeting links | M | No fallback when browsers cannot connect | Tutor's own https link per lesson, shown only inside that classroom |
 ### Notifications and communication (comms agent, 2026-11-10)
 
 | As found | Class | Finding | After |
@@ -182,6 +196,33 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Engagement mechanics | None | F (correctly absent) | Brief: no likes or popularity | Indicators only: questions resolved, answers accepted, resources contributed, sessions attended, milestones |
 | Freshness | None | M | No way to see new activity | Versioned activity endpoint with ETag/304 and a polling notice |
 
+### Learner screens (student UI agent, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Learner home | Legacy dashboard (counts, subjects list); no "what is next" | P | Nothing told a learner what to do next | `/learn`: next step, need field, lessons, courses to resume, work due, unanswered room questions, insights |
+| Onboarding | Academic profile form (functional, app layout) | P | No first-run path, no interface language, no guardian step | `/learn/welcome` in under a minute, guardian step for minors |
+| Find and match | Minimal page, comma-coded language field, scores without explanation; list query values refused | B (lists) / P | Matches not explained in plain lines; `languages[]` failed validation | Plain-words need, explained fits and gaps, ranking table, language chips; controller fix (D-1117) |
+| Storefront and booking | Minimal storefront, free-text date booking, no slots | P | Learners could not see real open times or courses | Real slots, packages, group seats, weekly series, idempotent requests, safeguarding reasons shown first |
+| Lesson page | None (API only) | M | No status timeline, pay, cancel policy or review on the web | `/learn/lessons/{id}` |
+| Courses, library, quizzes | Functional wave-1 views on the legacy layout | P | Not in the learner shell; no level filter in the catalogue | Kit screens in the shell; level and curriculum filters (D-1118) |
+| Progress and flashcards | JSON only | M | No learner-facing progress or flashcard pages | Progress in words; flashcard create, review and grade |
+| Purchases and account | None | M | No list of orders; no place for languages, step and guardian status | `/learn/purchases`, `/learn/account` |
+| Young learners | Ds step existed, never switched on | P | A Grade 3 learner saw the full interface | Step decided by level and age band (D-1101), checked in the browser |
+
+### Deploy pipeline and operations (deploy agent, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Release gate | `ci.yml`: PHPUnit on SQLite only | P | No PostgreSQL run, no JS tests, no build check, nothing proved the upgrade of a populated database | SQLite and PostgreSQL 16 suites, upgrade rehearsal on both engines, JS tests, build + manifest check, production-like signed-in smoke (D-1905, D-1910) |
+| Upgrade path | No rehearsal; `academic:sync` an owner/deploy item (D-202) | M | A live database with tutors, lessons and reviews had never been migrated in a test | `scripts/ops/upgrade-rehearsal.sh`: no row lost or changed, cents exact, subjects adopted or linked with ids kept, unmapped level text reported; deploy runs `academic:sync` after every migrate |
+| Database safety | Rollback tar only (no PostgreSQL data) | B | A failed R-47 migration on PostgreSQL had no restore point | pg_dump or SQLite online backup before maintenance mode, engine read from the host `.env` (D-1902); daily backup and restore drill scripts (D-1909) |
+| Readiness | No preflight; smoke fetched `/`, `/login`, `/up` and the build | M | Nothing told the owner what was missing, and a broken host could leave maintenance mode | `tutor:preflight` gate (FAIL keeps the site down) with the paid-lesson readiness line (D-1900, D-1901); wider live smoke (guest redirects, guessed private files, headers, fonts, sprites, service worker) |
+| Routing vs public folders | `/classroom` page and `public/classroom/` folder | B | Apache serves the folder before `index.php`: the lesson list answered 403 on the live host layout | Sprite moved to `public/icons/classroom.svg`, regression test, stale docroot folder moved aside (D-1903) |
+| View comments | Head partial named `resources/js/ds/theme.js` in a comment beside `@vite` | B (deploy trap) | Breaks the stricter manifest check other Dot deploys use | Comment reworded; check runs in CI and deploy (D-1904) |
+| Static files | Deploy synced only `build/` to the docroot | B | R-47 fonts, sprites, push script and `/comms-sw.js` would 404 where the docroot holds copies | Every `public/` entry kept in step (D-1907) |
+| `.env.example` | `APP_URL` of the live host, `BROADCAST_CONNECTION=reverb`, no R-47 variable documented | P | CI copied a live-host URL and a broadcaster the host cannot run; owners had no list of the new settings | Safe values, every R-47 variable documented with its default (D-1908) |
+| Owner runbook | `docs/deployment.md` (pre-R-47) | M | No first-steps order, monitoring thresholds, incident or restore procedure for the R-47 platform | `docs/R47_OPERATIONS.md` |
 ### Tutor workspace (tutor UI agent, 2026-11-12)
 
 | As found | Class | Finding | After |

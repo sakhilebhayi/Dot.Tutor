@@ -15,6 +15,8 @@
 @import './ds/shells.css';
 @import './ds/landing.css';
 @import './ds/legacy.css';
+@import './student/student.css';
+@import './classroom.css';
 
 @source '../views/**/*.blade.php';
 @source '../../storage/framework/views/*.php';

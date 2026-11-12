@@ -34,6 +34,9 @@ class CatalogueController extends LearningController
             'subject_id' => ['nullable', 'integer'],
             'pricing' => ['nullable', 'in:free,paid'],
             'language' => ['nullable', 'string', 'max:20'],
+            // R-47 student UI (D-1118): the catalogue also filters by level and curriculum.
+            'level_id' => ['nullable', 'integer'],
+            'curriculum_id' => ['nullable', 'integer'],
         ]);
         $courses = Course::query()->with(['owner:id,name', 'currentVersion'])
             ->where('status', CourseStatus::Published->value)
@@ -41,6 +44,8 @@ class CatalogueController extends LearningController
             ->when($filters['subject_id'] ?? null, fn ($q, $id) => $q->where('subject_id', $id))
             ->when($filters['pricing'] ?? null, fn ($q, $p) => $q->where('pricing', $p))
             ->when($filters['language'] ?? null, fn ($q, $l) => $q->where('original_locale', $l))
+            ->when($filters['level_id'] ?? null, fn ($q, $id) => $q->where('level_id', $id))
+            ->when($filters['curriculum_id'] ?? null, fn ($q, $id) => $q->where('curriculum_id', $id))
             ->orderByDesc('published_at')->orderByDesc('id')
             ->paginate(20)->withQueryString();
 

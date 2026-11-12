@@ -2,7 +2,7 @@
     $r = $result['result'] ?? null;
     $aiAssisted = ($result['source'] ?? null) === 'ai_assisted';
 @endphp
-<x-layouts::learner title="Describe what you need">
+<x-student.shell title="Describe what you need">
     <x-td.page-head title="Describe what you need" lede="Say it in your own words. We read it, show you what we understood, and you confirm before we look for tutors." />
 
     <x-td.panel title="Your words">
@@ -50,4 +50,4 @@
             @endif
         </x-td.panel>
     @endif
-</x-layouts::learner>
+</x-student.shell>

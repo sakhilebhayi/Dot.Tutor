@@ -1,5 +1,5 @@
 @php $t = $view['translation']; @endphp
-<x-layouts::learner title="Original and translation">
+<x-student.shell title="Original and translation">
     <x-td.page-head title="Original and translation" lede="The original always stays. A machine translation is labelled until a person who reads the language reviews it." />
 
     <form method="GET" action="{{ route('ai.translations.show', [$type, $id, $field]) }}" class="flex flex-wrap items-end gap-3">
@@ -52,4 +52,4 @@
             @endif
         </x-td.panel>
     </div>
-</x-layouts::learner>
+</x-student.shell>

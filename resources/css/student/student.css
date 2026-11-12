@@ -1,0 +1,769 @@
+/*
+ * R-47 learner screens (student UI agent, docs/R47_UI_STUDENT.md). Layout recipes only: every colour, size and
+ * space is a ds token, and every control is an x-td component. Lives in the components layer so utilities win.
+ */
+@layer components {
+    .st {
+        display: grid;
+        gap: var(--td-space-6);
+        min-width: 0;
+    }
+
+    .st > .td-page-head {
+        margin-bottom: 0;
+    }
+
+    .st-stack {
+        display: grid;
+        gap: var(--td-space-4);
+        min-width: 0;
+    }
+
+    .st-stack--tight {
+        gap: var(--td-space-2);
+    }
+
+    .st-cols {
+        display: grid;
+        gap: var(--td-space-6);
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+
+    @media (min-width: 64rem) {
+        .st-cols {
+            grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+        }
+
+        .st-cols--even {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+    }
+
+    @media (max-width: 63.99rem) {
+        .st-cols--filters-first > aside {
+            order: -1;
+        }
+    }
+
+    .st-muted {
+        color: var(--td-ink-2);
+    }
+
+    .st-small {
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    .st-title {
+        margin: 0;
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+    }
+
+    .st-h2 {
+        margin: 0;
+        font-family: var(--td-font-display);
+        font-variation-settings: 'wdth' var(--td-display-stretch);
+        font-size: var(--td-text-xl);
+        font-weight: 750;
+        line-height: var(--td-leading-tight);
+    }
+
+    .st-prose {
+        max-width: var(--td-measure);
+    }
+
+    .st-prose > * + * {
+        margin-top: var(--td-space-3);
+    }
+
+    .st-prose h2,
+    .st-prose h3 {
+        font-size: var(--td-text-md);
+        margin-top: var(--td-space-5);
+    }
+
+    .st-prose ul,
+    .st-prose ol {
+        padding-left: 1.25rem;
+    }
+
+    .st-prose ul {
+        list-style: disc;
+    }
+
+    .st-prose ol {
+        list-style: decimal;
+    }
+
+    .st-prose a {
+        color: var(--td-primary);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    .st-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        align-items: center;
+        min-width: 0;
+    }
+
+    .st-inline--loose {
+        gap: var(--td-space-3);
+    }
+
+    .st-dot > * + *::before {
+        content: '·';
+        margin-right: var(--td-space-2);
+        color: var(--td-ink-3);
+    }
+
+    /* The request slip: the one place a learner says what they need in their own words. */
+    .st-slip {
+        display: grid;
+        gap: var(--td-space-3);
+        padding: var(--td-space-5);
+        background: var(--td-primary-soft);
+        color: var(--td-primary-soft-ink);
+        border-radius: var(--td-radius);
+    }
+
+    .st-slip__label {
+        font-family: var(--td-font-display);
+        font-variation-settings: 'wdth' var(--td-display-stretch);
+        font-size: var(--td-text-xl);
+        font-weight: 750;
+        line-height: var(--td-leading-tight);
+    }
+
+    .st-slip__row {
+        display: grid;
+        gap: var(--td-space-2);
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @media (min-width: 40rem) {
+        .st-slip__row {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+    }
+
+    .st-slip .td-input {
+        background: var(--td-surface);
+    }
+
+    .st-slip .td-hint {
+        color: var(--td-primary-soft-ink);
+    }
+
+    /* "What is next": one large line that answers the home screen's question. */
+    .st-next {
+        display: grid;
+        gap: var(--td-space-2);
+        padding: var(--td-space-5);
+        background: var(--td-surface);
+        border: 1px solid var(--td-line);
+    }
+
+    .st-next__when {
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+        color: var(--td-ink-2);
+    }
+
+    .st-next__what {
+        margin: 0;
+        font-family: var(--td-font-display);
+        font-variation-settings: 'wdth' var(--td-display-stretch);
+        font-size: var(--td-text-2xl);
+        font-weight: 750;
+        line-height: var(--td-leading-tight);
+        overflow-wrap: anywhere;
+    }
+
+    /* Rows: lists people work down. A row is one thing with its facts and at most one action. */
+    .st-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .st-list > li + li {
+        border-top: 1px solid var(--td-line); /* taste-skill-ignore: app-screen row divider (DESIGN.md: rows in lists, tables before cards) */
+    }
+
+    .st-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--td-space-2) var(--td-space-4);
+        padding: var(--td-row-pad-y) var(--td-row-pad-x);
+        align-items: center;
+    }
+
+    @media (min-width: 40rem) {
+        .st-row {
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+    }
+
+    .st-row__title {
+        margin: 0;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .st-row__title a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .st-row__title a:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    .st-row__meta {
+        margin: var(--td-space-1) 0 0;
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    .st-row__end {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        align-items: center;
+    }
+
+    /* Key facts: a definition list read left to right. */
+    .st-facts {
+        display: grid;
+        grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr);
+        gap: var(--td-space-2) var(--td-space-4);
+        margin: 0;
+    }
+
+    .st-facts dt {
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+        padding-top: 0.1em;
+    }
+
+    .st-facts dd {
+        margin: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* A tutor's catalogue record in the match list. */
+    .st-record {
+        display: grid;
+        gap: var(--td-space-4);
+        padding: var(--td-space-5);
+        background: var(--td-surface);
+    }
+
+    .st-record + .st-record {
+        border-top: 1px solid var(--td-line); /* taste-skill-ignore: app-screen row divider (DESIGN.md: rows in lists, tables before cards) */
+    }
+
+    .st-record__head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--td-space-3);
+        align-items: start;
+    }
+
+    @media (min-width: 48rem) {
+        .st-record__head {
+            grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+    }
+
+    .st-record__name {
+        margin: 0;
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+    }
+
+    .st-record__name a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .st-record__name a:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    .st-record__price {
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .st-record__body {
+        display: grid;
+        gap: var(--td-space-4);
+    }
+
+    @media (min-width: 64rem) {
+        .st-record__body {
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        }
+    }
+
+    /* Open times as choices. Radios so it works without script and with a keyboard. */
+    .st-times {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .st-time {
+        position: relative;
+    }
+
+    .st-time input {
+        position: absolute;
+        opacity: 0;
+        inset: 0;
+        cursor: pointer;
+    }
+
+    .st-time span {
+        display: grid;
+        place-items: center;
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-space-2);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        transition: background-color var(--td-dur-micro) var(--td-ease-out), border-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .st-time input:hover + span {
+        border-color: var(--td-ink);
+    }
+
+    .st-time input:checked + span {
+        background: var(--td-primary);
+        border-color: var(--td-primary);
+        color: var(--td-primary-ink);
+    }
+
+    .st-time input:focus-visible + span {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .st-day {
+        margin: var(--td-space-4) 0 var(--td-space-2);
+        font-size: var(--td-text-sm);
+        font-weight: 700;
+    }
+
+    .st-day:first-child {
+        margin-top: 0;
+    }
+
+    /* Choice cards for offerings and onboarding (radio or checkbox with a body). */
+    .st-choices {
+        display: grid;
+        gap: var(--td-space-2);
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .st-choice {
+        position: relative;
+        display: grid;
+        gap: var(--td-space-1);
+        padding: var(--td-space-3) var(--td-space-4);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        cursor: pointer;
+    }
+
+    .st-choice input {
+        position: absolute;
+        inset: var(--td-space-3) var(--td-space-3) auto auto;
+        width: 1.125rem;
+        height: 1.125rem;
+        accent-color: var(--td-primary);
+    }
+
+    .st-choice:has(input:checked) {
+        border-color: var(--td-primary);
+        outline: 1px solid var(--td-primary);
+        outline-offset: -2px;
+        background: var(--td-primary-soft);
+        color: var(--td-primary-soft-ink);
+    }
+
+    .st-choice:has(input:focus-visible) {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .st-choice__title {
+        font-weight: 700;
+        padding-right: var(--td-space-6);
+    }
+
+    .st-choice__meta {
+        font-size: var(--td-text-sm);
+    }
+
+    .st-chipset {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .st-chipset label {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        min-height: 2.75rem;
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius-pill);
+        background: var(--td-surface);
+        cursor: pointer;
+    }
+
+    .st-chipset label:has(input:checked) {
+        background: var(--td-primary-soft);
+        border-color: var(--td-primary);
+        color: var(--td-primary-soft-ink);
+    }
+
+    .st-chipset input {
+        accent-color: var(--td-primary);
+    }
+
+    .st-chipset label:has(input:focus-visible) {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    /* Forms laid out as sections inside a panel. */
+    .st-form {
+        display: grid;
+        gap: var(--td-space-5);
+    }
+
+    .st-form fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+    }
+
+    .st-form legend {
+        padding: 0;
+        margin-bottom: var(--td-space-2);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+    }
+
+    .st-form__pair {
+        display: grid;
+        gap: var(--td-space-3);
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @media (min-width: 40rem) {
+        .st-form__pair {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+    }
+
+    .st-form__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-3);
+        align-items: center;
+    }
+
+    /* Onboarding steps: where you are, in words. */
+    .st-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2) var(--td-space-4);
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    .st-steps [aria-current] {
+        color: var(--td-ink);
+        font-weight: 700;
+    }
+
+    /* Course player: the lesson and its outline. */
+    .st-player {
+        display: grid;
+        gap: var(--td-space-6);
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+
+    @media (min-width: 64rem) {
+        .st-player {
+            grid-template-columns: minmax(0, 1fr) 20rem;
+        }
+    }
+
+    .st-player video,
+    .st-player img {
+        width: 100%;
+        max-width: 100%;
+        background: var(--td-deep);
+    }
+
+    .st-outline {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .st-outline a,
+    .st-outline span.st-outline__locked {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr);
+        gap: var(--td-space-2);
+        padding: var(--td-space-2) var(--td-space-3);
+        border-radius: var(--td-radius);
+        color: var(--td-ink);
+        text-decoration: none;
+        align-items: start;
+    }
+
+    .st-outline a:hover {
+        background: var(--td-sunken);
+    }
+
+    .st-outline a[aria-current] {
+        background: var(--td-primary-soft);
+        color: var(--td-primary-soft-ink);
+        font-weight: 700;
+    }
+
+    .st-outline__locked {
+        color: var(--td-ink-2) !important;
+    }
+
+    .st-outline__section {
+        margin: var(--td-space-4) 0 var(--td-space-1);
+        font-size: var(--td-text-sm);
+        font-weight: 700;
+        color: var(--td-ink-2);
+    }
+
+    .st-outline__section:first-child {
+        margin-top: 0;
+    }
+
+    /* Stars as a fieldset of radios: the review form. */
+    .st-stars {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .st-stars label {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-1);
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        cursor: pointer;
+    }
+
+    .st-stars label:has(input:checked) {
+        background: var(--td-primary-soft);
+        border-color: var(--td-primary);
+        color: var(--td-primary-soft-ink);
+    }
+
+    /* Mastery: one topic per row, a word for the level, the evidence beside it. */
+    .st-mastery {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--td-space-1) var(--td-space-4);
+        padding: var(--td-row-pad-y) var(--td-row-pad-x);
+        align-items: center;
+    }
+
+    @media (min-width: 48rem) {
+        .st-mastery {
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+        }
+    }
+
+    .st-level {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-1);
+        font-weight: 650;
+    }
+
+    .st-level--strong {
+        color: var(--td-success-ink);
+    }
+
+    .st-level--attention {
+        color: var(--td-warning-ink);
+    }
+
+    /* Flashcard: front, then the back behind a disclosure (works without script). */
+    .st-card {
+        display: grid;
+        gap: var(--td-space-4);
+        padding: var(--td-space-6);
+        background: var(--td-surface);
+        border: 1px solid var(--td-line);
+        min-height: 12rem;
+        align-content: start;
+    }
+
+    .st-card__front {
+        margin: 0;
+        font-size: var(--td-text-xl);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+        overflow-wrap: anywhere;
+    }
+
+    .st-card details > summary {
+        cursor: pointer;
+        font-weight: 650;
+        color: var(--td-primary);
+    }
+
+    .st-grades {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+    }
+
+    /* Original language label on a resource or course. */
+    .st-original {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    /* Stage swatch strip on the left of a level label in a heading row. */
+    .st-shelf {
+        display: inline-block;
+        width: 0.5rem;
+        height: 1.5rem;
+        background: var(--td-stage-fill, var(--td-line));
+        vertical-align: middle;
+    }
+
+    .st-shelf.td-stage--foundation { --td-stage-fill: var(--td-stage-foundation); }
+    .st-shelf.td-stage--intermediate { --td-stage-fill: var(--td-stage-intermediate); }
+    .st-shelf.td-stage--senior { --td-stage-fill: var(--td-stage-senior); }
+    .st-shelf.td-stage--fet { --td-stage-fill: var(--td-stage-fet); }
+    .st-shelf.td-stage--undergraduate { --td-stage-fill: var(--td-stage-undergraduate); }
+    .st-shelf.td-stage--postgraduate { --td-stage-fill: var(--td-stage-postgraduate); }
+    .st-shelf.td-stage--doctoral { --td-stage-fill: var(--td-stage-doctoral); }
+    .st-shelf.td-stage--professional { --td-stage-fill: var(--td-stage-professional); }
+
+    .st-total {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: var(--td-space-2);
+        padding-top: var(--td-space-3);
+        border-top: 1px solid var(--td-line); /* taste-skill-ignore: app-screen row divider (DESIGN.md: rows in lists, tables before cards) */
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+    }
+
+    /* The young step: one thing per row and fewer side facts. */
+    [data-td-step='young'] .st-young-hide {
+        display: none !important;
+    }
+
+    .st-young-only {
+        display: none !important;
+    }
+
+    [data-td-step='young'] .st-young-only {
+        display: revert !important;
+    }
+
+    [data-td-step='young'] .st-next__what {
+        font-size: var(--td-text-xl);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .st-time span {
+            transition: none;
+        }
+    }
+}
+
+@layer components {
+    /* The join panel comes first on phones so price and refund policy are read before the content list. */
+    @media (max-width: 63.99rem) {
+        .st-course__aside {
+            order: -1;
+        }
+    }
+}
+
+@layer components {
+    /* Phones: the price takes its own row under the name, so the avatar column stays the avatar's width. */
+    @media (max-width: 47.99rem) {
+        .st-record__head > :nth-child(3) {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+@layer components {
+    /* Narrow phones: with the notifications bell in the top bar, the menu button shows its icon only (its name
+       stays for screen readers) so the page title is not cut to a few letters. */
+    @media (max-width: 29.99rem) {
+        .td-top__menu > span:not(.td-sr) {
+            position: absolute;
+            width: 1px;
+            height: 1px; /* taste-skill-ignore: visually hidden text, not a rule */
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+    }
+}

@@ -34,15 +34,22 @@ class MarketplacePageController extends Controller
         $result = null;
 
         if ($request->filled('subject_id')) {
-            $input = array_filter($request->only(array_keys(LearningNeed::rules())), fn ($v) => $v !== null && $v !== '');
+            // Top-level keys only: only('languages.*') would nest the list a level deeper (R-47 student UI fix, D-1117).
+            $keys = array_values(array_filter(array_keys(LearningNeed::rules()), fn (string $key) => ! str_contains($key, '*')));
+            $input = array_filter($request->only($keys), fn ($v) => $v !== null && $v !== '' && $v !== []);
             if (isset($input['budget_per_hour'])) {
                 unset($input['budget_per_hour']);
             }
             if ($request->filled('budget_rand')) {
                 $input['budget_per_hour_minor'] = (int) round(((float) $request->input('budget_rand')) * 100);
             }
-            if (isset($input['languages']) && is_string($input['languages'])) {
-                $input['languages'] = array_values(array_filter(array_map('trim', explode(',', $input['languages']))));
+            foreach (['languages', 'weekdays'] as $list) {
+                if (isset($input[$list]) && is_string($input[$list])) {
+                    $input[$list] = array_values(array_filter(array_map('trim', explode(',', $input[$list]))));
+                }
+            }
+            if (isset($input['bilingual_ok'])) {
+                $input['bilingual_ok'] = filter_var($input['bilingual_ok'], FILTER_VALIDATE_BOOL);
             }
             $validator = Validator::make($input, LearningNeed::rules());
             if ($validator->passes()) {
