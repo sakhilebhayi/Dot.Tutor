@@ -2,6 +2,7 @@
     $approved = $state['key'] === 'approved';
     $title = $approved ? 'Profile and verification' : 'Become a tutor';
     $current = collect($steps)->firstWhere('key', $step);
+    $levelWaiting = $profile ? app(\App\Domain\Integration\Support\TutorStanding::class)->levelWaiting($profile) : null;
     $scopeRows = $scopes->map(fn ($s) => ['subject_id' => $s->subject_id, 'level_min_id' => $s->level_min_id, 'level_max_id' => $s->level_max_id, 'notes' => $s->notes])->all();
     $scopeRows = array_pad($scopeRows, max(3, count($scopeRows) + 2), ['subject_id' => null, 'level_min_id' => null, 'level_max_id' => null, 'notes' => null]);
     $langRows = collect($teaching)->map(fn ($l) => ['code' => $l->code, 'proficiency' => $l->proficiency->value, 'verified' => $l->verified])->all();
@@ -61,7 +62,7 @@
         <nav aria-label="Onboarding steps" class="hidden lg:block">@include('teach.partials.onboarding-steps')</nav>
 
         <div class="grid gap-6">
-            <x-td.panel :title="$current['title']" :heading-level="2">
+            <x-td.panel :title="$step === 'send' && $approved ? 'What is left' : $current['title']" :heading-level="2">
                 <p class="mb-5 text-td-ink-2">{{ $current['summary'] }}</p>
 
                 @switch($step)
@@ -341,9 +342,31 @@
                         @elseif ($state['key'] === 'review')
                             <x-td.state kind="loading" title="Under review" icon="hourglass">Nothing to do now. You will see the decision here.</x-td.state>
                         @else
-                            <x-td.state kind="success" title="Approved">Your storefront is live for signed-in learners.
-                                <x-slot:actions><x-td.button href="{{ route('teach.home') }}" variant="primary">Go to your workspace</x-td.button></x-slot:actions>
-                            </x-td.state>
+                            {{-- Approved: the banner and the standing above already say so once (D-2402); this step names what is left. --}}
+                            @php
+                                $next = [];
+                                if (! $verification['level']) {
+                                    $next[] = $levelWaiting
+                                        ? ['title' => 'Level being set', 'text' => $levelWaiting['qualification']->title.' was verified. A reviewer sets your verification level next; nothing to do.', 'href' => null]
+                                        : ['title' => 'Add evidence for a verification level', 'text' => $qualifications->contains('status', 'submitted') ? 'Your evidence is with a reviewer.' : 'Learners see you as not verified until a reviewer checks a qualification.', 'href' => $qualifications->contains('status', 'submitted') ? null : route('teach.profile', ['step' => 'qualifications'])];
+                                }
+                                if ($onboarding?->teaches_minors && $screeningMissing !== []) {
+                                    $next[] = ['title' => 'Screening to teach under-18s', 'text' => 'An operator records it after checking the registers outside the platform; until then learners under 18 cannot book you.', 'href' => route('teach.profile', ['step' => 'safeguarding'])];
+                                }
+                            @endphp
+                            @if ($next === [])
+                                <p>Nothing left to do here. Your storefront is live for signed-in learners.</p>
+                            @else
+                                <ul class="grid gap-3">
+                                    @foreach ($next as $n)
+                                        <li class="border-t border-td-line pt-3">
+                                            <p class="font-bold">{{ $n['title'] }}</p>
+                                            <p class="text-sm text-td-ink-2">{{ $n['text'] }}</p>
+                                            @if ($n['href'])<p class="mt-1"><a class="td-link" href="{{ $n['href'] }}">Open this step<span class="td-sr">: {{ $n['title'] }}</span></a></p>@endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         @endif
                         @break
                 @endswitch
@@ -352,7 +375,7 @@
             @if ($profile && in_array($step, ['qualifications', 'send'], true))
                 <x-td.panel title="Verification levels">
                     <p class="mb-4 text-td-ink-2">From peer tutor to professional: each level needs a reviewed record of its kind. Dot.Tutor never assigns a level from what a profile says.</p>
-                    <p class="mb-4">Your level now: <strong>{{ $verification['label'] }}</strong>{{ $verification['level'] ? '' : ($qualifications->contains('status', 'submitted') ? ', evidence in review' : '') }}</p>
+                    <p class="mb-4">Your level now: <strong>{{ $verification['level'] ? $verification['label'] : ($levelWaiting ? 'Not set yet' : $verification['label']) }}</strong>{{ $verification['level'] ? '' : ($levelWaiting ? ': '.$levelWaiting['qualification']->title.' was verified and a reviewer sets the level' : ($qualifications->contains('status', 'submitted') ? ', evidence in review' : '')) }}</p>
                     <x-td.table caption="Verification levels and the evidence each needs" caption-hidden>
                         <thead><tr><th scope="col">Level</th><th scope="col">What Dot.Tutor checks</th><th scope="col">Evidence that counts</th></tr></thead>
                         <tbody>
