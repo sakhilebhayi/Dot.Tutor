@@ -44,7 +44,7 @@
             <header class="td-public-top">
                 <div class="td-wrap td-public-top__bar">
                     <a class="td-wordmark" href="{{ url('/') }}">
-                        <img src="{{ asset('images/mark.png') }}" alt="" width="32" height="32">
+                        <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                         <span>Dot.Tutor</span>
                     </a>
                     <div class="td-public-top__actions">

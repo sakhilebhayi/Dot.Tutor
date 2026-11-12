@@ -13,7 +13,7 @@
     <aside class="td-rail sidebar" id="app-sidebar" aria-label="Main navigation" tabindex="-1">
         <div class="td-rail__brand">
             <a class="td-wordmark" href="{{ url('/') }}">
-                <img src="{{ asset('images/mark.png') }}" alt="" width="32" height="32">
+                <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                 <span>Dot.Tutor<span class="td-wordmark__scope">{{ $scope }}</span></span>
             </a>
             <x-td.button variant="quiet" icon="x" icon-only class="td-rail__close" data-shell-close aria-label="Close menu">Close menu</x-td.button>
