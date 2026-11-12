@@ -46,7 +46,7 @@ class Messenger
         $memberIds = $this->membersFor($actor, $contextType, $contextId, $recipientIds);
         $others = array_values(array_diff($memberIds, [$actor->id]));
 
-        $this->gate->allows($actor, 'message', new Participants($others), ['context_type' => $contextType])->authorize();
+        $this->gate->allows($actor, 'message', new Participants($others), ['context_type' => $contextType, 'context_id' => $contextId])->authorize();
 
         $conversation = $this->existing($contextType, $contextId, $memberIds);
 
