@@ -63,9 +63,9 @@
 
     <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-            <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#f4f4f5;">
+            <h1 style="margin:0;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#f4f4f5;">
                 {{ optional($session->subject)->name ?? 'Session' }}
-            </div>
+            </h1>
             <span class="status-badge badge-{{ $session->status }}">{{ $session->status }}</span>
         </div>
 
