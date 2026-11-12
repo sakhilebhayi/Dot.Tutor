@@ -51,7 +51,8 @@
                         @php $p = \App\Domain\Money\Services\Earnings::present($e); @endphp
                         <tr>
                             <td class="tabular-nums">{{ $e->created_at->copy()->timezone($tz)->format('j M Y') }}</td>
-                            <td>{{ $p['title'] ?? 'Sale' }}@if ($e->kind === 'reversal')<span class="block text-sm text-td-ink-2">Refund adjustment</span>@endif</td>
+                            @php $label = $labels[$e->id] ?? ['what' => $p['title'] ?? 'Sale', 'who' => null]; @endphp
+                            <td>{{ $label['what'] }}@if ($label['who'])<span class="block text-sm text-td-ink-2">{{ $label['who'] }}</span>@endif @if ($e->kind === 'reversal')<span class="block text-sm text-td-ink-2">Refund adjustment</span>@endif</td>
                             <td class="is-num">{{ $m($p['gross']) }}</td>
                             <td class="is-num">{{ $m($p['commission']) }}</td>
                             <td class="is-num">{{ $p['other_charges']->isZero() ? '—' : $m($p['other_charges']) }}</td>

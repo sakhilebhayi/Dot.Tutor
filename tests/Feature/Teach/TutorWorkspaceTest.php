@@ -232,11 +232,13 @@ class TutorWorkspaceTest extends TestCase
 
         $earning = Earning::query()->where('seller_id', $tutor->id)->sole();
         $this->actingAs($tutor)->get(route('teach.earnings'))->assertOk()
-            ->assertSee('Mathematics lesson with Lerato Khumalo')->assertSee('Pending');
+            // The row names the learner and what was sold, never the tutor herself (D-2207).
+            ->assertSee('Anele Ngcobo')->assertDontSee('lesson with Lerato Khumalo')->assertSee('Pending');
         $this->actingAs($tutor)->get(route('teach.home'))->assertOk()->assertSee('Next payout run');
 
         $csv = $this->actingAs($tutor)->get(route('teach.earnings.export'))->assertOk()->streamedContent();
-        $this->assertStringContainsString('Mathematics lesson with Lerato Khumalo', $csv);
+        $this->assertStringContainsString('Anele Ngcobo', $csv);
+        $this->assertStringNotContainsString('lesson with Lerato Khumalo', $csv);
         $this->assertStringContainsString(number_format($earning->net_minor / 100, 2, '.', ''), $csv);
         $this->assertStringContainsString('Totals', $csv);
         $otherCsv = $this->actingAs($other)->get(route('teach.earnings.export'))->assertOk()->streamedContent();
