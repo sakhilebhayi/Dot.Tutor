@@ -191,7 +191,8 @@ class TutorPresenter
                 'currency' => $profile->currency,
                 'hourly_rate_display' => $profile->hourly_rate_minor !== null ? MinorUnits::format((int) $profile->hourly_rate_minor, $profile->currency).' per hour' : null,
             ],
-            'offerings' => $profile->offerings->where('is_active', true)->map(fn ($o) => $this->offering($o))->values()->all(),
+            // Offering titles and descriptions are tutor free text too (R-47 polish D-2003: the storefront is public).
+            'offerings' => $profile->offerings->where('is_active', true)->map(fn ($o) => ['title' => $text($o->title), 'description' => $text($o->description)] + $this->offering($o))->values()->all(),
             'reviews' => $this->reviewSummary($profile),
             'availability_url' => route('marketplace.api.tutors.availability', $profile),
             'timezone' => $profile->scheduleTimezone(),

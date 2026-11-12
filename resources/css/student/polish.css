@@ -1,0 +1,76 @@
+/*
+ * R-47 polish, learner area and public discovery (polish-learner, D-2000 onward, docs/R47_POLISH_LEARNER.md).
+ * Recipes on ds tokens only, in the components layer like the rest of the learner CSS.
+ */
+@layer components {
+    /* Learner pages read by a signed-out visitor (find a tutor, storefronts) inside the public shell. */
+    .st-public {
+        padding-block: var(--td-space-6) var(--td-space-9);
+    }
+
+    @media (min-width: 64rem) {
+        .st-narrow-only {
+            display: none;
+        }
+    }
+
+    /* A disclosure is one line: a chevron that turns, an optional icon, the label, and a short line saying what is
+       inside, so a closed one never looks like an empty card (critic A 9 and 11). */
+    .st-disclosure > summary {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--td-space-2);
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .st-disclosure > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .st-disclosure__chev {
+        margin-top: 0.15em;
+        color: var(--td-ink-2);
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    .st-disclosure[open] > summary .st-disclosure__chev {
+        transform: rotate(90deg);
+    }
+
+    .st-disclosure__label {
+        display: grid;
+        gap: 0.15rem;
+    }
+
+    .st-disclosure__hint {
+        font-size: var(--td-text-sm);
+        font-weight: 400;
+        color: var(--td-ink-2);
+    }
+
+    /* A panel whose head is the summary. */
+    .td-panel.st-disclosure > summary.td-panel__head {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+    }
+
+    .td-panel.st-disclosure:not([open]) > summary.td-panel__head {
+        border-bottom: 0;
+    }
+}
+
+@layer components {
+    /* What every listed tutor has in common, said once above the match cards (D-2012). */
+    .st-shared {
+        display: grid;
+        gap: var(--td-space-2);
+        padding: var(--td-space-4) var(--td-space-5);
+        background: var(--td-sunken);
+    }
+
+    .st-shared__title {
+        margin: 0;
+        font-weight: 700;
+    }
+}

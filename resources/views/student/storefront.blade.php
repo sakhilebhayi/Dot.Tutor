@@ -5,8 +5,11 @@
     $lessonTypes = ['one_to_one', 'consultation', 'homework_help', 'exam_prep', 'revision'];
     $reviews = $tutor['reviews'];
     $offerings = collect($tutor['offerings']);
+    $guest = auth()->guest();
+    $subjectNames = collect($tutor['teaching_scope'])->pluck('subject.name')->merge(collect($tutor['subjects'])->pluck('name'))->filter()->unique()->take(4)->implode(', ');
+    $description = $tutor['name'].' on Dot.Tutor'.($subjectNames !== '' ? ': '.$subjectNames : '').'. Levels, teaching languages, what was verified, lessons and prices.';
 @endphp
-<x-student.shell :title="$tutor['name']">
+<x-student.shell :title="$tutor['name']" :description="$description">
     <header class="st-record" style="border:1px solid var(--td-line)">
         <div class="st-record__head">
             <x-td.avatar :name="$tutor['name']" :src="$tutor['photo_url']" size="lg" decorative />
@@ -21,9 +24,14 @@
             @endif
         </div>
         <div class="st-inline">
-            @if ($offerings->isNotEmpty())<x-td.button variant="primary" href="#offerings" icon="calendar">Book</x-td.button>@endif
-            <x-td.button variant="quiet" :href="route('marketplace.find')" icon="arrow-left">Back to tutors</x-td.button>
+            {{-- One booking action per offering lives in "Lessons and prices"; this only jumps there on a phone,
+                 where that panel sits below the profile (R-47 polish D-2010: no second "Book" button). --}}
+            @if ($offerings->isNotEmpty())<x-td.button variant="quiet" href="#offerings" icon="chevron-down" class="st-narrow-only">Lessons and prices</x-td.button>@endif
+            <x-td.button variant="quiet" :href="route('marketplace.find')" icon="arrow-left">{{ $guest ? 'Find other tutors' : 'Back to tutors' }}</x-td.button>
         </div>
+        @if ($guest)
+            <p class="st-small" style="margin:0">You are reading a public profile. Sign in with InfoDot to book, pay or send a message; contact details are never shown here.</p>
+        @endif
     </header>
 
     @if ($errors->any())
@@ -134,7 +142,7 @@
         </div>
 
         <aside class="st-stack" id="offerings" aria-label="Book with {{ $tutor['name'] }}">
-            <x-td.panel title="Lessons and packages" flush>
+            <x-td.panel title="Lessons and prices" flush>
                 @if ($offerings->isEmpty())
                     <x-td.state kind="empty" title="Nothing to book yet">{{ $tutor['name'] }} has not published a lesson or package.</x-td.state>
                 @else
@@ -151,11 +159,12 @@
                                     <p style="margin:0" class="st-title">@if ((int) $o['price_minor'] === 0) Free @else<x-td.money :minor="$o['price_minor']" :currency="$o['currency']" />@endif</p>
                                     <p class="st-small" style="margin:0">{{ $o['cancellation']['summary'] }}</p>
                                     <div class="st-inline" style="margin-top:var(--td-space-1)">
-                                        <x-td.button :variant="$loop->first ? 'primary' : 'secondary'" size="sm" :href="route('learn.book', $o['id'])">{{ match (true) {
-                                            in_array($o['type'], $lessonTypes, true) => 'Request this lesson',
-                                            $o['type'] === 'recurring_weekly' => 'Choose a weekly time',
-                                            $o['type'] === 'package' => 'See the package',
-                                            default => 'See group lessons',
+                                        {{-- A guest is sent to sign in by the booking page's own auth check and comes back to it. --}}
+                                        <x-td.button :variant="$loop->first ? 'primary' : 'secondary'" size="sm" :href="route('learn.book', $o['id'])" :icon="$guest ? 'lock' : null">{{ ($guest ? 'Sign in to ' : '').match (true) {
+                                            in_array($o['type'], $lessonTypes, true) => $guest ? 'request this lesson' : 'Request this lesson',
+                                            $o['type'] === 'recurring_weekly' => $guest ? 'choose a weekly time' : 'Choose a weekly time',
+                                            $o['type'] === 'package' => $guest ? 'see the package' : 'See the package',
+                                            default => $guest ? 'see group lessons' : 'See group lessons',
                                         } }}</x-td.button>
                                     </div>
                                 </div>

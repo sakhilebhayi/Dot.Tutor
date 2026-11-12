@@ -398,7 +398,7 @@ class MatchingService
         if ($scopes->contains(fn ($s) => $s->curriculum_id === $need->curriculumId)) {
             $name = $this->academic->curriculumName($need->curriculumId);
 
-            return [1.0, $name ? "Teaches the {$name} curriculum." : 'Teaches your curriculum.'];
+            return [1.0, $name ? "Follows {$name}, your curriculum." : 'Follows your curriculum.'];
         }
         if ($scopes->isEmpty() || $scopes->contains(fn ($s) => $s->curriculum_id === null)) {
             return [0.5, 'Has not said which curricula they teach.'];

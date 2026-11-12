@@ -25,6 +25,19 @@
     width: 2rem;
     height: 2rem;
     object-fit: contain;
+    transition: transform var(--td-dur-short) var(--td-ease-out);
+}
+
+/* The wordmark answers a pointer (R-47 polish D-2008): the mark lifts and the name is underlined. */
+@media (hover: hover) {
+    .td-wordmark:hover > span {
+        text-decoration: underline 2px;
+        text-underline-offset: 0.25em;
+    }
+
+    .td-wordmark:hover img {
+        transform: translateY(-2px);
+    }
 }
 
 .td-wordmark__scope {

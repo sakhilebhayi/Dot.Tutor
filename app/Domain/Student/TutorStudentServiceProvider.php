@@ -9,6 +9,9 @@ use App\Domain\Student\Http\Composers\LessonsComposer;
 use App\Domain\Student\Http\Composers\StorefrontComposer;
 use App\Domain\Student\Services\LearnerContext;
 use App\Domain\Student\Support\ViewerZones;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +31,13 @@ class TutorStudentServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Public discovery (D-2003): guests are limited per address; signed-in people have the domains' own limits.
+        RateLimiter::for('tutor-guest-search', fn (Request $request) => $request->user() !== null ? Limit::none()
+            : [Limit::perMinute((int) config('tutor.public.search_per_minute', 12))->by('gs:'.$request->ip()),
+                Limit::perHour((int) config('tutor.public.search_per_hour', 120))->by('gsh:'.$request->ip())]);
+        RateLimiter::for('tutor-public-pages', fn (Request $request) => $request->user() !== null ? Limit::none()
+            : Limit::perMinute((int) config('tutor.public.pages_per_minute', 60))->by('gp:'.$request->ip()));
+
         View::composer('student.find.index', FindComposer::class);
         View::composer('student.storefront', StorefrontComposer::class);
         View::composer('student.lessons', LessonsComposer::class);
