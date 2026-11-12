@@ -33,13 +33,26 @@ class Insights
         $weekStart = $now->startOfWeek(CarbonImmutable::MONDAY)->subWeeks(11)->startOfDay();
         $requests = TutorSession::query()->where('tutor_profile_id', $profile->id)->where('kind', '!=', 'group')
             ->where('created_at', '>=', $weekStart->utc())->get(['created_at']);
+        // Each request is bucketed once by its timestamp against the local week starts (DST-safe), instead of
+        // twelve timezone conversions per request (R-47 D-1605).
+        $bounds = array_map(fn (int $i) => $weekStart->addWeeks($i)->getTimestamp(), range(0, 12));
+        $perWeek = array_fill(0, 12, 0);
+        foreach ($requests as $request) {
+            $ts = $request->created_at->getTimestamp();
+            for ($i = 0; $i < 12; $i++) {
+                if ($ts >= $bounds[$i] && $ts < $bounds[$i + 1]) {
+                    $perWeek[$i]++;
+                    break;
+                }
+            }
+        }
         $weeks = [];
         for ($i = 0; $i < 12; $i++) {
             $from = $weekStart->addWeeks($i);
             $weeks[] = [
                 'label' => $from->format('j M'),
                 'from' => $from,
-                'value' => $requests->filter(fn ($s) => $s->created_at->copy()->timezone($tz)->betweenIncluded($from, $from->addWeek()->subSecond()))->count(),
+                'value' => $perWeek[$i],
             ];
         }
 
@@ -51,13 +64,19 @@ class Insights
         $monthStart = $now->startOfMonth()->subMonths(5);
         $earnings = Earning::query()->where('seller_id', $profile->user_id)->where('status', '!=', Earning::CANCELLED)
             ->where('created_at', '>=', $monthStart->utc())->get(['net_minor', 'created_at', 'currency']);
+        $zone = new \DateTimeZone($tz);
+        $byMonth = [];
+        foreach ($earnings as $earning) {
+            $key = (new \DateTimeImmutable('@'.$earning->created_at->getTimestamp()))->setTimezone($zone)->format('Y-m');
+            $byMonth[$key] = ($byMonth[$key] ?? 0) + (int) $earning->net_minor;
+        }
         $months = [];
         for ($i = 0; $i < 6; $i++) {
             $from = $monthStart->addMonths($i);
             $months[] = [
                 'label' => $from->format('M'),
                 'title' => $from->format('F Y'),
-                'value' => (int) $earnings->filter(fn ($e) => $e->created_at->copy()->timezone($tz)->format('Y-m') === $from->format('Y-m'))->sum('net_minor'),
+                'value' => (int) ($byMonth[$from->format('Y-m')] ?? 0),
             ];
         }
 

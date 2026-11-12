@@ -14,6 +14,7 @@ use App\Domain\Teach\Models\StudentNote;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
@@ -61,6 +62,48 @@ class StudentBook
         $users = User::query()->whereIn('id', $ids)
             ->when($search, fn ($q, $s) => $q->where('name', 'like', '%'.str_replace(['%', '_'], ['\%', '\_'], $s).'%'))
             ->orderBy('name')->get(['id', 'name']);
+
+        return $this->rows($profile, $users);
+    }
+
+    /**
+     * One page of the list for the students screen (R-47 D-1606): the counts come from grouped queries and only the
+     * page's students are read in detail, so a tutor with thousands of students gets the same page cost as one with ten.
+     *
+     * @return array{rows: LengthAwarePaginator, total: int, repeat: int}
+     */
+    public function page(TutorProfile $profile, ?string $search, bool $repeatOnly, int $perPage, int $page, array $options = []): array
+    {
+        $ids = $this->learnerIds($profile);
+        $repeatIds = $ids === [] ? [] : TutorSession::query()->where('tutor_profile_id', $profile->id)->where('status', 'completed')
+            ->whereNotNull('student_id')->groupBy('student_id')->havingRaw('count(*) >= 2')->pluck('student_id')
+            ->map(fn ($id) => (int) $id)->intersect($ids)->values()->all();
+        $base = User::query()->whereIn('id', $ids)
+            ->when($search, fn ($q, $s) => $q->where('name', 'like', '%'.str_replace(['%', '_'], ['\%', '\_'], $s).'%'));
+
+        $total = (clone $base)->count();
+        $repeat = $repeatIds === [] ? 0 : (clone $base)->whereIn('id', $repeatIds)->count();
+        $users = (clone $base)->when($repeatOnly, fn ($q) => $q->whereIn('id', $repeatIds))
+            ->orderBy('name')->orderBy('id')->paginate($perPage, ['id', 'name'], 'page', $page);
+        $users->setCollection($this->rows($profile, $users->getCollection()));
+        if (isset($options['path'])) {
+            $users->withPath($options['path']);
+        }
+        $users->appends($options['query'] ?? []);
+
+        return ['rows' => $users, 'total' => $total, 'repeat' => $repeat];
+    }
+
+    /**
+     * @param  Collection<int, User>  $users
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function rows(TutorProfile $profile, Collection $users): Collection
+    {
+        $ids = $users->pluck('id')->all();
+        if ($ids === []) {
+            return collect();
+        }
         $sessions = TutorSession::query()->where('tutor_profile_id', $profile->id)->whereIn('student_id', $ids)->where('status', '!=', 'awaiting_guardian')
             ->get(['id', 'student_id', 'status', 'starts_at'])->groupBy('student_id');
         $courseIds = $profile->user_id ? Course::query()->where('owner_id', $profile->user_id)->pluck('id') : collect();

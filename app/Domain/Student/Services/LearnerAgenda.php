@@ -59,7 +59,7 @@ class LearnerAgenda
     public function lessonsToReview(User $user, int $limit = 3): Collection
     {
         return TutorSession::query()
-            ->with(['tutorProfile.user', 'subject'])
+            ->with(['tutorProfile.user', 'subject', 'reviews'])
             ->where('student_id', $user->id)
             ->where('status', SessionStatus::Completed->value)
             ->where('starts_at', '>=', now()->subDays(30))

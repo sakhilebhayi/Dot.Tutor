@@ -96,12 +96,14 @@ class Overview
     {
         $start = $this->now->startOfWeek()->subWeeks($weeks - 1);
         $counts = array_fill(0, $weeks, 0);
+        // Week boundaries as timestamps (local Mondays, so DST-correct) and plain integer comparisons per row:
+        // a Carbon object per lesson was most of the overview's time at volume (R-47 D-1605).
+        $bounds = array_map(fn (int $i) => $start->addWeeks($i)->getTimestamp(), range(0, $weeks));
 
-        DB::table('tutor_sessions')->where('created_at', '>=', $start->utc())->select('created_at')->orderBy('id')
-            ->lazy(1000)->each(function ($row) use ($start, &$counts, $weeks) {
-                $at = CarbonImmutable::parse($row->created_at, 'UTC')->setTimezone($this->tz);
-                $index = intdiv((int) $start->diffInDays($at->startOfDay(), true), 7);
-                if ($index >= 0 && $index < $weeks) {
+        DB::table('tutor_sessions')->where('created_at', '>=', $start->utc())->select('id', 'created_at')
+            ->lazyById(2000)->each(function ($row) use ($bounds, &$counts, $weeks) {
+                $index = $this->bucket($bounds, self::timestamp($row->created_at));
+                if ($index !== null && $index < $weeks) {
                     $counts[$index]++;
                 }
             });
@@ -187,15 +189,24 @@ class Overview
         $first = $this->now->startOfMonth()->subMonths($months - 1);
         $active = []; // learner => [monthIndex => true]
         $firstSeen = []; // learner => monthIndex of their first lesson ever
+        $holding = [SessionStatus::Confirmed->value, SessionStatus::InProgress->value, SessionStatus::Completed->value, SessionStatus::NoShow->value];
+        $bounds = array_map(fn (int $i) => $first->addMonths($i)->getTimestamp(), range(0, $months));
 
-        DB::table('tutor_sessions')->whereNotNull('student_id')
-            ->whereIn('status', [SessionStatus::Confirmed->value, SessionStatus::InProgress->value, SessionStatus::Completed->value, SessionStatus::NoShow->value])
-            ->select('student_id', 'starts_at')->orderBy('id')
-            ->lazy(1000)->each(function ($row) use ($first, &$active, &$firstSeen) {
-                $at = CarbonImmutable::parse($row->starts_at, 'UTC')->setTimezone($this->tz);
-                $index = ($at->year - $first->year) * 12 + ($at->month - $first->month);
-                $firstSeen[$row->student_id] = min($firstSeen[$row->student_id] ?? PHP_INT_MAX, $index);
-                $active[$row->student_id][$index] = true;
+        // First lesson ever per learner in one grouped query; learners first seen before the window are in no cohort.
+        DB::table('tutor_sessions')->whereNotNull('student_id')->whereIn('status', $holding)
+            ->groupBy('student_id')->select('student_id', DB::raw('min(starts_at) as first_at'))->get()
+            ->each(function ($row) use ($bounds, $first, &$firstSeen) {
+                $ts = self::timestamp($row->first_at);
+                $firstSeen[$row->student_id] = $ts < $first->getTimestamp() ? -1 : ($this->bucket($bounds, $ts) ?? PHP_INT_MAX);
+            });
+        // Activity only inside the window (the cells look at months 1 to 3 after each cohort month).
+        DB::table('tutor_sessions')->whereNotNull('student_id')->whereIn('status', $holding)->where('starts_at', '>=', $first->utc())
+            ->select('id', 'student_id', 'starts_at')
+            ->lazyById(2000)->each(function ($row) use ($bounds, &$active) {
+                $index = $this->bucket($bounds, self::timestamp($row->starts_at));
+                if ($index !== null) {
+                    $active[$row->student_id][$index] = true;
+                }
             });
 
         $current = $months - 1;
@@ -239,5 +250,35 @@ class Overview
             'tutor_earnings_minor' => (int) DB::table('money_earnings')->where('created_at', '>=', $since)->sum('net_minor'),
             'open_orders' => (int) Order::query()->whereIn('status', ['pending_payment', 'awaiting_guardian'])->count(),
         ];
+    }
+
+    /** A stored UTC datetime as a timestamp (both engines' formats). */
+    private static function timestamp(string $value): int
+    {
+        return (int) strtotime($value.(preg_match('/[zZ]|[+-]\d\d:?\d\d$/', $value) ? '' : ' UTC'));
+    }
+
+    /**
+     * The index i with bounds[i] <= ts < bounds[i + 1], or null outside them.
+     *
+     * @param  list<int>  $bounds
+     */
+    private function bucket(array $bounds, int $ts): ?int
+    {
+        if ($ts < $bounds[0] || $ts >= $bounds[count($bounds) - 1]) {
+            return null;
+        }
+        $lo = 0;
+        $hi = count($bounds) - 1;
+        while ($hi - $lo > 1) {
+            $mid = intdiv($lo + $hi, 2);
+            if ($ts >= $bounds[$mid]) {
+                $lo = $mid;
+            } else {
+                $hi = $mid;
+            }
+        }
+
+        return $lo;
     }
 }

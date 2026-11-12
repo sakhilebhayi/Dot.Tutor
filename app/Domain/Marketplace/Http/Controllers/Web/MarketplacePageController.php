@@ -91,8 +91,9 @@ class MarketplacePageController extends Controller
         $profileId = $user->tutorProfile()->value('id');
 
         return view('marketplace.bookings', [
-            'asLearner' => TutorSession::query()->where('student_id', $user->id)->orderByDesc('starts_at')->limit(50)->get()->map(fn ($s) => $presenter->session($s, $user)),
-            'asTutor' => $profileId ? TutorSession::query()->where('tutor_profile_id', $profileId)->orderByDesc('starts_at')->limit(50)->get()->map(fn ($s) => $presenter->session($s, $user)) : collect(),
+            // Eager loads match what BookingPresenter::session() reads (one query per relation, not per row: D-1603).
+            'asLearner' => TutorSession::query()->with(['tutorProfile.user', 'subject', 'offering', 'events'])->where('student_id', $user->id)->orderByDesc('starts_at')->limit(50)->get()->map(fn ($s) => $presenter->session($s, $user)),
+            'asTutor' => $profileId ? TutorSession::query()->with(['tutorProfile.user', 'subject', 'offering', 'events'])->where('tutor_profile_id', $profileId)->orderByDesc('starts_at')->limit(50)->get()->map(fn ($s) => $presenter->session($s, $user)) : collect(),
         ]);
     }
 

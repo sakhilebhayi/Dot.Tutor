@@ -62,7 +62,7 @@ class BookingPresenter
         }
 
         if ($viewer !== null && ($isTutor || $s->student_id === $viewer->id)) {
-            $data['events'] = $s->events()->get()->map(fn (TutorSessionEvent $e) => [
+            $data['events'] = ($s->relationLoaded('events') ? $s->events : $s->events()->get())->map(fn (TutorSessionEvent $e) => [
                 'event' => $e->event,
                 'from' => $e->from_state ? SessionStatus::tryFrom($e->from_state)?->state() ?? $e->from_state : null,
                 'to' => $e->to_state ? SessionStatus::tryFrom($e->to_state)?->state() ?? $e->to_state : null,

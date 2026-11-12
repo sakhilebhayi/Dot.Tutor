@@ -42,7 +42,9 @@ class BookingsController extends Controller
         ];
 
         $list = match ($view) {
-            'requests' => $bookings->requests($profile)->where('tutor_booking_series_id', null)->values(),
+            // Paged like every other view: a busy tutor can hold over a hundred open requests (R-47 D-1606).
+            'requests' => $bookings->base($profile)->where('status', SessionStatus::Pending->value)->whereNull('tutor_booking_series_id')
+                ->orderBy('starts_at')->paginate(25)->withQueryString(),
             'upcoming' => $bookings->base($profile)->whereIn('status', ['confirmed', 'in_progress'])->where('kind', '!=', 'group')
                 ->where('starts_at', '>=', $now->subHours(6))->orderBy('starts_at')->paginate(25)->withQueryString(),
             'waiting' => $bookings->base($profile)->where('status', 'awaiting_payment')->orderBy('starts_at')->paginate(25)->withQueryString(),

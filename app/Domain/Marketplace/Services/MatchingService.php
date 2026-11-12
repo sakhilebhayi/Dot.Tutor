@@ -3,6 +3,7 @@
 namespace App\Domain\Marketplace\Services;
 
 use App\Domain\Marketplace\Contracts\AcademicScopePort;
+use App\Domain\Marketplace\Contracts\BatchLanguageLookup;
 use App\Domain\Marketplace\Contracts\LanguageProfilePort;
 use App\Domain\Marketplace\Enums\OfferingType;
 use App\Domain\Marketplace\Enums\ReviewStatus;
@@ -44,6 +45,9 @@ class MatchingService
 {
     public const TERMS = ['scope', 'curriculum', 'language', 'availability', 'budget', 'help_type', 'verification', 'reviews', 'new_tutor'];
 
+    /** @var Collection<int, Collection<int, TutorSession>>|null the candidates' booked sessions over the matching horizon, by tutor profile id */
+    private ?Collection $busy = null;
+
     public function __construct(
         private SlotFinder $slots,
         private AcademicScopePort $academic,
@@ -59,7 +63,7 @@ class MatchingService
         $weights = (array) config('marketplace.matching.weights');
 
         $candidates = TutorProfile::query()
-            ->with(['user', 'teachingScopes', 'offerings' => fn ($q) => $q->where('is_active', true)->with('subjects')])
+            ->with(['user', 'teachingScopes', 'availabilityWindows', 'blockedDates', 'offerings' => fn ($q) => $q->where('is_active', true)->with('subjects')])
             ->where('status', TutorProfileStatus::Approved->value)
             ->whereHas('subjects', fn ($q) => $q->where('subjects.id', $need->subjectId)->where('subjects.is_active', true))
             ->when($learner, fn ($q) => $q->where(fn ($w) => $w->whereNull('user_id')->orWhere('user_id', '!=', $learner->id)))
@@ -68,6 +72,13 @@ class MatchingService
             ->get();
 
         $reviewStats = $this->reviewStats($candidates->pluck('id')->all());
+
+        // One query each for every candidate's teaching languages and booked times instead of one per candidate
+        // (R-47 D-1602: 1,219 statements for 300 candidates before, docs/R47_PERF.md).
+        if ($this->languages instanceof BatchLanguageLookup) {
+            $this->languages->primeTeachingLanguages($candidates->pluck('user')->filter()->all());
+        }
+        $this->busy = $this->bookedSessions($candidates->pluck('id')->all(), $now)->groupBy('tutor_profile_id');
 
         $results = [];
         $excluded = 0;
@@ -491,7 +502,7 @@ class MatchingService
             ];
         }
 
-        if (! $profile->availabilityWindows()->exists()) {
+        if ($profile->availabilityWindows->isEmpty()) {
             return [0.0, 'Has not published open hours yet.', []];
         }
 
@@ -501,22 +512,54 @@ class MatchingService
             : $now->addDays($horizon);
         $days = (int) max(1, min((int) config('tutor.booking_horizon_days', 14), ceil(($lastDay->getTimestamp() - $now->getTimestamp()) / 86400) + 1));
 
+        // Timestamps and native DateTime here: this loop runs for every open slot of every candidate (thousands
+        // per search), and Carbon per slot was most of the page's time (D-1602).
+        $zone = new \DateTimeZone($tz);
         $matching = [];
-        foreach ($this->slots->forTutor($profile, $need->durationMinutes, $now, $days) as $day) {
-            foreach ($day['slots'] as $slot) {
-                $local = $slot->setTimezone($tz);
-                if ($this->inWindow($local, $need)) {
-                    $matching[] = $slot->utc()->toIso8601String();
+        foreach ($this->slots->startTimestamps($profile, $need->durationMinutes, $now, $days, $this->busy?->get($profile->id, new Collection)) as $day) {
+            foreach ($day['starts'] as $ts) {
+                if ($this->timestampInWindow($ts, $need, $zone)) {
+                    $matching[] = $ts;
                 }
             }
         }
         $count = count($matching);
+        $matching = array_map(fn (int $ts) => CarbonImmutable::createFromTimestamp($ts, 'UTC')->toIso8601String(), array_slice($matching, 0, 3));
 
         $note = $count === 0
             ? ($need->hasWindow() ? 'No open times in your window in the next two weeks.' : 'No open times in the next two weeks.')
             : sprintf('%d open %s %s in the next two weeks.', $count, $count === 1 ? 'time' : 'times', $need->hasWindow() ? 'in your window' : '');
 
-        return [min(1, $count / $full), preg_replace('/\s+/', ' ', $note), array_slice($matching, 0, 3)];
+        return [min(1, $count / $full), preg_replace('/\s+/', ' ', $note), $matching];
+    }
+
+    /** inWindow() for a slot start given as a timestamp, without Carbon (same rules, same absolute-time end). */
+    private function timestampInWindow(int $ts, LearningNeed $need, \DateTimeZone $zone): bool
+    {
+        if (! $need->hasWindow()) {
+            return true;
+        }
+        [$date, $weekday, $time] = explode('|', (new \DateTimeImmutable('@'.$ts))->setTimezone($zone)->format('Y-m-d|N|H:i'));
+        if ($need->fromDate !== null && $date < $need->fromDate) {
+            return false;
+        }
+        if ($need->toDate !== null && $date > $need->toDate) {
+            return false;
+        }
+        if ($need->weekdays !== [] && ! in_array((int) $weekday, $need->weekdays, true)) {
+            return false;
+        }
+        if ($need->fromTime !== null && $time < $need->fromTime) {
+            return false;
+        }
+        if ($need->toTime !== null) {
+            [$endDate, $endTime] = explode('|', (new \DateTimeImmutable('@'.($ts + $need->durationMinutes * 60)))->setTimezone($zone)->format('Y-m-d|H:i'));
+            if ($endTime > $need->toTime && $endDate === $date) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function inWindow(CarbonImmutable $local, LearningNeed $need): bool
@@ -561,6 +604,28 @@ class MatchingService
             ->filter(fn (TutorSession $s) => $this->inWindow(CarbonImmutable::createFromTimestamp($s->starts_at->getTimestamp(), $need->timezone), $need))
             ->map(fn (TutorSession $s) => $s->starts_at->copy()->utc()->toIso8601String())
             ->values()->all();
+    }
+
+    /**
+     * Every candidate's sessions that could hold time over the matching horizon (with the slot finder's margin for
+     * the longest lesson before it), in one query; SlotFinder filters them per tutor exactly as its own query does.
+     *
+     * @param  list<int>  $profileIds
+     * @return Collection<int, TutorSession>
+     */
+    private function bookedSessions(array $profileIds, CarbonImmutable $now): Collection
+    {
+        if ($profileIds === []) {
+            return new Collection;
+        }
+        $horizon = max((int) config('tutor.booking_horizon_days', 14), (int) config('marketplace.matching.availability_days')) + 2;
+
+        return TutorSession::query()
+            ->whereIn('tutor_profile_id', $profileIds)
+            ->whereIn('status', SessionStatus::holdingTime())
+            ->where('starts_at', '>', $now->subDays(2)->subMinutes(TutorSession::longestDurationMinutes()))
+            ->where('starts_at', '<', $now->addDays($horizon))
+            ->get(['id', 'tutor_profile_id', 'status', 'starts_at', 'duration_minutes']);
     }
 
     /**
