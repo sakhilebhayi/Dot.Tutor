@@ -93,11 +93,11 @@
                                         @if ($row['next_slots'] !== [])
                                             <div>
                                                 <p class="st-small" style="margin:0 0 var(--td-space-1)">Next open {{ \Illuminate\Support\Str::plural('time', count($row['next_slots'])) }}</p>
-                                                <p style="margin:0" class="st-inline st-dot">
+                                                <ul class="st-stack st-stack--tight" style="margin:0;padding:0;list-style:none">
                                                     @foreach ($row['next_slots'] as $slot)
-                                                        <span>{{ is_string($slot) ? Times::when($slot) : Times::when($slot['starts_at'] ?? '') }}</span>
+                                                        <li><time datetime="{{ $slot }}">{{ Times::when($slot) }}</time></li>
                                                     @endforeach
-                                                </p>
+                                                </ul>
                                             </div>
                                         @endif
                                         <div class="st-inline">
