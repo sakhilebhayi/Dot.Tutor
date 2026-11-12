@@ -23,3 +23,20 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# R-47 perf (D-1612, docs/R47_PERF.md section 4): compress text answers and let browsers keep the content-hashed build
+# files. A phone on 3G downloads the 173 KB stylesheet as about 30 KB once, then never again until it changes.
+# Pages and JSON stay private and uncached (the application sets their Cache-Control). The deploy does not copy this
+# file into a separate document root: if the site's docroot is not <app>/public, add this block to the docroot's
+# .htaccess by hand (owner item O-P1 in docs/R47_PERF.md).
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml application/manifest+json
+</IfModule>
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#^/build/assets/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    <ElseIf "%{REQUEST_URI} =~ m#^/(fonts|icons|images)/#">
+        Header set Cache-Control "public, max-age=604800"
+    </ElseIf>
+</IfModule>

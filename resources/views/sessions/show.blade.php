@@ -63,9 +63,9 @@
 
     <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-            <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#f4f4f5;">
+            <h1 style="margin:0;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#f4f4f5;">
                 {{ optional($session->subject)->name ?? 'Session' }}
-            </div>
+            </h1>
             <span class="status-badge badge-{{ $session->status }}">{{ $session->status }}</span>
         </div>
 
@@ -121,7 +121,7 @@
         @endcan
 
         @if($session->isOpen())
-        <form method="POST" action="{{ route('sessions.cancel', $session) }}" onsubmit="return confirm('Cancel this session?');">
+        <form method="POST" action="{{ route('sessions.cancel', $session) }}" data-confirm="Cancel this session?">
             @csrf
             <button type="submit" class="cancel-btn">Cancel session</button>
         </form>
@@ -178,7 +178,7 @@
                 <div style="display:flex;gap:0.5rem;flex-shrink:0;">
                     <a href="{{ route('resources.download', $resource) }}" style="color:#a5b4fc;text-decoration:none;font-size:0.78rem;font-weight:700;">Download</a>
                     @if($resource->uploader_id === auth()->id())
-                    <form method="POST" action="{{ route('resources.destroy', $resource) }}" onsubmit="return confirm('Remove this resource?');">
+                    <form method="POST" action="{{ route('resources.destroy', $resource) }}" data-confirm="Remove this resource?">
                         @csrf
                         @method('DELETE')
                         <button type="submit" style="background:none;border:none;color:#f87171;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;">Remove</button>

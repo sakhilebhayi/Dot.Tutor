@@ -45,7 +45,7 @@ class TutorProfileDecision extends Notification
                 self::REINSTATED => 'Your tutor profile was reinstated. You are listed again.',
                 default => 'Your tutor profile status changed.',
             },
-            'url' => route('tutor.profile.edit'),
+            'url' => route('teach.profile'),
         ];
     }
 }

@@ -9,6 +9,8 @@ namespace App\Enums;
  */
 enum TutorProfileStatus: string
 {
+    /** Being written in the guided onboarding (tutor UI, D-1201); not sent, so no operator queue shows it. */
+    case Draft = 'draft';
     case Pending = 'pending';
     case Approved = 'approved';
     case Rejected = 'rejected';

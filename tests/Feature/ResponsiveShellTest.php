@@ -26,9 +26,9 @@ class ResponsiveShellTest extends TestCase
             [$student, route('tutors.browse')],
             [$student, route('tutors.show', $tutor)],
             [$student, route('sessions.show', $session)],
-            [$student, route('tutor.profile.edit')],
+            [$student, route('teach.profile')],
             [$student, route('profile.show')],
-            [$tutorUser, route('tutor.availability.index')],
+            [$tutorUser, route('teach.calendar')],
             [$this->makeOperator(), route('operator.tutor-profiles.index')],
             [$this->makeOperator(), route('operator.subjects.index')],
         ] as [$user, $url]) {
@@ -51,14 +51,13 @@ class ResponsiveShellTest extends TestCase
         $this->makeSession($tutor, $student, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(2)]);
 
         $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($student)->get(route('dashboard'))), 'Recent sessions');
-        $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($tutor->user)->get(route('tutor.availability.index'))), 'Weekly windows');
         $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($this->makeOperator())->get(route('operator.subjects.index'))), 'Subjects');
     }
 
     public function test_the_drawer_reaches_browse_teaching_and_operator_pages(): void
     {
         $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('dashboard')));
-        foreach (['dashboard', 'tutors.browse', 'tutor.profile.edit', 'profile.show'] as $name) {
+        foreach (['dashboard', 'tutors.browse', 'teach.profile', 'profile.show'] as $name) {
             $this->assertSame(1, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route($name).'"]')->length, $name);
         }
         $this->assertSame(0, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route('operator.subjects.index').'"]')->length);
@@ -71,7 +70,16 @@ class ResponsiveShellTest extends TestCase
 
     public function test_the_drawer_footer_has_sign_out_and_a_team_switcher(): void
     {
-        $user = $this->makeUser('Switcher Student');
+        // R-47 polish D-2023: the switcher is for a tutor (or operator) who uses more than one team; a learner with the
+        // same two teams sees only sign-out.
+        $learner = $this->makeUser('Plain Learner');
+        Team::factory()->create(['user_id' => $learner->id, 'personal_team' => false, 'name' => 'Learner Second Team']);
+        $xpath = $this->assertResponsiveShell($this->actingAs($learner)->get(route('dashboard')));
+        $this->assertSame(0, $xpath->query('//details[contains(@class, "team-switch")]')->length);
+        $this->assertSame(1, $xpath->query('//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);
+
+        $user = $this->makeUser('Switcher Tutor');
+        $this->makeTutor([], null, $user);
         $second = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false, 'name' => 'Matric Maths Study Group']);
 
         $xpath = $this->assertResponsiveShell($this->actingAs($user)->get(route('dashboard')));

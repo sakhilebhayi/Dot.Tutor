@@ -1,0 +1,69 @@
+{{-- Guardian home (brief section 15): an urgent safety matter first, then what waits for a decision, what was
+     decided lately, and each child with a status that tells the truth. Phone-first. --}}
+@php
+    $tz = config('tutor.timezone');
+@endphp
+<x-layouts::learner title="Children">
+    <x-td.page-head title="{{ $is_guardian ? 'Your children on Dot.Tutor' : 'Guardian' }}" :lede="$is_guardian ? 'Approve or decline what your child asks for, see their lessons, purchases and messages, and choose what needs your approval.' : 'A parent or guardian looks after a learner under 18 here: they approve lessons, purchases and rooms, and see messages and reports.'" />
+
+    @if (! $is_guardian)
+        @include('guardian.partials.not-linked')
+    @else
+        <div class="grid gap-6">
+            @foreach ($urgent as $row)
+                @include('guardian.partials.urgent', ['row' => $row])
+            @endforeach
+
+            <x-td.panel title="Waiting for you" flush>
+                @if ($waiting_total === 0)
+                    <x-td.state kind="success" title="Nothing is waiting for your approval">When your child asks to book a lesson, buy something or join a paid room, it appears here and you get an email.</x-td.state>
+                @else
+                    @foreach ($children as $child)
+                        @foreach ($child['pending'] as $approval)
+                            @include('guardian._decision', ['approval' => $approval, 'childName' => $child['name']])
+                        @endforeach
+                    @endforeach
+                @endif
+            </x-td.panel>
+
+            @if ($decisions !== [])
+                <x-td.panel title="Recent decisions" flush>
+                    @include('guardian.partials.decisions', ['decisions' => array_slice($decisions, 0, 5)])
+                    @if (count($decisions) > 5)
+                        <div class="px-5 py-4"><x-td.button :href="route('guardian.approvals')" variant="quiet" icon-end="arrow-right">All {{ count($decisions) }} decisions</x-td.button></div>
+                    @endif
+                </x-td.panel>
+            @endif
+
+            <x-td.panel title="{{ count($children) === 1 ? 'Your child' : 'Your children' }}" flush>
+                <ul class="ops-work">
+                    @foreach ($children as $child)
+                        @php
+                            $next = $child['upcoming_lessons'][0] ?? null;
+                            $urgentCount = count($child['urgent']);
+                            $tag = match (true) {
+                                $urgentCount > 0 => ['text' => $urgentCount === 1 ? '1 urgent report' : $urgentCount.' urgent reports', 'tone' => 'danger', 'href' => route('safety.guardian.dashboard').'#'.$child['urgent'][0]['key']],
+                                $child['account']['status'] === 'suspended' => ['text' => 'Suspended', 'tone' => 'danger'],
+                                $child['account']['status'] === 'limited' => ['text' => 'Needs consent', 'tone' => 'warning'],
+                                $child['open_reports'] > 0 => ['text' => $child['open_reports'] === 1 ? '1 open report' : $child['open_reports'].' open reports', 'tone' => 'warning', 'href' => route('safety.guardian.dashboard')],
+                                count($child['pending']) > 0 => ['text' => count($child['pending']).' waiting for you', 'tone' => 'info'],
+                                default => ['text' => 'Active', 'tone' => 'success'],
+                            };
+                        @endphp
+                        <li>
+                            <div class="grid gap-1">
+                                <p class="ops-work__title"><a href="{{ route('guardian.child', $child['id']) }}">{{ $child['name'] }}</a> <span class="ops-muted" style="font-weight:400">· {{ $child['age_band_label'] }}</span></p>
+                                <p class="ops-work__meta">{{ $next ? 'Next lesson: '.($next['subject'] ?? 'a lesson').' with '.($next['tutor'] ?? 'a tutor').', '.\Illuminate\Support\Carbon::parse($next['starts_at'])->timezone($tz)->format('D j M, H:i') : 'No lessons booked' }} · {{ $child['messages']['conversations'] }} {{ $child['messages']['conversations'] === 1 ? 'conversation' : 'conversations' }}</p>
+                            </div>
+                            @if (isset($tag['href']))
+                                <a href="{{ $tag['href'] }}" class="no-underline">@include('ops.partials.tag', $tag)</a>
+                            @else
+                                @include('ops.partials.tag', $tag)
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </x-td.panel>
+        </div>
+    @endif
+</x-layouts::learner>

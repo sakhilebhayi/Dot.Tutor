@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Domain\Marketplace\Enums\SeatStatus;
 use App\Enums\SessionStatus;
 use App\Models\TutorSession;
 use App\Models\User;
@@ -17,13 +18,30 @@ class TutorSessionPolicy
     public function view(User $user, TutorSession $session): bool
     {
         return $session->student_id === $user->id
-            || $session->tutorProfile->user_id === $user->id;
+            || $session->tutorProfile->user_id === $user->id
+            // R-47: a learner holding (or who held) a seat on a group lesson.
+            || ($session->isGroup() && $session->participants()->where('learner_id', $user->id)->exists());
     }
 
+    /**
+     * Learner or tutor, while the booking is still ahead (not once it is under
+     * way). A group lesson is cancelled whole only by its tutor; learners
+     * cancel their seat instead.
+     */
     public function cancel(User $user, TutorSession $session): bool
     {
-        return $this->view($user, $session)
-            && in_array($session->status, SessionStatus::holdingTime(), true);
+        $cancellable = [
+            SessionStatus::Pending->value, SessionStatus::AwaitingGuardian->value,
+            SessionStatus::AwaitingPayment->value, SessionStatus::Confirmed->value,
+        ];
+
+        if (! in_array($session->status, $cancellable, true)) {
+            return false;
+        }
+
+        return $session->isGroup()
+            ? $session->tutorProfile->user_id === $user->id
+            : ($session->student_id === $user->id || $session->tutorProfile->user_id === $user->id);
     }
 
     /**
@@ -48,7 +66,7 @@ class TutorSessionPolicy
     {
         return $this->view($user, $session)
             && $session->tutorProfile->isApproved()
-            && $session->status === SessionStatus::Confirmed->value
+            && in_array($session->status, [SessionStatus::Confirmed->value, SessionStatus::InProgress->value], true)
             && now()->gte($session->starts_at);
     }
 
@@ -61,8 +79,17 @@ class TutorSessionPolicy
      */
     public function rate(User $user, TutorSession $session): bool
     {
+        if ($session->status !== SessionStatus::Completed->value) {
+            return false;
+        }
+
+        // R-47: on a group lesson each attending learner rates their own seat.
+        if ($session->isGroup()) {
+            return $session->participants()->where('learner_id', $user->id)->where('status', SeatStatus::Attended->value)->exists()
+                && ! $session->reviews()->where('rated_by', $user->id)->exists();
+        }
+
         return $session->student_id === $user->id
-            && $session->status === SessionStatus::Completed->value
             && ! $session->rating()->exists();
     }
 

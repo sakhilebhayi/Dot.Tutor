@@ -1,8 +1,9 @@
-<x-guest-layout>
-    <x-authentication-card>
+<x-guest-layout :livewire="true" title="Two-step sign-in">
+    <x-authentication-card title="Confirm it is you">
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>
+
 
         <div x-data="{ recovery: false }">
             <div class="mb-4 text-sm text-[var(--moss)]" x-show="! recovery">

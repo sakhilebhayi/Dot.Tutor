@@ -35,11 +35,11 @@
                             </div>
 
                             <div>
-                                <div class="text-xs text-gray-500">
+                                <div class="text-xs text-[var(--td-ink-2)]">
                                     {{ $session->ip_address }},
 
                                     @if ($session->is_current_device)
-                                        <span class="text-green-500 font-semibold">{{ __('This device') }}</span>
+                                        <span class="text-[var(--td-success-ink)] font-semibold">{{ __('This device') }}</span>
                                     @else
                                         {{ __('Last active') }} {{ $session->last_active }}
                                     @endif

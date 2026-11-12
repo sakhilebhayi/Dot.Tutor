@@ -1,3 +1,1 @@
-<a href="/" class="flex items-center gap-2.5">
-    <img src="{{ asset('images/logo.png') }}" alt="Dot.Tutor" class="h-16 sm:h-20 w-auto">
-</a>
+{{-- The guest header already carries the wordmark; the card needs no second logo. --}}

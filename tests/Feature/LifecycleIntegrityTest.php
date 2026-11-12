@@ -21,14 +21,16 @@ class LifecycleIntegrityTest extends TestCase
     public function test_every_status_in_use_is_declared_in_one_place(): void
     {
         $this->assertEqualsCanonicalizing(
-            ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'],
+            // R-47 booking v2 added awaiting_guardian, awaiting_payment, in_progress and disputed (decision D-310).
+            ['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'disputed'],
             SessionStatus::values(),
         );
         $this->assertEqualsCanonicalizing(
-            ['pending', 'approved', 'rejected', 'suspended'],
+            // R-47 tutor UI added draft: a profile being written in the guided onboarding, not sent (decision D-1201).
+            ['draft', 'pending', 'approved', 'rejected', 'suspended'],
             TutorProfileStatus::values(),
         );
-        $this->assertSame(['pending', 'confirmed'], SessionStatus::holdingTime());
+        $this->assertSame(['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress'], SessionStatus::holdingTime());
     }
 
     public function test_the_stale_session_command_writes_the_declared_no_show_status(): void
@@ -151,7 +153,8 @@ class LifecycleIntegrityTest extends TestCase
 
         foreach ([0, 6, 99] as $i => $bad) {
             try {
-                DB::table('session_ratings')->insert(['session_id' => $sessions[$i]->id, 'rated_by' => $student->id, 'rating' => $bad, 'created_at' => now(), 'updated_at' => now()]);
+                // In a nested transaction (a savepoint), so on PostgreSQL the refused insert does not abort the test's transaction.
+                DB::transaction(fn () => DB::table('session_ratings')->insert(['session_id' => $sessions[$i]->id, 'rated_by' => $student->id, 'rating' => $bad, 'created_at' => now(), 'updated_at' => now()]));
                 $this->fail("rating {$bad} was accepted by the database");
             } catch (QueryException) {
                 $this->assertTrue(true);

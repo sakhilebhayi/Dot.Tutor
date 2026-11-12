@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Domain\Integration\Support;
+
+use App\Domain\Marketplace\Enums\QualificationStatus;
+use App\Domain\Marketplace\Enums\VerificationLevel;
+use App\Domain\Marketplace\Models\TutorQualification;
+use App\Domain\Safety\Services\Screening;
+use App\Enums\TutorProfileStatus;
+use App\Models\TutorProfile;
+
+/**
+ * One truthful summary of where a tutor stands (D-2210), read from the records that decide it and worded the same in
+ * the tutor workspace and on the operator screens (x-td.tutor-standing). Three separate facts, because they are
+ * separate decisions made by different people:
+ *
+ *  - listed: the profile review (an operator approves, rejects or suspends the profile);
+ *  - qualification: the verification level, set only from a verified qualification record (never from the profile);
+ *  - minors: the safeguarding screening record (cleared and current for every required kind).
+ *
+ * Nothing here is inferred from what the tutor wrote about themselves.
+ */
+class TutorStanding
+{
+    public function __construct(private Screening $screening) {}
+
+    /**
+     * @return list<array{key: string, ok: bool|null, text: string, detail: string}>
+     *                                                                               ok: true done, false not done, null waiting
+     */
+    public function facts(TutorProfile $profile): array
+    {
+        $status = (string) $profile->status;
+        $listed = match ($status) {
+            TutorProfileStatus::Approved->value => [true, 'Listed', 'Learners can find and book this tutor.'],
+            TutorProfileStatus::Pending->value => [null, 'Not listed yet', 'The profile is waiting for an operator\'s review.'],
+            TutorProfileStatus::Rejected->value => [false, 'Not listed', 'The profile was not approved.'],
+            TutorProfileStatus::Suspended->value => [false, 'Not listed', 'The tutor is suspended.'],
+            default => [false, 'Not listed', 'The profile is a draft and has not been sent for review.'],
+        };
+
+        $level = $profile->verificationLevel();
+        $waiting = $level === null ? $this->levelWaiting($profile) : null;
+        $reviewing = $level === null && $waiting === null && $profile->qualificationRecords()->where('status', 'submitted')->exists();
+        $qualification = match (true) {
+            $level !== null => [true, 'Qualification verified', $level->label().', from a reviewed record.'],
+            // A record was verified but no reviewer has set the level yet (D-2401): checked, not yet a level.
+            $waiting !== null => [null, 'Qualification checked, level pending', $waiting['qualification']->title.' was verified. A reviewer still has to set the verification level.'],
+            $reviewing => [null, 'Qualification in review', 'Evidence was sent and is waiting for a reviewer.'],
+            default => [false, 'Qualification not verified', 'Anything the profile says about qualifications is self-declared.'],
+        };
+
+        $cleared = $profile->user !== null && $this->screening->isClearedForMinors($profile->user);
+        $minors = $cleared
+            ? [true, 'Cleared to teach under-18s', 'Screening is recorded and current.']
+            : [false, 'Not cleared to teach under-18s', 'No current screening record, so learners under 18 cannot book.'];
+
+        return [
+            ['key' => 'listed', 'ok' => $listed[0], 'text' => $listed[1], 'detail' => $listed[2]],
+            ['key' => 'qualification', 'ok' => $qualification[0], 'text' => $qualification[1], 'detail' => $qualification[2]],
+            ['key' => 'minors', 'ok' => $minors[0], 'text' => $minors[1], 'detail' => $minors[2]],
+        ];
+    }
+
+    /**
+     * A verified qualification with no verification level set yet, and the highest level that record supports, so a
+     * reviewer can be prompted to set it (D-2401). Null when a level is set or nothing is verified.
+     *
+     * @return array{qualification: TutorQualification, level: VerificationLevel}|null
+     */
+    public function levelWaiting(TutorProfile $profile): ?array
+    {
+        if ($profile->verificationLevel() !== null) {
+            return null;
+        }
+
+        $verified = $profile->qualificationRecords()->where('status', QualificationStatus::Verified->value)->get();
+        if ($verified->isEmpty()) {
+            return null;
+        }
+
+        $levels = VerificationLevel::cases();
+        usort($levels, fn (VerificationLevel $a, VerificationLevel $b) => $b->matchingWeight() <=> $a->matchingWeight());
+        foreach ($levels as $candidate) {
+            $kinds = array_map(fn ($k) => $k->value, $candidate->supportingKinds());
+            $record = $verified->first(fn (TutorQualification $q) => in_array($q->kind, $kinds, true));
+            if ($record !== null) {
+                return ['qualification' => $record, 'level' => $candidate];
+            }
+        }
+
+        return null;
+    }
+}

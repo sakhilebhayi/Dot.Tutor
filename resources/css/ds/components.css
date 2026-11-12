@@ -1,0 +1,1227 @@
+/*
+ * Component kit. Every class here has a Blade component in resources/views/components/td/ that writes it;
+ * use the component, not the class, so markup and accessibility stay in one place. docs/R47_DS.md lists them.
+ */
+@layer components {
+    /* Icon from the sprite (x-td.icon). */
+    .td-icon {
+        width: 1.25em;
+        height: 1.25em;
+        flex: none;
+        vertical-align: -0.22em;
+    }
+
+    .td-icon--spin {
+        animation: td-spin 0.9s linear infinite;
+    }
+
+    @keyframes td-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Buttons (x-td.button). One shape: 4px corners. Eight states. */
+    .td-btn {
+        --td-btn-bg: var(--td-surface);
+        --td-btn-ink: var(--td-ink);
+        --td-btn-edge: var(--td-edge);
+        --td-btn-bg-hover: var(--td-sunken);
+        --td-btn-bg-press: var(--td-line);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--td-space-2);
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-control-pad-x);
+        border: 1px solid var(--td-btn-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-btn-bg);
+        color: var(--td-btn-ink);
+        font-family: var(--td-font-text);
+        font-size: var(--td-control-text);
+        font-weight: 650;
+        line-height: 1.2;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        transition:
+            background-color var(--td-dur-micro) var(--td-ease-out),
+            border-color var(--td-dur-micro) var(--td-ease-out),
+            transform var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-btn:hover {
+        background: var(--td-btn-bg-hover);
+    }
+
+    .td-btn:active {
+        background: var(--td-btn-bg-press);
+        transform: translateY(1px);
+    }
+
+    /* Hover is never colour alone (R-47 polish D-2008, critics A20/B17): the label's underline draws in and an end
+       arrow steps forward, the way the shelf spines move on the landing. Pointer devices only; under reduced motion
+       the change is instant (base.css). */
+    .td-btn > span:not(.td-sr) {
+        text-decoration-line: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.3em;
+        text-decoration-color: transparent;
+        transition: text-decoration-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-btn > .td-icon {
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    @media (hover: hover) {
+        .td-btn:not(:disabled, [aria-disabled='true']):hover > span:not(.td-sr) {
+            text-decoration-color: currentColor;
+        }
+
+        .td-btn:not(:disabled, [aria-disabled='true']):hover > span + .td-icon {
+            transform: translateX(3px);
+        }
+    }
+
+    .td-btn:disabled,
+    .td-btn[aria-disabled='true'] {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .td-btn[aria-busy='true'] {
+        cursor: progress;
+    }
+
+    .td-btn--primary {
+        --td-btn-bg: var(--td-primary);
+        --td-btn-ink: var(--td-primary-ink);
+        --td-btn-edge: var(--td-primary);
+        --td-btn-bg-hover: var(--td-primary-hover);
+        --td-btn-bg-press: var(--td-primary-press);
+    }
+
+    .td-btn--quiet {
+        --td-btn-bg: transparent;
+        --td-btn-edge: transparent;
+        --td-btn-bg-hover: var(--td-sunken);
+        --td-btn-bg-press: var(--td-line);
+    }
+
+    .td-btn--danger {
+        --td-btn-bg: var(--td-danger);
+        --td-btn-ink: var(--td-primary-ink);
+        --td-btn-edge: var(--td-danger);
+        --td-btn-bg-hover: var(--td-danger-hover);
+        --td-btn-bg-press: var(--td-danger-hover);
+    }
+
+    .td-btn--sm {
+        min-height: calc(var(--td-control-h) - 0.5rem);
+        padding: 0 calc(var(--td-control-pad-x) * 0.75);
+        font-size: var(--td-text-sm);
+    }
+
+    .td-btn--lg {
+        min-height: calc(var(--td-control-h) + 0.5rem);
+        padding: 0 calc(var(--td-control-pad-x) * 1.4);
+        font-size: var(--td-text-md);
+    }
+
+    .td-btn--block {
+        width: 100%;
+    }
+
+    .td-btn--icon {
+        padding: 0;
+        width: var(--td-control-h);
+    }
+
+    /* Text link with a visible state change. */
+    .td-link {
+        color: var(--td-primary);
+        font-weight: 600;
+        text-decoration: underline;
+        text-decoration-color: color-mix(in oklch, var(--td-primary) 45%, transparent);
+        text-underline-offset: 0.2em;
+        transition: text-decoration-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-link:hover {
+        text-decoration-color: currentColor;
+    }
+
+    /* Fields (x-td.field, x-td.input, x-td.select, x-td.textarea, x-td.combobox, x-td.check). */
+    .td-field {
+        display: grid;
+        gap: var(--td-space-2);
+        min-width: 0;
+    }
+
+    .td-label {
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+        color: var(--td-ink);
+    }
+
+    .td-label__optional {
+        font-weight: 400;
+        color: var(--td-ink-2);
+    }
+
+    .td-hint {
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+        margin: 0;
+    }
+
+    .td-error {
+        display: flex;
+        gap: var(--td-space-2);
+        align-items: flex-start;
+        font-size: var(--td-text-sm);
+        font-weight: 600;
+        color: var(--td-danger-ink);
+        margin: 0;
+    }
+
+    .td-input,
+    .td-select,
+    .td-textarea {
+        width: 100%;
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        color: var(--td-ink);
+        font-size: max(16px, var(--td-control-text));
+        line-height: 1.4;
+        transition: border-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-textarea {
+        padding: var(--td-space-3);
+        min-height: 7rem;
+        resize: vertical;
+    }
+
+    .td-select {
+        appearance: none;
+        padding-inline-end: 2.5rem;
+        background-image: none;
+    }
+
+    .td-select-wrap {
+        position: relative;
+        display: block;
+    }
+
+    .td-select-wrap > .td-icon {
+        position: absolute;
+        inset-inline-end: var(--td-space-3);
+        top: 50%;
+        translate: 0 -50%;
+        pointer-events: none;
+        color: var(--td-ink-2);
+    }
+
+    .td-input::placeholder,
+    .td-textarea::placeholder {
+        color: var(--td-ink-2);
+        opacity: 1;
+    }
+
+    .td-input:hover,
+    .td-select:hover,
+    .td-textarea:hover {
+        border-color: var(--td-ink-2);
+    }
+
+    .td-input:focus-visible,
+    .td-select:focus-visible,
+    .td-textarea:focus-visible {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 1px;
+    }
+
+    .td-input[aria-invalid='true'],
+    .td-select[aria-invalid='true'],
+    .td-textarea[aria-invalid='true'] {
+        border-color: var(--td-danger);
+        box-shadow: inset 0 0 0 1px var(--td-danger);
+    }
+
+    .td-input:disabled,
+    .td-select:disabled,
+    .td-textarea:disabled {
+        background: var(--td-sunken);
+        color: var(--td-ink-2);
+        cursor: not-allowed;
+        opacity: 0.75;
+    }
+
+    .td-check {
+        display: flex;
+        gap: var(--td-space-3);
+        align-items: flex-start;
+        min-height: var(--td-control-h);
+        padding-block: calc((var(--td-control-h) - 1.5rem) / 2);
+        cursor: pointer;
+    }
+
+    .td-check input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.125rem;
+        flex: none;
+        accent-color: var(--td-primary);
+    }
+
+    /* Combobox: a text input that filters a listbox (resources/js/ds/combobox.js). */
+    .td-combobox {
+        position: relative;
+    }
+
+    .td-combobox__list {
+        position: absolute;
+        inset-inline: 0;
+        top: calc(100% + 4px);
+        z-index: var(--td-z-sticky);
+        max-height: 16rem;
+        overflow-y: auto;
+        margin: 0;
+        padding: var(--td-space-1);
+        list-style: none;
+        background: var(--td-raised);
+        border: 1px solid var(--td-line);
+        border-radius: var(--td-radius);
+        box-shadow: var(--td-shadow-float);
+    }
+
+    .td-combobox__option {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--td-space-3);
+        padding: var(--td-space-2) var(--td-space-3);
+        border-radius: var(--td-radius);
+        cursor: pointer;
+    }
+
+    .td-combobox__option[aria-selected='true'],
+    .td-combobox__option.is-active {
+        background: var(--td-primary-soft);
+        color: var(--td-primary-soft-ink);
+    }
+
+    .td-combobox__option small {
+        color: var(--td-ink-2);
+    }
+
+    .td-combobox__group {
+        position: sticky;
+        top: calc(var(--td-space-1) * -1);
+        padding: var(--td-space-2) var(--td-space-3) var(--td-space-1);
+        background: var(--td-raised);
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+    }
+
+    .td-combobox__empty {
+        padding: var(--td-space-2) var(--td-space-3);
+        color: var(--td-ink-2);
+    }
+
+    /* Language chip (x-td.language-chip): the language in its own name, its code, and the role it plays. */
+    .td-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        min-height: 2rem;
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius-pill);
+        background: var(--td-surface);
+        color: var(--td-ink);
+        font-size: var(--td-text-sm);
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .td-chip__code {
+        color: var(--td-ink-2);
+        font-size: var(--td-text-xs);
+    }
+
+    .td-chip__role {
+        color: var(--td-ink-2);
+    }
+
+    .td-chip--verified {
+        border-color: var(--td-success);
+    }
+
+    .td-chip--verified .td-icon {
+        color: var(--td-success);
+    }
+
+    .td-chip--match {
+        background: var(--td-primary-soft);
+        border-color: var(--td-primary);
+        color: var(--td-primary-soft-ink);
+    }
+
+    button.td-chip,
+    a.td-chip {
+        cursor: pointer;
+        text-decoration: none;
+        min-height: 2.75rem;
+    }
+
+    button.td-chip:hover,
+    a.td-chip:hover {
+        background: var(--td-sunken);
+    }
+
+    button.td-chip[aria-pressed='true'] {
+        background: var(--td-primary);
+        border-color: var(--td-primary);
+        color: var(--td-primary-ink);
+    }
+
+    button.td-chip[aria-pressed='true'] .td-chip__code,
+    button.td-chip[aria-pressed='true'] .td-chip__role,
+    .td-chip--match .td-chip__code,
+    .td-chip--match .td-chip__role {
+        color: inherit;
+    }
+
+    /* Level and subject pills (x-td.pill). A level pill wears its stage's binding colour. */
+    .td-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        min-height: 1.75rem;
+        padding: 0 var(--td-space-3);
+        border-radius: var(--td-radius);
+        background: var(--td-sunken);
+        color: var(--td-ink);
+        font-size: var(--td-text-sm);
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .td-pill--stage {
+        background: var(--td-pill-bg, var(--td-ink));
+        color: var(--td-pill-ink, var(--td-ink-inverse));
+    }
+
+    .td-pill--subject {
+        background: transparent;
+        border: 1px solid var(--td-edge);
+        font-weight: 500;
+    }
+
+    .td-pill__swatch {
+        width: 0.625rem;
+        height: 0.625rem;
+        border-radius: 2px;
+        background: var(--td-pill-bg, var(--td-ink));
+        flex: none;
+    }
+
+    .td-stage--foundation { --td-pill-bg: var(--td-stage-foundation); --td-pill-ink: var(--td-stage-foundation-ink); }
+    .td-stage--intermediate { --td-pill-bg: var(--td-stage-intermediate); --td-pill-ink: var(--td-stage-intermediate-ink); }
+    .td-stage--senior { --td-pill-bg: var(--td-stage-senior); --td-pill-ink: var(--td-stage-senior-ink); }
+    .td-stage--fet { --td-pill-bg: var(--td-stage-fet); --td-pill-ink: var(--td-stage-fet-ink); }
+    .td-stage--undergraduate { --td-pill-bg: var(--td-stage-undergraduate); --td-pill-ink: var(--td-stage-undergraduate-ink); }
+    .td-stage--honours,
+    .td-stage--pg_diploma,
+    .td-stage--masters,
+    .td-stage--postgraduate { --td-pill-bg: var(--td-stage-postgraduate); --td-pill-ink: var(--td-stage-postgraduate-ink); }
+    .td-stage--doctoral { --td-pill-bg: var(--td-stage-doctoral); --td-pill-ink: var(--td-stage-doctoral-ink); }
+    .td-stage--professional { --td-pill-bg: var(--td-stage-professional); --td-pill-ink: var(--td-stage-professional-ink); }
+
+    /* Verification badge (x-td.verify-badge). Every state has a glyph and words; colour is never the only signal. */
+    .td-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        min-height: 1.75rem;
+        padding: 0 var(--td-space-3) 0 var(--td-space-2);
+        border-radius: var(--td-radius);
+        font-size: var(--td-text-sm);
+        font-weight: 600;
+        line-height: 1.2;
+        max-width: 100%;
+        padding-block: 0.25rem;
+        border: 1px solid transparent;
+    }
+
+    .td-badge--verified {
+        background: var(--td-success-soft);
+        color: var(--td-success-ink);
+    }
+
+    .td-badge--review {
+        background: var(--td-info-soft);
+        color: var(--td-info-ink);
+    }
+
+    .td-badge--self {
+        background: transparent;
+        border-color: var(--td-edge);
+        border-style: dashed;
+        color: var(--td-ink-2);
+    }
+
+    .td-badge--peer {
+        background: var(--td-sunken);
+        color: var(--td-ink);
+    }
+
+    .td-badge--lapsed,
+    .td-badge--rejected {
+        background: var(--td-danger-soft);
+        color: var(--td-danger-ink);
+    }
+
+    /* Money (x-td.money): tabular figures, currency and minor units kept apart for screen readers. */
+    .td-money {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        font-weight: 650;
+    }
+
+    .td-money__unit {
+        font-weight: 400;
+        color: var(--td-ink-2);
+        font-size: 0.875em;
+    }
+
+    /* Avatar (x-td.avatar): a stable pale tint per person, from their name. */
+    .td-avatar {
+        --td-avatar-size: 2.5rem;
+        display: inline-grid;
+        place-items: center;
+        width: var(--td-avatar-size);
+        height: var(--td-avatar-size);
+        flex: none;
+        border-radius: 50%;
+        overflow: hidden;
+        background: oklch(90% 0.05 var(--td-avatar-hue, 165));
+        color: oklch(30% 0.07 var(--td-avatar-hue, 165));
+        font-size: calc(var(--td-avatar-size) * 0.38);
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .td-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .td-avatar--sm { --td-avatar-size: 2rem; }
+    .td-avatar--lg { --td-avatar-size: 3.5rem; }
+    .td-avatar--xl { --td-avatar-size: 5rem; }
+
+    /* Empty, loading, success and error states (x-td.state, x-td.skeleton). */
+    .td-state {
+        display: grid;
+        gap: var(--td-space-3);
+        justify-items: start;
+        padding: var(--td-space-6) var(--td-space-5);
+        background: var(--td-surface);
+        color: var(--td-ink);
+    }
+
+    .td-state__glyph {
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: var(--td-radius);
+        background: var(--td-sunken);
+        color: var(--td-ink-2);
+        font-size: 1.25rem;
+    }
+
+    .td-state__title {
+        margin: 0;
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+    }
+
+    .td-state__body {
+        justify-self: stretch;
+        margin: 0;
+        max-width: var(--td-measure);
+        color: var(--td-ink-2);
+    }
+
+    .td-state--success .td-state__glyph { background: var(--td-success-soft); color: var(--td-success-ink); }
+    .td-state--error .td-state__glyph { background: var(--td-danger-soft); color: var(--td-danger-ink); }
+    .td-state--loading .td-state__glyph { background: var(--td-primary-soft); color: var(--td-primary-soft-ink); }
+
+    .td-skeleton {
+        display: block;
+        height: 1em;
+        border-radius: var(--td-radius);
+        background: var(--td-line);
+        animation: td-pulse 1.6s var(--td-ease-out) infinite alternate;
+    }
+
+    @keyframes td-pulse {
+        to {
+            opacity: 0.45;
+        }
+    }
+
+    /* Progress meter (x-td.progress): a shelf filling up. The figure is always printed beside the bar. */
+    .td-meter {
+        display: grid;
+        gap: var(--td-space-2);
+    }
+
+    .td-meter__head {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--td-space-3);
+        font-size: var(--td-text-sm);
+    }
+
+    .td-meter__label {
+        font-weight: 600;
+    }
+
+    .td-meter__value {
+        color: var(--td-ink-2);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .td-meter__track {
+        position: relative;
+        height: 0.625rem;
+        border-radius: 2px;
+        background: var(--td-sunken);
+        box-shadow: inset 0 0 0 1px var(--td-line);
+        overflow: hidden;
+    }
+
+    .td-meter__fill {
+        position: absolute;
+        inset: 0;
+        background: var(--td-meter-fill, var(--td-primary));
+        transform-origin: left center;
+        transform: scaleX(var(--td-meter, 0));
+        transition: transform var(--td-dur-reveal) var(--td-ease-out);
+    }
+
+    [data-td-step='young'] .td-meter__track {
+        height: 1rem;
+    }
+
+    /* Tabs (x-td.tabs). Link tabs keep state in the URL; panel tabs use resources/js/ds/tabs.js. */
+    .td-tabs {
+        display: flex;
+        gap: var(--td-space-1);
+        overflow-x: auto;
+        scrollbar-width: none;
+        border-bottom: 1px solid var(--td-line);
+    }
+
+    .td-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .td-tab {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-2);
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-space-4);
+        border: 0;
+        background: transparent;
+        color: var(--td-ink-2);
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .td-tab:hover {
+        color: var(--td-ink);
+    }
+
+    .td-tab[aria-selected='true'],
+    .td-tab[aria-current='page'] {
+        color: var(--td-ink);
+    }
+
+    .td-tab[aria-selected='true']::after,
+    .td-tab[aria-current='page']::after {
+        content: '';
+        position: absolute;
+        inset-inline: var(--td-space-3);
+        bottom: -1px;
+        height: 3px;
+        background: var(--td-primary);
+        border-radius: 2px 2px 0 0;
+    }
+
+    .td-tab__count {
+        font-size: var(--td-text-xs);
+        color: var(--td-ink-2);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Dialog and sheet (x-td.dialog): native <dialog>; a bottom sheet on phones. */
+    .td-dialog {
+        width: min(36rem, calc(100% - 2rem));
+        max-height: min(85dvh, 48rem);
+        padding: 0;
+        border: 1px solid var(--td-line);
+        border-radius: calc(var(--td-radius) * 2);
+        background: var(--td-raised);
+        color: var(--td-ink);
+        box-shadow: var(--td-shadow-float);
+    }
+
+    .td-dialog::backdrop {
+        background: var(--td-scrim);
+    }
+
+    .td-dialog[open] {
+        animation: td-dialog-in var(--td-dur-short) var(--td-ease-out);
+    }
+
+    @keyframes td-dialog-in {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+    }
+
+    .td-dialog__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--td-space-4);
+        padding: var(--td-space-5) var(--td-space-5) 0;
+    }
+
+    .td-dialog__title {
+        margin: 0;
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+    }
+
+    .td-dialog__body {
+        padding: var(--td-space-4) var(--td-space-5);
+        overflow-y: auto;
+    }
+
+    .td-dialog__foot {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: var(--td-space-3);
+        padding: var(--td-space-4) var(--td-space-5) var(--td-space-5);
+    }
+
+    @media (max-width: 40rem) {
+        .td-dialog--sheet {
+            width: 100%;
+            max-width: none;
+            margin: auto 0 0;
+            border-radius: calc(var(--td-radius) * 3) calc(var(--td-radius) * 3) 0 0;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+
+    /* Toasts (x-td.toasts): a polite live region; errors stay until dismissed. */
+    .td-toasts {
+        position: fixed;
+        inset-inline-end: var(--td-space-4);
+        bottom: calc(var(--td-space-4) + env(safe-area-inset-bottom));
+        z-index: var(--td-z-toast);
+        display: grid;
+        gap: var(--td-space-2);
+        width: min(24rem, calc(100% - 2rem));
+        pointer-events: none;
+    }
+
+    .td-toast {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--td-space-3);
+        padding: var(--td-space-3) var(--td-space-3) var(--td-space-3) var(--td-space-4);
+        background: var(--td-ink);
+        color: var(--td-ink-inverse);
+        border-radius: var(--td-radius);
+        box-shadow: var(--td-shadow-float);
+        pointer-events: auto;
+        animation: td-toast-in var(--td-dur-short) var(--td-ease-out);
+    }
+
+    .td-toast__text {
+        flex: 1;
+        min-width: 0;
+        padding-top: 0.15rem;
+    }
+
+    .td-toast .td-btn {
+        --td-btn-ink: var(--td-ink-inverse);
+        --td-btn-bg-hover: color-mix(in oklch, var(--td-ink-inverse) 14%, transparent);
+        --td-btn-bg-press: color-mix(in oklch, var(--td-ink-inverse) 22%, transparent);
+        min-height: 2.25rem;
+        width: 2.25rem;
+    }
+
+    .td-toast--error {
+        background: var(--td-danger);
+        color: var(--td-primary-ink);
+    }
+
+    @keyframes td-toast-in {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+    }
+
+    @media (max-width: 40rem) {
+        .td-toasts {
+            inset-inline: var(--td-space-4);
+            width: auto;
+            bottom: calc(var(--td-space-4) + var(--td-bottom-bar, 0px) + env(safe-area-inset-bottom));
+        }
+    }
+
+    /* Pagination (x-td.pagination). */
+    .td-pagination {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--td-space-3);
+        padding-top: var(--td-space-4);
+    }
+
+    .td-pagination__summary {
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+    }
+
+    .td-pagination__pages {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-1);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .td-pagination__page {
+        display: inline-grid;
+        place-items: center;
+        min-width: var(--td-control-h);
+        min-height: var(--td-control-h);
+        padding: 0 var(--td-space-2);
+        border-radius: var(--td-radius);
+        color: var(--td-ink);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    a.td-pagination__page:hover {
+        background: var(--td-sunken);
+    }
+
+    .td-pagination__page[aria-current='page'] {
+        background: var(--td-ink);
+        color: var(--td-ink-inverse);
+    }
+
+    .td-pagination__page[aria-disabled='true'] {
+        color: var(--td-ink-3);
+        cursor: not-allowed;
+    }
+
+    /* Data table (x-td.table). Rules and alignment; numbers right-aligned; no zebra, no header band. */
+    .table-scroll {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .table-scroll:focus-visible {
+        outline-offset: -2px;
+    }
+
+    .td-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--td-text-base);
+    }
+
+    .td-table caption {
+        text-align: start;
+        padding: 0 0 var(--td-space-3);
+        font-weight: 700;
+        color: var(--td-ink);
+    }
+
+    .td-table th,
+    .td-table td {
+        padding: var(--td-row-pad-y) var(--td-row-pad-x);
+        text-align: start;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--td-line);
+    }
+
+    .td-table thead th {
+        font-size: var(--td-text-sm);
+        font-weight: 600;
+        color: var(--td-ink-2);
+        white-space: nowrap;
+        border-bottom-color: var(--td-edge);
+    }
+
+    .td-table tbody tr:hover {
+        background: color-mix(in oklch, var(--td-sunken) 60%, transparent);
+    }
+
+    .td-table .is-num {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .td-table .is-muted {
+        color: var(--td-ink-2);
+    }
+
+    /* Stat strip (x-td.stat-strip): readouts that share edges, never a row of floating tiles. */
+    .td-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+        gap: 1px;
+        background: var(--td-line);
+        border: 1px solid var(--td-line);
+        margin: 0;
+    }
+
+    .td-stats > div {
+        display: grid;
+        gap: var(--td-space-1);
+        align-content: start;
+        padding: var(--td-space-4) var(--td-space-5);
+        background: var(--td-surface);
+    }
+
+    .td-stats dt {
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+        font-weight: 600;
+    }
+
+    .td-stats dd {
+        margin: 0;
+        font-family: var(--td-font-display);
+        /* Normal width, so a tile's figures are the same drawing as the figures in tables and text (D-2103). */
+        font-stretch: 100%;
+        font-weight: 700;
+        font-size: var(--td-text-xl);
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Two tiles to a row on a phone: one step smaller so "R12 450.00" or "Mon 16 Nov" stays on one line. */
+    @media (max-width: 47.98rem) {
+        .td-stats dd {
+            font-size: var(--td-text-lg);
+        }
+    }
+
+    .td-stats .td-stats__hint {
+        font-family: var(--td-font-text);
+        font-stretch: 100%;
+        font-weight: 400;
+        font-size: var(--td-text-sm);
+        line-height: 1.4;
+        color: var(--td-ink-2);
+    }
+
+    /* Timeline (x-td.timeline, x-td.timeline-item). */
+    .td-timeline {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+    }
+
+    .td-timeline__item {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr);
+        gap: var(--td-space-3);
+        padding-bottom: var(--td-space-5);
+    }
+
+    .td-timeline__item::before {
+        content: '';
+        position: absolute;
+        left: calc(0.75rem - 0.5px);
+        top: 1.6rem;
+        bottom: 0.2rem;
+        width: 1px;
+        background: var(--td-line);
+    }
+
+    .td-timeline__item:last-child::before {
+        display: none;
+    }
+
+    .td-timeline__mark {
+        display: grid;
+        place-items: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background: var(--td-surface);
+        border: 1px solid var(--td-edge);
+        color: var(--td-ink-2);
+        font-size: 0.8rem;
+    }
+
+    .td-timeline__item--done .td-timeline__mark {
+        background: var(--td-primary);
+        border-color: var(--td-primary);
+        color: var(--td-primary-ink);
+    }
+
+    .td-timeline__item--current .td-timeline__mark {
+        border: 2px solid var(--td-primary);
+        color: var(--td-primary);
+    }
+
+    .td-timeline__title {
+        margin: 0;
+        font-weight: 650;
+    }
+
+    .td-timeline__meta {
+        margin: 0;
+        font-size: var(--td-text-sm);
+        color: var(--td-ink-2);
+    }
+
+    .td-timeline__body {
+        margin: var(--td-space-1) 0 0;
+    }
+
+    /* File picker (x-td.file-picker). A real file input, enlarged into a drop target; resources/js/ds/file-picker.js lists the choice. */
+    .td-file {
+        position: relative;
+        display: grid;
+        gap: var(--td-space-2);
+        justify-items: start;
+        padding: var(--td-space-5);
+        border: 1.5px dashed var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        transition: background-color var(--td-dur-micro) var(--td-ease-out), border-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-file:hover,
+    .td-file.is-dragging {
+        background: var(--td-primary-soft);
+        border-color: var(--td-primary);
+    }
+
+    .td-file:focus-within {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .td-file input[type='file'] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .td-file__title {
+        font-weight: 650;
+        display: flex;
+        gap: var(--td-space-2);
+        align-items: center;
+    }
+
+    .td-file__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--td-space-1);
+        font-size: var(--td-text-sm);
+    }
+
+    .td-file__list li {
+        display: flex;
+        gap: var(--td-space-2);
+        align-items: center;
+    }
+
+    /* Notice (x-td.notice): an inline message in the flow of a page. A tinted ground, never a side stripe. */
+    .td-notice {
+        display: flex;
+        gap: var(--td-space-3);
+        align-items: flex-start;
+        padding: var(--td-space-4);
+        border-radius: var(--td-radius);
+        background: var(--td-sunken);
+        color: var(--td-ink);
+    }
+
+    .td-notice > .td-icon {
+        margin-top: 0.15rem;
+    }
+
+    .td-notice__body {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .td-notice__title {
+        margin: 0 0 var(--td-space-1);
+        font-weight: 700;
+    }
+
+    .td-notice p {
+        margin: 0;
+    }
+
+    .td-notice--info { background: var(--td-info-soft); color: var(--td-info-ink); }
+    .td-notice--success { background: var(--td-success-soft); color: var(--td-success-ink); }
+    .td-notice--warning { background: var(--td-warning-soft); color: var(--td-warning-ink); }
+    .td-notice--danger { background: var(--td-danger-soft); color: var(--td-danger-ink); }
+
+    /* Panel (x-td.panel): the one container recipe. Panels in a .td-panels group share their edges. */
+    .td-panel {
+        background: var(--td-surface);
+        border: 1px solid var(--td-line);
+        min-width: 0;
+    }
+
+    .td-panel__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--td-space-3);
+        padding: var(--td-space-4) var(--td-space-5);
+        border-bottom: 1px solid var(--td-line);
+    }
+
+    .td-panel__title {
+        margin: 0;
+        font-size: var(--td-text-md);
+        font-weight: 700;
+        line-height: var(--td-leading-tight);
+    }
+
+    .td-panel__body {
+        padding: var(--td-space-5);
+    }
+
+    .td-panel__body--flush {
+        padding: 0;
+    }
+
+    .td-panels {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1px;
+        background: var(--td-line);
+        border: 1px solid var(--td-line);
+    }
+
+    .td-panels > .td-panel {
+        border: 0;
+    }
+
+    @media (min-width: 64rem) {
+        .td-panels--2 {
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        }
+    }
+
+    /* Page head inside a shell (x-td.page-head). */
+    .td-page-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--td-space-4);
+        margin-bottom: var(--td-space-6);
+    }
+
+    .td-page-head__title {
+        margin: 0;
+        font-family: var(--td-font-display);
+        font-stretch: var(--td-display-stretch);
+        font-weight: 750;
+        font-size: var(--td-text-xl);
+        line-height: var(--td-leading-tight);
+        letter-spacing: -0.01em;
+    }
+
+    .td-page-head__lede {
+        margin: var(--td-space-2) 0 0;
+        max-width: var(--td-measure);
+        color: var(--td-ink-2);
+    }
+
+    .td-page-head__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-3);
+    }
+
+    /* The match reason list: why a tutor fits a request. */
+    .td-reasons {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--td-space-2);
+    }
+
+    .td-reasons li {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr);
+        gap: var(--td-space-2);
+        align-items: start;
+    }
+
+    .td-reasons .td-icon {
+        margin-top: 0.15em;
+        color: var(--td-success);
+    }
+
+    .td-reasons .is-gap .td-icon {
+        color: var(--td-warning-ink);
+    }
+}

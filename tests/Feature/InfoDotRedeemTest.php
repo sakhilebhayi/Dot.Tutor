@@ -63,7 +63,7 @@ class InfoDotRedeemTest extends TestCase
     {
         Http::fake([self::URL => Http::response($this->identity())]);
 
-        $this->post(route('ecosystem.auth'), ['token' => 'one-time-token'], $this->fromInfodot())->assertRedirect(route('dashboard'));
+        $this->post(route('ecosystem.auth'), ['token' => 'one-time-token'], $this->fromInfodot())->assertRedirect(route('learn.home', absolute: false));
 
         $this->assertAuthenticated();
         $user = User::where('email', 'amara@example.test')->firstOrFail();
@@ -253,7 +253,7 @@ class InfoDotRedeemTest extends TestCase
         $token = $record->id.'|'.$plain;
         Http::fake();
 
-        $this->post(route('ecosystem.auth'), ['token' => $token], $this->fromInfodot())->assertRedirect(route('dashboard'));
+        $this->post(route('ecosystem.auth'), ['token' => $token], $this->fromInfodot())->assertRedirect(route('learn.home'));
         $this->assertAuthenticatedAs($user);
         Http::assertNothingSent();
 
@@ -316,7 +316,7 @@ class InfoDotRedeemTest extends TestCase
         $this->assertAuthenticated();
     }
 
-    public function test_open_redirect_attempts_fall_back_to_the_dashboard(): void
+    public function test_open_redirect_attempts_fall_back_to_the_role_home(): void
     {
         $attempts = [
             'https://evil.test/phish',
@@ -342,7 +342,7 @@ class InfoDotRedeemTest extends TestCase
             Cache::flush(); // the throttle has its own test; this loop makes more than 10 requests
 
             $this->post(route('ecosystem.auth'), ['token' => 't', 'redirect' => $attempt], $this->fromInfodot())
-                ->assertRedirect(route('dashboard'));
+                ->assertRedirect(route('learn.home'));
         }
     }
 

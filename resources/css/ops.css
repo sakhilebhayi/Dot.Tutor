@@ -1,0 +1,116 @@
+/*
+ * R-47 operations command centre and guardian views (ops agent, docs/R47_UI_OPS.md). Built on the ds tokens only:
+ * no new colours, no shadows at rest, square panels, tabular figures. Charts follow the dataviz method: one series,
+ * one hue (primary) on the data, recessive axes, a table view beside every chart, values never in colour.
+ */
+@layer components {
+    /* A visually hidden label inside a scrolling table (an "Actions" header) is absolutely positioned; without a
+       positioned scroll region it escapes to the page and widens a phone's layout viewport. Contract note for ds. */
+    .table-scroll { position: relative; }
+
+    /* Status tags: a glyph and words, a soft ground; colour is never the only signal. */
+    .ops-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--td-space-1);
+        padding: 0.125rem var(--td-space-2);
+        border-radius: var(--td-radius);
+        font-size: var(--td-text-sm);
+        font-weight: 600;
+        line-height: 1.35;
+        white-space: nowrap;
+        background: var(--td-sunken);
+        color: var(--td-ink);
+    }
+    .ops-tag .td-icon { width: 0.95em; height: 0.95em; }
+    .ops-tag--danger { background: var(--td-danger-soft); color: var(--td-danger-ink); }
+    .ops-tag--warning { background: var(--td-warning-soft); color: var(--td-warning-ink); }
+    .ops-tag--success { background: var(--td-success-soft); color: var(--td-success-ink); }
+    .ops-tag--info { background: var(--td-info-soft); color: var(--td-info-ink); }
+
+    /* Work list: one row per thing that needs a person, the most urgent first. */
+    .ops-work { list-style: none; margin: 0; padding: 0; }
+    .ops-work > li {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--td-space-2) var(--td-space-4);
+        align-items: center;
+        padding: var(--td-row-pad-y) var(--td-space-5);
+        border-bottom: 1px solid var(--td-line);
+    }
+    .ops-work > li:last-child { border-bottom: 0; }
+    .ops-work__title { margin: 0; font-weight: 650; }
+    .ops-work__meta { margin: 0; color: var(--td-ink-2); font-size: var(--td-text-sm); }
+    .ops-work__count { font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--td-text-lg); }
+
+    /* Team page (D-2212): one line per operator; the role form opens under the row behind "Change roles". */
+    .ops-team__change > summary { list-style: none; justify-self: end; }
+    .ops-team__change > summary::-webkit-details-marker { display: none; }
+    .ops-team__change[open] { grid-column: 1 / -1; }
+    .ops-team__sheet { margin-top: var(--td-space-3); padding: var(--td-space-4); background: var(--td-sunken); border-radius: var(--td-radius); }
+    .ops-team__matrix > summary { list-style-position: inside; }
+
+    /* Inline action forms: a reason field and the buttons that use it, on one line where there is room. */
+    .ops-act { display: flex; flex-wrap: wrap; gap: var(--td-space-2); align-items: flex-end; }
+    .ops-act > .td-field { flex: 1 1 14rem; margin: 0; }
+    .ops-act--stack { display: grid; gap: var(--td-space-3); }
+
+    /* Facts about one thing: label and value pairs. */
+    .ops-facts { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--td-space-2) var(--td-space-5); margin: 0; }
+    .ops-facts dt { color: var(--td-ink-2); font-size: var(--td-text-sm); font-weight: 600; }
+    .ops-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    @media (max-width: 30rem) { .ops-facts { grid-template-columns: 1fr; gap: 0 0; } .ops-facts dd { margin-bottom: var(--td-space-3); } }
+
+    /* Column chart (one series). The current period carries the full hue; earlier ones a lighter step of it. */
+    .ops-columns { display: block; width: 100%; height: auto; overflow: visible; }
+    .ops-columns__bar { fill: color-mix(in oklch, var(--td-primary) 55%, var(--td-surface)); }
+    .ops-columns__bar--current { fill: var(--td-primary); }
+    .ops-columns__grid { stroke: var(--td-line); stroke-width: 1; }
+    .ops-columns__axis { fill: var(--td-ink-2); font-size: var(--td-text-xs); font-variant-numeric: tabular-nums; }
+    .ops-columns__value { fill: var(--td-ink); font-size: var(--td-text-xs); font-weight: 650; font-variant-numeric: tabular-nums; }
+    .ops-columns__hit { fill: transparent; }
+    .ops-columns__hit:hover + .ops-columns__bar, .ops-columns g:hover .ops-columns__bar { fill: var(--td-primary-hover); }
+
+    /* Bar list: a label, a thin bar in the one hue, the figure in ink. */
+    .ops-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--td-space-3); }
+    .ops-bars li { display: grid; grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 3.5rem; gap: var(--td-space-3); align-items: center; }
+    .ops-bars__label { overflow-wrap: anywhere; font-size: var(--td-text-sm); }
+    .ops-bars__track { height: 0.625rem; background: var(--td-sunken); border-radius: 0 var(--td-radius) var(--td-radius) 0; }
+    .ops-bars__fill { display: block; height: 100%; min-width: 2px; background: var(--td-primary); border-radius: 0 var(--td-radius) var(--td-radius) 0; }
+    .ops-bars__value { text-align: end; font-variant-numeric: tabular-nums; font-weight: 650; }
+
+    /* Retention heatmap: one hue, light to dark by share; the figure is always printed. */
+    .ops-heat td.ops-heat__cell { text-align: center; font-variant-numeric: tabular-nums; font-weight: 650; min-width: 4.5rem; }
+    .ops-heat__cell[data-step='0'] { background: var(--td-surface); }
+    /* Steps stop at 46% of the hue so the ink figure keeps its contrast in both themes. */
+    .ops-heat__cell[data-step='1'] { background: color-mix(in oklch, var(--td-primary) 10%, var(--td-surface)); }
+    .ops-heat__cell[data-step='2'] { background: color-mix(in oklch, var(--td-primary) 22%, var(--td-surface)); }
+    .ops-heat__cell[data-step='3'] { background: color-mix(in oklch, var(--td-primary) 34%, var(--td-surface)); }
+    .ops-heat__cell[data-step='4'] { background: color-mix(in oklch, var(--td-primary) 46%, var(--td-surface)); }
+    .ops-heat__cell--none { color: var(--td-ink-2); font-weight: 400; }
+
+    /* Message thread (support, report evidence). */
+    .ops-thread { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--td-space-3); }
+    .ops-thread li { padding: var(--td-space-3) var(--td-space-4); background: var(--td-sunken); max-width: 70ch; }
+    .ops-thread li.ops-thread--staff { background: var(--td-primary-soft); color: var(--td-primary-soft-ink); justify-self: end; }
+    .ops-thread__meta { margin: 0 0 var(--td-space-1); font-size: var(--td-text-sm); color: var(--td-ink-2); }
+    .ops-thread--staff .ops-thread__meta { color: inherit; }
+
+    /* Guardian approvals: one decision per block, thumb-sized buttons. */
+    .ops-decision { display: grid; gap: var(--td-space-3); padding: var(--td-space-4) var(--td-space-5); border-bottom: 1px solid var(--td-line); }
+    .ops-decision:last-child { border-bottom: 0; }
+    .ops-decision__what { margin: 0; font-weight: 650; font-size: var(--td-text-lg); }
+    .ops-decision__buttons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--td-space-2); }
+
+    /* Panel groups beyond the ds 2:1 split: three equal columns, or two equal ones, on desk widths. */
+    @media (min-width: 64rem) {
+        .td-panels.ops-panels-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .td-panels.ops-panels-even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .ops-work--grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ops-work--grid > li { border-right: 1px solid var(--td-line); }
+        .ops-work--grid > li:last-child { border-bottom: 1px solid var(--td-line); }
+    }
+
+    .ops-muted { color: var(--td-ink-2); }
+    .ops-num { font-variant-numeric: tabular-nums; }
+}

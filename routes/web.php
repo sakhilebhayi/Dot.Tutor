@@ -111,3 +111,19 @@ Route::middleware([
 if (! Features::enabled(Features::registration())) {
     Route::redirect('/register', '/login')->name('register');
 }
+
+require __DIR__.'/tutor/safety.php';
+require __DIR__.'/tutor/money.php';
+require __DIR__.'/tutor/learning.php';
+require __DIR__.'/tutor/academic.php';
+require __DIR__.'/tutor/marketplace.php';
+require __DIR__.'/tutor/integration.php';
+require __DIR__.'/tutor/ai.php';
+require __DIR__.'/tutor/classroom.php';
+require __DIR__.'/tutor/comms.php';
+require __DIR__.'/tutor/community.php';
+require __DIR__.'/tutor/student.php';
+require __DIR__.'/tutor/security.php';
+require __DIR__.'/tutor/ops.php';
+require __DIR__.'/tutor/teach.php';
+require __DIR__.'/tutor/public.php';

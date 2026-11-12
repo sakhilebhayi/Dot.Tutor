@@ -75,10 +75,10 @@
                 </div>
             </div>
             @if($tutor->headline)
-            <div style="font-size:0.82rem;color:#e4e4e7;font-weight:600;">{{ $tutor->headline }}</div>
+            <div style="font-size:0.82rem;color:#e4e4e7;font-weight:600;">{{ app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutor->user, (string) $tutor->headline)['text'] }}</div>
             @endif
             @if($tutor->bio)
-            <div class="tutor-bio">{{ Str::limit($tutor->bio, 120) }}</div>
+            <div class="tutor-bio">{{ Str::limit(app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutor->user, (string) $tutor->bio)['text'], 120) }}</div>
             @endif
             <div>
                 @foreach($tutor->subjects as $subject)

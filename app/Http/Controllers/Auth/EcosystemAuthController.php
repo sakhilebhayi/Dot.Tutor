@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\InfoDot\IdentityClient;
 use App\Services\InfoDot\InfoDotUnavailable;
+use App\Support\RoleHome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -135,12 +136,12 @@ class EcosystemAuthController extends Controller
     /**
      * A deep link names a page to open after sign-in. Only a path on this app is honoured:
      * a single leading slash, nothing that a browser could read as another host (//, \),
-     * no traversal (..), no control characters. Anything else falls back to the dashboard,
+     * no traversal (..), no control characters. Anything else falls back to the person's role home,
      * so this can never be turned into an open redirect.
      */
     private function safeRedirect(mixed $redirect): string
     {
-        $fallback = route('dashboard');
+        $fallback = app(RoleHome::class)->for(Auth::user());
 
         if (! is_string($redirect) || $redirect === '' || strlen($redirect) > 2000 || $redirect[0] !== '/') {
             return $fallback;

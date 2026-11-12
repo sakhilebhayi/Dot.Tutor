@@ -1,0 +1,16 @@
+// A form with data-confirm="question" asks before it submits. Replaces inline onsubmit handlers, which the enforced
+// Content-Security-Policy blocks (R-47 security D-1514). Without script the form simply submits.
+export function initConfirm() {
+    if (document.documentElement.dataset.tdConfirm === 'on') {
+        return;
+    }
+    document.documentElement.dataset.tdConfirm = 'on';
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        // The pressed button may carry its own question (a form with a harmless and a serious button).
+        const question = form instanceof HTMLFormElement ? (event.submitter?.dataset.confirm ?? form.dataset.confirm) : undefined;
+        if (question && !window.confirm(question)) {
+            event.preventDefault();
+        }
+    }, true);
+}

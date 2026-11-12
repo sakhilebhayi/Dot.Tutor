@@ -54,11 +54,11 @@
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
                 <div class="avatar-xl">{{ strtoupper(substr(optional($tutorProfile->user)->name ?? '?', 0, 1)) }}</div>
                 <div>
-                    <div style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#f4f4f5;">
+                    <h1 style="margin:0;font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#f4f4f5;">
                         {{ optional($tutorProfile->user)->name ?? 'Unnamed tutor' }}
-                    </div>
+                    </h1>
                     @if($tutorProfile->headline)
-                    <div style="font-size:0.85rem;color:#d4d4d8;margin-top:0.1rem;">{{ $tutorProfile->headline }}</div>
+                    <div style="font-size:0.85rem;color:#d4d4d8;margin-top:0.1rem;">{{ app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutorProfile->user, (string) $tutorProfile->headline)['text'] }}</div>
                     @endif
                     <div style="font-size:0.85rem;color:#fbbf24;font-weight:700;" class="t-mono">
                         {{ \App\Support\Money::format($tutorProfile->hourly_rate, $tutorProfile->currency) }}/hr &middot; {{ number_format($tutorProfile->rating, 1) }}&#9733; &middot; {{ $tutorProfile->total_sessions }} sessions taught
@@ -68,12 +68,12 @@
 
             @if($tutorProfile->bio)
             <p style="font-size:0.85rem;color:#a1a1aa;line-height:1.6;margin-bottom:1rem;">
-                {{ $tutorProfile->bio }}
+                {{ app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutorProfile->user, (string) $tutorProfile->bio)['text'] }}
             </p>
             @endif
 
             @if($tutorProfile->qualifications)
-            <p style="font-size:0.8rem;color:#a1a1aa;line-height:1.6;margin-bottom:1rem;"><strong style="color:#d4d4d8;">Qualifications:</strong> {{ $tutorProfile->qualifications }}</p>
+            <p style="font-size:0.8rem;color:#a1a1aa;line-height:1.6;margin-bottom:1rem;"><strong style="color:#d4d4d8;">Qualifications:</strong> {{ app(\App\Domain\Safety\Services\ContactPrivacy::class)->profileText(auth()->user(), $tutorProfile->user, (string) $tutorProfile->qualifications)['text'] }}</p>
             @endif
 
             <div>

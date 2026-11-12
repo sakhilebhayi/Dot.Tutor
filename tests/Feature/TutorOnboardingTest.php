@@ -34,20 +34,19 @@ class TutorOnboardingTest extends TestCase
         $this->get('/tutor/profile')->assertRedirect('/login');
     }
 
-    public function test_a_user_without_a_profile_sees_the_application_form_with_the_configured_currency(): void
+    public function test_the_old_profile_address_forwards_to_the_workspace_onboarding(): void
     {
-        config(['tutor.currency' => 'ZAR']);
         $this->makeSubject('Algebra');
-        $this->makeSubject('Retired Subject', active: false);
 
-        $response = $this->actingAs($this->makeUser())->get('/tutor/profile');
-
-        $response->assertOk()
-            ->assertSee('Apply to teach')
+        // One tutor shell (D-2201): /tutor/profile opens the workspace onboarding, which works before a profile exists.
+        $this->actingAs($this->makeUser())->get('/tutor/profile')->assertRedirect(route('teach.profile'));
+        $this->actingAs($this->makeUser())->followingRedirects()->get('/tutor/profile')
+            ->assertOk()
+            ->assertSee('Become a tutor')
             ->assertSee('name="headline"', false)
-            ->assertSee('ZAR')
-            ->assertSee('Algebra')
-            ->assertDontSee('Retired Subject');
+            // Offerings own prices (D-2204): no profile-wide rate field, and no "payment outside the platform" line.
+            ->assertDontSee('name="hourly_rate"', false)
+            ->assertDontSee('outside the platform');
     }
 
     public function test_applying_creates_a_pending_profile_with_chosen_subjects(): void
@@ -170,7 +169,7 @@ class TutorOnboardingTest extends TestCase
         $profile = $this->makeTutor(['status' => 'rejected', 'rejected_reason' => 'Please add proof of your teaching qualification.', 'headline' => 'Maths tutor', 'bio' => 'Bio', 'qualifications' => 'BSc'], $algebra);
         $payload = $this->application([$algebra->id], ['headline' => 'Maths tutor', 'bio' => 'Bio', 'qualifications' => 'BSc', 'hourly_rate' => '45', 'timezone' => 'UTC']);
 
-        $this->actingAs($profile->user)->get('/tutor/profile')
+        $this->actingAs($profile->user)->followingRedirects()->get('/tutor/profile')
             ->assertOk()
             ->assertSee('Please add proof of your teaching qualification.');
 
@@ -192,7 +191,7 @@ class TutorOnboardingTest extends TestCase
         $profile = $this->makeTutor(['status' => 'suspended', 'suspended_reason' => 'Two no-shows in one week.', 'headline' => 'H', 'bio' => 'B', 'qualifications' => 'Q'], $algebra);
         $payload = $this->application([$algebra->id], ['headline' => 'H', 'bio' => 'B', 'qualifications' => 'Q', 'hourly_rate' => '45', 'timezone' => 'UTC']);
 
-        $this->actingAs($profile->user)->get('/tutor/profile')->assertSee('Two no-shows in one week.');
+        $this->actingAs($profile->user)->followingRedirects()->get('/tutor/profile')->assertSee('Two no-shows in one week.');
         $this->actingAs($profile->user)->put('/tutor/profile', $payload)->assertSessionHasErrors('headline');
 
         $payload['bio'] = 'B, plus a note on how I now confirm every booking within a day.';

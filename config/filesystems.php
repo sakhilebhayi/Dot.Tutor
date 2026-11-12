@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Not served: nothing here is meant for a URL (private files stream through authorising controllers),
+            // and the /storage/{path} routes it would add answer anyone holding a signed link (R-47 security S-25).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

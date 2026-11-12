@@ -34,8 +34,23 @@ class ProvisionUserFromInfoDot
 
         if ($user) {
             if ($user->email_verified_at === null) {
-                $user->forceFill(['password' => Hash::make(Str::random(48)), 'email_verified_at' => now()])->save();
-                Log::notice('Unverified local account adopted by InfoDot sign-in; password replaced.', ['user_id' => $user->id]);
+                // Whoever pre-registered or switched to this address loses every way back in (R-47 security S-01):
+                // the password, two-factor secret, remember-me token, API tokens and every open session.
+                $user->forceFill([
+                    'password' => Hash::make(Str::random(48)),
+                    'email_verified_at' => now(),
+                    'remember_token' => Str::random(60),
+                    'two_factor_secret' => null,
+                    'two_factor_recovery_codes' => null,
+                    'two_factor_confirmed_at' => null,
+                ])->save();
+                $user->tokens()->delete();
+
+                if (config('session.driver') === 'database') {
+                    DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
+                }
+
+                Log::notice('Unverified local account adopted by InfoDot sign-in; credentials and sessions replaced.', ['user_id' => $user->id]);
             }
 
             return $user;
