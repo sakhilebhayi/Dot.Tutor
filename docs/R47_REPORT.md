@@ -608,7 +608,35 @@ These fixes have not been scored by a third jury.
 
 ## 28. Deployment
 
-> **PLACEHOLDER for the coordinator.** Record: the PR and merge into `main` (deploy runs only from `main`, D-1906), the deploy run id and result, the release before and after, the database restore point name, the `academic:sync` output, the `tutor:preflight` output (especially "Can a learner book a paid lesson?"), the live smoke result, and anything that kept the site in maintenance mode.
+Released 2026-11-12 (23:46 UTC, 2026-11-13 01:46 SAST).
+
+| Item | Result |
+|---|---|
+| Pull request | [sakhilebhayi/Dot.Tutor#27](https://github.com/sakhilebhayi/Dot.Tutor/pull/27), squash-merged into `main` as `b4ee003`. All five CI jobs green on the final head (PHP on SQLite and PostgreSQL 16, JS, upgrade rehearsal, signed-in smoke). GitGuardian's 11 hits were false positives: the throwaway PostgreSQL service password in CI and the RFC 8291 test vector |
+| Mode | `confirm=deploy`. A read-only drift report first showed the host was a git checkout at `2aa8daf` with all 343 tracked files identical to `main`, so no takeover was needed |
+| Deploy run | [43330996771](https://github.com/sakhilebhayi/Dot.Tutor/actions/runs/43330996771): success. Its own CI gate re-ran all five jobs green before touching the host |
+| Release | `2aa8daf` to `b4ee003` |
+| Rollback copy | `~/dot-tutor-deploy-20261112T234541Z.tgz` (1.6 MB) |
+| Database restore point | `~/dot-tutor-db-deploy-20261112T234541Z.sqlite` (284 KB), integrity ok. The live database is SQLite |
+| Maintenance window | 23:45:49 to 23:46:38 UTC (49 s) |
+| Migrations | 26 applied (45 in total, none pending). All additive |
+| `academic:sync` | 15 languages, 1 country, 4 curricula, 45 levels, 71 subjects, 882 subject offerings; every pre-R-47 subject linked |
+| `tutor:preflight` | **OK: 39 pass, 5 info, 5 off, 7 warnings, 0 failures.** The CSP is enforced, debug is off, the session cookie is Secure, HSTS is on, caches are built and 14 scheduled tasks are registered with cron seen running |
+| Cron | Installed through the shared crontab under the flock, other apps' lines unchanged |
+| Live smoke (runner) | Passed: pages, guest redirects, security headers, built assets, fonts, icons, the service worker, private storage and `.env` not served, no debug page |
+| Independent check (coordinator) | `/`, `/login`, `/find-a-tutor`, the legal pages, `sitemap.xml`, `robots.txt` and `/up` answer 200; `/learn`, `/teach`, `/ops` and `/guardian` redirect a guest to sign-in; a missing page is a real 404. Unique title, description and Open Graph tags. In a browser at phone width: the landing page, public tutor search and sign-in render with the phone menu and **no console errors or CSP violations** |
+
+**Preflight warnings, all owner items (section 29):**
+- Mail is `log`, so nobody receives email (step 9).
+- The database is SQLite: fine for launch, move to PostgreSQL before real traffic (step 3).
+- Paystack is off: free lessons and courses work, and paid items say online payment is not enabled (steps 10 and 11).
+- There is no TURN relay: some phone and school networks cannot connect, and the classroom offers the tutor's own meeting link (step 15).
+- **There are no operators and no safeguarding contacts yet**: sign in through InfoDot, then `php artisan ops:grant <email> --role=admin`, and name safeguarding officers (step 7).
+- "Can a learner book a paid lesson?": **NO**, because there is no Paystack key and no approved tutor with a priced offering and open hours (steps 10 to 13).
+
+Also off until configured: the AI assistant, Web Push, SMS, Dot.Notify and payout transfers. InfoDot sign-in has its service secret set. Dot.Analytics ingest is on.
+
+Nothing kept the site in maintenance mode. The `infodot.co.za` domain renewal (step 1) is still the first owner item: this subdomain and every sign-in depend on it.
 
 ## 29. Owner steps
 
