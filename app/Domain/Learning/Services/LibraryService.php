@@ -51,6 +51,11 @@ class LibraryService
 
         $errors += $this->academic->validate($data['curriculum_id'] ?? null, $data['level_id'] ?? null, $data['subject_id'] ?? null, $data['topic_id'] ?? null);
 
+        // Any source link is shown as a link to every reader and to moderators: https only, so a javascript: or
+        // data: address can never be stored (R-47 security S-17).
+        if (filled($sourceUrl) && ! $this->isHttps($sourceUrl)) {
+            $errors['source_url'] = 'The source link must be a full https:// address.';
+        }
         if ($licence === ResourceLicence::OfficialSource && ! $this->isHttps($sourceUrl)) {
             $errors['source_url'] = 'An officially sourced resource needs the https link to where the official body publishes it.';
         }

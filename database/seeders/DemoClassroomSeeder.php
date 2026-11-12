@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domain\Classroom\Models\Classroom;
+use App\Domain\Safety\Models\AgeRecord;
 use App\Models\Subject;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
@@ -33,6 +34,8 @@ class DemoClassroomSeeder extends Seeder
                 $user->forceFill(['current_team_id' => $team->id])->save();
             }
         }
+        // An adult learner with a recorded birth date: unknown ages are protected as children (R-47 security S-03).
+        AgeRecord::query()->firstOrCreate(['user_id' => $learner->id], ['birth_date' => now()->subYears(19)->subMonths(2)->toDateString(), 'source' => 'operator_verified', 'recorded_by_id' => $tutor->id]);
         $profile = TutorProfile::query()->firstOrCreate(['user_id' => $tutor->id], ['hourly_rate' => 250, 'status' => 'approved', 'headline' => 'Demo classroom tutor', 'timezone' => 'Africa/Johannesburg']);
         $subject = Subject::query()->firstOrCreate(['name' => 'Mathematics'], ['level' => 'high_school']);
 

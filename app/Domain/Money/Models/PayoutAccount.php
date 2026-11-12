@@ -21,6 +21,7 @@ class PayoutAccount extends Model
     protected $casts = [
         'holder_name' => 'encrypted',
         'account_number' => 'encrypted',
+        'details_changed_at' => 'datetime',
     ];
 
     public static function blindIndex(string $bankCode, string $accountNumber): string

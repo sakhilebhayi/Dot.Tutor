@@ -169,7 +169,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Secure by default when the site is served over https (R-47 security S-31), so a live host whose .env lacks
+    // SESSION_SECURE_COOKIE never sends the session cookie over plain http.
+    'secure' => env('SESSION_SECURE_COOKIE', str_starts_with((string) env('APP_URL', ''), 'https://') ? true : null),
 
     /*
     |--------------------------------------------------------------------------

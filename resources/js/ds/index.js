@@ -7,6 +7,7 @@ import { initToasts } from './toast.js';
 import { initComboboxes } from './combobox.js';
 import { initFilePickers } from './file-picker.js';
 import { initShelf } from './shelf.js';
+import { initConfirm } from './confirm.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -16,6 +17,7 @@ function boot(root = document) {
     initComboboxes(root);
     initFilePickers(root);
     initShelf(root);
+    initConfirm();
 }
 
 if (document.readyState === 'loading') {

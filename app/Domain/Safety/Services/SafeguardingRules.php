@@ -5,11 +5,13 @@ namespace App\Domain\Safety\Services;
 use App\Domain\Safety\Contracts\AgeGatedSpace;
 use App\Domain\Safety\Contracts\GuardianApprovals;
 use App\Domain\Safety\Contracts\InvolvesPeople;
+use App\Domain\Safety\Contracts\RoomDirectory;
 use App\Domain\Safety\Contracts\SafeguardingGate;
 use App\Domain\Safety\Enums\AgeBand;
 use App\Domain\Safety\Models\Conversation;
 use App\Domain\Safety\Models\ConversationParticipant;
 use App\Domain\Safety\Support\Decision;
+use App\Enums\SessionStatus;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
 use App\Models\User;
@@ -109,14 +111,22 @@ class SafeguardingRules implements SafeguardingGate
             }
 
             $contextType = $subject->context_type;
+            $contextId = $subject->context_id;
             $people = User::query()->whereIn('id', $subject->memberIds())->get()->all();
 
-            // A guardian or operator speaks as an overseer, not as a party to the context.
-            if ($participant->role !== ConversationParticipant::MEMBER) {
+            // An operator speaks as an overseer, not as a party to the context.
+            if ($participant->role === ConversationParticipant::OPERATOR) {
                 return Decision::allow();
+            }
+
+            // A guardian oversees their own child; in a conversation that also holds other people's children they
+            // speak only with a screening, like any adult (R-47 security S-05).
+            if ($participant->role === ConversationParticipant::GUARDIAN) {
+                return $this->screeningFor([...$people, $actor]);
             }
         } else {
             $contextType = (string) ($context['context_type'] ?? Conversation::DIRECT);
+            $contextId = isset($context['context_id']) ? (int) $context['context_id'] : null;
             $people = $this->peopleIn($subject, $actor);
             $people[] = $actor;
         }
@@ -127,6 +137,10 @@ class SafeguardingRules implements SafeguardingGate
 
         if ($limited = $this->limited($actor)) {
             return $limited;
+        }
+
+        if ($closed = $this->contextClosed($actor, $contextType, $contextId, $people)) {
+            return $closed;
         }
 
         $minors = array_filter($people, fn (User $p) => $this->standing->isMinor($p));
@@ -280,8 +294,45 @@ class SafeguardingRules implements SafeguardingGate
         return Decision::allow();
     }
 
+    /**
+     * A conversation lasts only as long as the context that allowed it (R-47 security S-07): a room conversation
+     * while the sender is still a member of the room; a booking conversation with a learner under 18 not before a
+     * guardian has approved the booking, and not after it was cancelled.
+     *
+     * @param  list<User>  $people
+     */
+    private function contextClosed(User $actor, string $contextType, ?int $contextId, array $people): ?Decision
+    {
+        if ($contextType === Conversation::ROOM && $contextId !== null) {
+            $room = app(RoomDirectory::class)->find($contextId);
+
+            if ($room === null || ! in_array($actor->id, $room->safetyMemberIds(), true)) {
+                return Decision::deny('context_ended', 'You are no longer a member of this room.');
+            }
+        }
+
+        if ($contextType === Conversation::BOOKING && $contextId !== null
+            && collect($people)->contains(fn (User $p) => $this->standing->isMinor($p))) {
+            $status = TutorSession::query()->whereKey($contextId)->value('status');
+
+            if ($status === SessionStatus::AwaitingGuardian->value) {
+                return Decision::deny('guardian_approval_missing', 'Messages about this lesson open once a parent or guardian approves it.');
+            }
+
+            if ($status === null || $status === SessionStatus::Cancelled->value) {
+                return Decision::deny('context_ended', 'This lesson was cancelled, so its conversation is closed.');
+            }
+        }
+
+        return null;
+    }
+
     private function limited(User $actor): ?Decision
     {
+        if ($this->standing->isLimited($actor) && $this->standing->ageUnknown($actor)) {
+            return Decision::deny('age_unknown', 'Add your month and year of birth to your learning profile first, so we can keep younger learners safe.');
+        }
+
         if ($this->standing->isLimited($actor)) {
             return Decision::deny('guardian_consent_required', 'A parent or guardian needs to link to this account and give consent first.');
         }
@@ -291,7 +342,8 @@ class SafeguardingRules implements SafeguardingGate
 
     /**
      * Every adult in an exchange with a minor must hold a current screening, unless they are an operator or a
-     * guardian of one of the minors.
+     * guardian of every minor present (a parent of one child is not cleared to meet other people's children:
+     * R-47 security S-05).
      *
      * @param  list<User>  $people
      */
@@ -309,9 +361,9 @@ class SafeguardingRules implements SafeguardingGate
                 continue;
             }
 
-            $isGuardian = collect($minors)->contains(fn (User $minor) => $this->guardians->isGuardianOf($person, $minor));
+            $guardsEveryMinor = collect($minors)->every(fn (User $minor) => $this->guardians->isGuardianOf($person, $minor));
 
-            if (! $isGuardian && ! $this->screening->isClearedForMinors($person)) {
+            if (! $guardsEveryMinor && ! $this->screening->isClearedForMinors($person)) {
                 return Decision::deny('tutor_screening_missing', 'This tutor has not completed the safeguarding screening needed to work with learners under 18.');
             }
         }

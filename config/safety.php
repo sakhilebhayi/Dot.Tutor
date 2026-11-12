@@ -25,10 +25,12 @@ return [
         'adult_from' => 18,
     ],
 
-    // How a person with no known date of birth is treated. 'adult' keeps today's flows working until the
-    // academic onboarding collects a date of birth from every learner; 'restrict' treats unknown as a child
-    // (the safest setting, and the one to switch to once dates of birth are collected). See D-402.
-    'unknown_age_policy' => env('SAFETY_UNKNOWN_AGE_POLICY', 'adult'),
+    // How a person with no known date of birth is treated (R-47 security S-03, D-1502; D-402 superseded):
+    // 'ask' (default) protects them as a child, and asks them to declare a month and year of birth before they
+    // book, pay, message, join a room, meet live or publish, unless something attests to an adult (an operator,
+    // an approved tutor, a cleared screening, an active guardian of a learner); 'restrict' treats every unknown
+    // as a child; 'adult' treats every unknown as an adult (the pre-R-47 behaviour, unsafe with children).
+    'unknown_age_policy' => env('SAFETY_UNKNOWN_AGE_POLICY', 'ask'),
 
     'guardians' => [
         // Hours a guardian invitation link stays valid.

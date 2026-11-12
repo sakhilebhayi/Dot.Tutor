@@ -31,7 +31,7 @@ class EarningsPayoutTest extends TestCase
 
     private function bank(User $tutor, string $number = '62001234567'): void
     {
-        $this->actingAs($tutor)->putJson('/api/tutor/money/tutor/payout-account', [
+        $this->actingAs($tutor)->withSession(['tutor.signed_in_at' => time()])->putJson('/api/tutor/money/tutor/payout-account', [
             'holder_name' => 'T Tutor', 'account_number' => $number, 'bank_name' => 'First National Bank', 'bank_code' => '250655',
         ])->assertOk()->assertJsonPath('account.account_ending', substr($number, -4))->assertJsonMissingPath('account.account_number');
     }
