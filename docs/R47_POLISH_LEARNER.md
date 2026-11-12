@@ -47,6 +47,11 @@ Branch `feat/r47-polish-learner`, decisions D-2000 to D-2025, port 8740. Source:
 
 ## 4. Checks
 
-- PHP: baseline 980 (973 pass, 7 skipped); after this work 996 (989 pass, 7 skipped) before the final merge; new tests `LearnerTimesTest` (2), `PublicDiscoveryTest` (3), `PublicMetaTest` (4), `LearnerPolishTest` (7); updated with reasons: `MatchingTest` (curriculum wording), `ResponsiveShellTest` (team switcher), `EcosystemErrorPagesTest` (404), `RouteAuthorizationMapTest` (public list).
-- JS: `tests/js/cards-editor.test.mjs`.
+- PHP: baseline 980 (973 pass, 7 skipped); after this work 996 (989 pass, 7 skipped); after merging the trunk with polish-guardian, 1009 (1002 pass, 7 skipped); new tests `LearnerTimesTest` (2), `PublicDiscoveryTest` (3), `PublicMetaTest` (4), `LearnerPolishTest` (7); updated with reasons: `MatchingTest` (curriculum wording), `ResponsiveShellTest` (team switcher), `EcosystemErrorPagesTest` (404), `RouteAuthorizationMapTest` (public list).
+- JS: `tests/js/cards-editor.test.mjs` (15 JS tests pass). `npm run build`, `view:cache` and `route:cache` pass.
+- E2E: the whole suite (`node tests/e2e/run.mjs`, specs 01 to 09, route sweep included) passed before the trunk merge; the booking specs pick the day first. The run after the merge is recorded in section 5.
 - Browser (local server on 8740, Demo seeders): public storefront and guest search at 1440 and 375, booking day strip at 375 (no horizontal overflow) and 1440, the flashcard editor's "Add another card", terms page, 404.
+
+## 5. After merging the trunk (polish-guardian included)
+
+PHP 1009 (1002 pass, 7 skipped), JS 15 pass, build and caches pass, full E2E suite 01 to 09 passed (route sweep 641 s). The learner frame keeps `GuardianShell::frame()`; the team switcher rule (D-2023) sits in the shared `partials/frame`. No new monospace or money formatting was added.
