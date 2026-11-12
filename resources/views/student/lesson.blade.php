@@ -2,12 +2,13 @@
     use App\Domain\Student\Support\Times;
     $status = $session->status;
     $group = $session->isGroup();
+    $young = ($ctx['step'] ?? 'standard') === 'young';
     $mine = $seat ?? null;
     $payState = $group ? ($mine['state'] ?? null) : $status;
     $priceMinor = $group ? ($mine['price']['amount_minor'] ?? 0) : $data['price']['amount_minor'];
     $currency = $group ? ($mine['price']['currency'] ?? 'ZAR') : $data['price']['currency'];
     $labels = [
-        'requested' => 'You asked for this lesson', 'held_for_guardian' => 'Waiting for your parent or guardian',
+        'requested' => 'You asked for this lesson', 'held_for_guardian' => 'Asked your parent or guardian',
         'guardian_approved' => 'Your parent or guardian approved', 'guardian_declined' => 'Your parent or guardian said no',
         'accepted' => 'The tutor accepted', 'declined' => 'The tutor declined', 'paid' => 'Paid', 'confirmed' => 'Confirmed',
         'started' => 'The lesson started', 'completed' => 'The lesson was completed', 'cancelled' => 'Cancelled',
@@ -138,7 +139,7 @@
             </x-td.panel>
 
             @if ($isLearner && in_array($payState, ['awaiting_guardian', 'pending', 'requested', 'awaiting_payment', 'confirmed'], true))
-                <x-td.panel title="Cancel">
+                <x-td.panel :title="$young ? 'Can\'t make it?' : 'Cancel'">
                     @if ($data['cancellation'])<p style="margin:0">{{ $data['cancellation'] }}</p>@endif
                     @if ($cancelPreview)
                         <p style="margin:var(--td-space-2) 0 0"><strong>If you cancel now:</strong>
@@ -150,14 +151,17 @@
                         </p>
                         @if ($cancelPreview['paid'] && $cancelPreview['percent'] > 0)<p class="st-small" style="margin:var(--td-space-1) 0 0">Refunds go back to the card through Paystack once Dot.Tutor's finance team processes them.</p>@endif
                     @endif
+                    {{-- Opening the form is a quiet step; only the confirming button is red (R-47 polish D-2025: a red
+                         "Cancel this lesson" was the strongest thing in a child's lesson page). --}}
+                    @if ($young)<p style="margin:var(--td-space-2) 0 0">Talk to your parent or guardian before you cancel.</p>@endif
                     <details style="margin-top:var(--td-space-3)">
-                        <summary class="td-btn td-btn--sm td-btn--danger">{{ $group ? 'Cancel my seat' : 'Cancel this lesson' }}</summary>
+                        <summary class="td-btn td-btn--sm">{{ $young ? 'I can\'t make it' : ($group ? 'Cancel my seat' : 'Cancel this lesson') }}</summary>
                         <form method="POST" action="{{ route('learn.lessons.cancel', $session) }}" class="st-form" style="margin-top:var(--td-space-3)">
                             @csrf
                             <x-td.field label="Reason" for="cancel-reason" optional hint="The tutor sees this.">
                                 <x-td.textarea name="reason" id="cancel-reason" rows="2" maxlength="1000" :hint="true" />
                             </x-td.field>
-                            <x-td.button type="submit" variant="danger" size="sm">Yes, cancel</x-td.button>
+                            <x-td.button type="submit" variant="danger" size="sm">{{ $young ? 'Yes, cancel the lesson' : 'Yes, cancel' }}</x-td.button>
                         </form>
                     </details>
                 </x-td.panel>

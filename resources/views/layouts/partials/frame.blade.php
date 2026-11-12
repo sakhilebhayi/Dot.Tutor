@@ -33,19 +33,27 @@
         </nav>
 
         @auth
+            @php
+                // Jetstream teams mean nothing to a learner, a child or a guardian ("Sipho's Team"). The switcher is shown
+                // only to a tutor or operator who really uses teams (more than one); R-47 polish D-2023, critic A 13.
+                $frameUser = Auth::user();
+                $showTeams = Laravel\Jetstream\Jetstream::hasTeamFeatures() && $frameUser->currentTeam
+                    && ($frameUser->is_platform_operator || $frameUser->tutorProfile()->exists())
+                    && $frameUser->allTeams()->count() > 1;
+            @endphp
             <div class="td-rail__foot sidebar-footer">
                 <div class="td-rail__user">
                     <x-td.avatar :name="Auth::user()->name" :src="Auth::user()->profile_photo_path ? Auth::user()->profile_photo_url : null" size="sm" decorative />
                     <div style="min-width:0;flex:1">
                         <div class="td-rail__user-name">{{ Auth::user()->name }}</div>
-                        <div class="td-rail__user-meta">{{ Auth::user()->currentTeam->name ?? 'Personal' }}</div>
+                        @if ($showTeams)<div class="td-rail__user-meta">{{ $frameUser->currentTeam->name }}</div>@endif
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <x-td.button type="submit" variant="quiet" icon="log-out" icon-only aria-label="Sign out" title="Sign out">Sign out</x-td.button>
                     </form>
                 </div>
-                @if (Laravel\Jetstream\Jetstream::hasTeamFeatures() && Auth::user()->currentTeam)
+                @if ($showTeams)
                     <details class="td-rail__teams team-switch">
                         <summary class="td-nav-link"><x-td.icon name="users" /><span style="flex:1">Teams</span><x-td.icon name="chevron-down" /></summary>
                         <div class="td-rail__teams-list">

@@ -2,8 +2,8 @@
 <x-student.shell :title="$result['assessment']['title']">
     <x-td.page-head :title="$result['assessment']['title'].': '.$result['score'].' out of '.$result['max_score']" :lede="$result['label']">
         <x-slot:actions>
-            <x-td.button variant="quiet" icon="arrow-left" :href="route('practice.index')">Practice</x-td.button>
-            <x-td.button :href="route('learning.assessments.take', $result['assessment']['id'])">Back to the assessment</x-td.button>
+            {{-- One way back (R-47 polish D-2018): the assessment, which links on to practice. --}}
+            <x-td.button variant="quiet" icon="arrow-left" :href="route('learning.assessments.take', $result['assessment']['id'])">Back to the assessment</x-td.button>
         </x-slot:actions>
     </x-td.page-head>
 

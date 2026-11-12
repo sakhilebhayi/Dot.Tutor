@@ -10,8 +10,8 @@
     @error('money')<x-td.notice tone="danger">{{ $message }}</x-td.notice>@enderror
 
     <div class="st-cols">
-        <x-td.panel title="What you are buying" flush>
-            <x-td.table caption="Order items">
+        <x-td.panel :title="$order->isSettled() ? 'What you bought' : 'What you are buying'" flush>
+            <x-td.table caption="Order items" caption-hidden>
                 <thead><tr><th scope="col">Item</th><th scope="col" class="is-num">Price</th>@if ($order->discount_minor)<th scope="col" class="is-num">Discount</th>@endif @if ($order->credit_minor)<th scope="col" class="is-num">Credit</th>@endif<th scope="col" class="is-num">To pay</th></tr></thead>
                 <tbody>
                     @foreach ($order->lines as $line)
@@ -26,7 +26,7 @@
                 </tbody>
             </x-td.table>
             <div class="td-panel__body">
-                <dl class="st-facts">
+                <dl class="st-facts st-facts--sums">
                     <dt>Subtotal</dt><dd>{{ Money::of($order->subtotal_minor, $cur)->format() }}</dd>
                     @if ($order->discount_minor)<dt>Discount{{ $order->coupon ? ' ('.$order->coupon->code.')' : '' }}</dt><dd>−{{ Money::of($order->discount_minor, $cur)->format() }}</dd>@endif
                     @if ($order->credit_minor)<dt>Promotional credit</dt><dd>−{{ Money::of($order->credit_minor, $cur)->format() }}</dd>@endif

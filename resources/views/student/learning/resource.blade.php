@@ -32,7 +32,7 @@
                         @if ($data['institution'])<dt>Institution</dt><dd>{{ $data['institution'] }}</dd>@endif
                         <dt>Licence</dt><dd>{{ $data['licence_label'] }}{{ $data['ownership'] === 'third_party' ? ', shared from another author' : ', the contributor\'s own work' }}</dd>
                         @if ($data['source_url'])<dt>Source</dt><dd><a class="td-link" href="{{ $data['source_url'] }}" rel="noopener noreferrer" target="_blank">{{ $data['source_url'] }}</a></dd>@endif
-                        <dt>File</dt><dd>{{ $data['mime'] }}, {{ number_format($data['size'] / 1024) }} KB</dd>
+                        <dt>File</dt><dd>{{ \App\Domain\Student\Support\FileKind::label($data['mime']) }}, {{ number_format($data['size'] / 1024) }} KB</dd>
                         <dt>Recommended by</dt><dd>{{ $data['recommendations'] }} {{ \Illuminate\Support\Str::plural('person', $data['recommendations']) }}</dd>
                     </dl>
                 </div>
@@ -103,8 +103,8 @@
                 </div>
             </x-td.panel>
 
-            <details class="td-panel">
-                <summary class="td-panel__head" style="cursor:pointer"><h2 class="td-panel__title">Report or suggest a change</h2></summary>
+            <details class="td-panel st-disclosure">
+                <summary class="td-panel__head"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span class="st-disclosure__label"><h2 class="td-panel__title">Report or suggest a change</h2><span class="st-disclosure__hint">A mistake, a better version, or something that should not be here</span></span></summary>
                 <form method="POST" action="{{ route('learning.library.reports.store', $resource) }}" class="st-form td-panel__body">@csrf
                     <x-td.field label="What is it about?" for="kind">
                         <x-td.select name="kind" :options="array_filter(['incorrect' => 'Something is wrong', 'improvement' => 'Suggest an improvement', 'copyright' => $data['is_owner'] ? null : 'Copyright: this is my work, shared without permission', 'other' => 'Something else'])" />

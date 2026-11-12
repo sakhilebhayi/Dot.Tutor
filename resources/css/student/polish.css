@@ -299,3 +299,105 @@
         }
     }
 }
+
+@layer components {
+    /* Order sums: labels left, every amount right-aligned under the total (D-2019, critic A 14). */
+    .st-facts--sums {
+        grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .st-facts--sums dd {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    /* Flashcard editor: numbered rows of two fields (D-2021). */
+    .st-cards-editor {
+        display: grid;
+        gap: var(--td-space-3);
+        margin: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+    }
+
+    .st-cards-editor legend {
+        padding: 0;
+        font-weight: 650;
+    }
+
+    .st-cards-editor__list {
+        display: grid;
+        gap: var(--td-space-3);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .st-cards-editor__row {
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--td-space-2) var(--td-space-3);
+        align-items: end;
+    }
+
+    .st-cards-editor__n {
+        padding-bottom: 0.7rem;
+        color: var(--td-ink-2);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .st-cards-editor [data-cards-add] {
+        justify-self: start;
+    }
+}
+
+@layer components {
+    /* A notification's title opens it (D-2022): a text button that reads as a link, the arrow steps on hover. */
+    .comms-item__open {
+        display: inline;
+        padding: 3px 0;
+        border: 0;
+        background: none;
+        color: var(--td-primary);
+        font: inherit;
+        text-align: left;
+        text-decoration: underline;
+        text-decoration-color: color-mix(in oklch, var(--td-primary) 45%, transparent);
+        text-underline-offset: 0.2em;
+        cursor: pointer;
+    }
+
+    .comms-item__open .td-icon {
+        margin-left: 0.3em;
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    @media (hover: hover) {
+        .comms-item__open:hover {
+            text-decoration-color: currentColor;
+        }
+
+        .comms-item__open:hover .td-icon {
+            transform: translateX(3px);
+        }
+    }
+
+    .comms-item__open:focus-visible {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    /* A tutor's words quoted on a learner screen (the last lesson's summary). */
+    .st-quote {
+        display: grid;
+        gap: var(--td-space-1);
+        padding: var(--td-space-3) var(--td-space-4);
+        background: var(--td-sunken);
+    }
+}

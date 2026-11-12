@@ -27,8 +27,8 @@
     <x-td.panel :title="$show === 'past' ? 'Past and cancelled' : 'Coming up'" flush>
         @if ($rows->isEmpty() && ($show === 'past' || $openSeats->isEmpty()))
             <x-td.state kind="empty" :title="$show === 'past' ? 'Nothing here yet' : 'No lessons booked'">
-                @if ($show === 'upcoming') Book one lesson at a time. There is no subscription. @endif
-                <x-slot:actions>@if ($show === 'upcoming')<x-td.button :href="route('marketplace.find')" icon="search">Find a tutor</x-td.button>@endif</x-slot:actions>
+                {{-- The page head already carries "Find a tutor" (R-47 polish D-2018: one button per action). --}}
+                @if ($show === 'upcoming') Book one lesson at a time with "Find a tutor" above. There is no subscription. @endif
             </x-td.state>
         @else
             <ul class="st-list">
