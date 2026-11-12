@@ -53,7 +53,7 @@
                     <path d="M{{ $x }},{{ $base }} V{{ $y + $r }} Q{{ $x }},{{ $y }} {{ $x + $r }},{{ $y }} H{{ $x + $bw - $r }} Q{{ $x + $bw }},{{ $y }} {{ $x + $bw }},{{ $y + $r }} V{{ $base }} Z" class="fill-td-primary" />
                 @endif
                 @if (($i === $maxIndex || $i === $lastIndex) && $v > 0)
-                    <text x="{{ $x + $bw / 2 }}" y="{{ $y - 6 }}" text-anchor="middle" class="fill-td-ink" font-size="12" font-weight="700">{{ $fmt($v) }}</text>
+                    <text x="{{ $x + $bw / 2 }}" y="{{ $y - 6 }}" text-anchor="middle" class="fill-td-ink" font-size="12" font-weight="700">{{ $fmtFull($v) }}</text>
                 @endif
                 <text x="{{ $left + $band * $i + $band / 2 }}" y="{{ $H - 8 }}" text-anchor="middle" class="fill-td-ink-2" font-size="11">{{ $n > 8 && $i % 2 === 1 ? '' : $item['label'] }}</text>
             </g>

@@ -12,18 +12,8 @@
 @endphp
 <li class="grid gap-2 border-t border-td-line py-3 first:border-t-0" id="{{ $rowId }}">
     <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p class="m-0 font-bold">
-            @if (! $s->isGroup() && $s->student_id)
-                <a class="td-link" href="{{ route('teach.students.show', $s->student_id) }}">{{ $who }}</a>
-            @else
-                {{ $who }}
-            @endif
-            <span class="font-normal text-td-ink-2">, {{ $s->subject?->name ?? 'Subject removed' }}</span>
-        </p>
-        <p class="m-0 tabular-nums">
-            <time datetime="{{ $s->starts_at->toIso8601String() }}">{{ $start->format('D j M, H:i') }}</time>
-            <span class="text-td-ink-2">, {{ $s->duration_minutes }} min</span>
-        </p>
+        <p class="m-0 font-bold">@if (! $s->isGroup() && $s->student_id)<a class="td-link" href="{{ route('teach.students.show', $s->student_id) }}">{{ $who }}</a>@else{{ $who }}@endif<span class="font-normal text-td-ink-2">, {{ $s->subject?->name ?? 'Subject removed' }}</span></p>
+        <p class="m-0 tabular-nums"><time datetime="{{ $s->starts_at->toIso8601String() }}">{{ $start->format('D j M, H:i') }}</time><span class="text-td-ink-2">, {{ $s->duration_minutes }} min</span></p>
     </div>
     <p class="m-0 text-sm text-td-ink-2">
         {{ $s->offering?->title ?? 'Lesson' }}

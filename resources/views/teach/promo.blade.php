@@ -30,7 +30,7 @@
             <h2 class="m-0 text-xl font-bold">I teach</h2>
             <ul class="m-0 grid list-disc gap-1 pl-5">
                 @foreach ($store['teaching_scope'] as $sc)
-                    <li>{{ $sc['subject']['name'] }}@if ($sc['level_min']), {{ $sc['curriculum']['name'] ?? '' }} {{ $sc['level_min']['name'] }}{{ $sc['level_max'] && $sc['level_max']['id'] !== $sc['level_min']['id'] ? ' to '.$sc['level_max']['name'] : '' }}@endif</li>
+                    <li>{{ $sc['subject']['name'] }}@if ($sc['level_min']), {{ $levelIndex[$sc['level_min']['id']]['curriculum'] ?? ($sc['curriculum']['name'] ?? '') }} {{ $sc['level_min']['name'] }}{{ $sc['level_max'] && $sc['level_max']['id'] !== $sc['level_min']['id'] ? ' to '.$sc['level_max']['name'] : '' }}@endif</li>
                 @endforeach
             </ul>
             @if (! empty($store['languages']))

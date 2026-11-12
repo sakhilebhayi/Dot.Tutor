@@ -32,7 +32,8 @@ class AcademicOptions
         return AcademicLevel::query()->active()->whereIn('curriculum_id', $curricula->keys())
             ->orderBy('curriculum_id')->orderBy('position')->get()
             ->sortBy(fn (AcademicLevel $l) => [$curricula[$l->curriculum_id]->sort ?? 0, $curricula[$l->curriculum_id]->name, $l->position])
-            ->map(fn (AcademicLevel $l) => ['value' => (int) $l->id, 'label' => $l->name, 'group' => $curricula[$l->curriculum_id]->label()])
+            // The curriculum is in the label too: a closed select shows only the option, and "Grade 10" exists in CAPS and IEB.
+            ->map(fn (AcademicLevel $l) => ['value' => (int) $l->id, 'label' => $curricula[$l->curriculum_id]->label().' '.$l->name, 'group' => $curricula[$l->curriculum_id]->label()])
             ->values()->all();
     }
 

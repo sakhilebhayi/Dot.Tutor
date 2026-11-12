@@ -48,7 +48,7 @@
                         @endforeach
                     </tbody>
                 </x-td.table>
-                <div class="p-4"><x-td.pagination :paginator="$packages" label="Packages pages" /></div>
+                @if ($packages->hasPages())<div class="p-4"><x-td.pagination :paginator="$packages" label="Packages pages" /></div>@endif
             @endif
         </x-td.panel>
     @elseif ($view === 'groups')

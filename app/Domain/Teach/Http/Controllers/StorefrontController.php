@@ -59,7 +59,7 @@ class StorefrontController extends Controller
         return back()->with('success', 'Storefront saved.');
     }
 
-    public function promo(Request $request, TutorPresenter $presenter): View
+    public function promo(Request $request, TutorPresenter $presenter, AcademicOptions $options): View
     {
         $profile = TutorContext::profile($request);
 
@@ -67,6 +67,7 @@ class StorefrontController extends Controller
             'profile' => $profile,
             'store' => $presenter->storefront($profile),
             'courses' => $this->courses($profile),
+            'levelIndex' => $options->levelIndex(),
             'link' => $profile->public_handle ? route('teach.handle', $profile->public_handle) : route('teach.referral', ReferralLink::for($profile)->code),
         ]);
     }

@@ -52,18 +52,13 @@
     @endif
 
     <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
-        <nav aria-label="Onboarding steps">
-            <x-td.timeline label="Steps to become a tutor">
-                @foreach ($steps as $s)
-                    @php $itemState = $s['key'] === $step ? 'current' : ($s['done'] ? 'done' : 'upcoming'); @endphp
-                    <x-td.timeline-item :title="$s['title']" :state="$itemState" :meta="$s['required'] ? null : 'Optional'">
-                        @if ($profile || $s['key'] === 'about')
-                            <a class="td-link" href="{{ route('teach.profile', ['step' => $s['key']]) }}" @if ($s['key'] === $step) aria-current="page" @endif>{{ $s['key'] === $step ? 'You are here' : ($s['done'] ? 'Review' : 'Open') }}<span class="td-sr"> {{ $s['title'] }}</span></a>
-                        @endif
-                    </x-td.timeline-item>
-                @endforeach
-            </x-td.timeline>
-        </nav>
+        @php $position = collect($steps)->search(fn ($s) => $s['key'] === $step) + 1; $doneCount = collect($steps)->where('done', true)->count(); @endphp
+        {{-- Phones: the current step first, the full list one tap away. Wide screens: the list beside the step. --}}
+        <details class="border border-td-line bg-td-surface p-4 lg:hidden">
+            <summary class="cursor-pointer font-bold">Step {{ $position }} of {{ count($steps) }}: {{ $current['title'] }} <span class="font-normal text-td-ink-2">({{ $doneCount }} done)</span></summary>
+            <nav aria-label="Onboarding steps" class="mt-4">@include('teach.partials.onboarding-steps')</nav>
+        </details>
+        <nav aria-label="Onboarding steps" class="hidden lg:block">@include('teach.partials.onboarding-steps')</nav>
 
         <div class="grid gap-6">
             <x-td.panel :title="$current['title']" :heading-level="2">

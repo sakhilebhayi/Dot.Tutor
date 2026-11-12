@@ -16,10 +16,10 @@
 
     <div class="td-panels td-panels--2">
         <x-td.panel title="Preview">
-            <article class="grid gap-5" aria-label="Storefront preview">
+            <article class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 [overflow-wrap:anywhere]" aria-label="Storefront preview">
                 <header class="flex flex-wrap items-start gap-4">
                     <x-td.avatar :name="$store['name']" :src="$store['photo_url']" size="lg" />
-                    <div class="grid gap-2">
+                    <div class="grid min-w-0 gap-2">
                         <h3 class="m-0 font-td-display text-2xl">{{ $store['name'] }}</h3>
                         <p class="m-0">{{ $store['headline'] ?: 'No headline yet' }}</p>
                         <div>@include('teach.partials.verify-level', ['level' => $store['verification']['level']])</div>
@@ -38,7 +38,7 @@
                                 <li class="flex flex-wrap items-center gap-2">
                                     <x-td.pill kind="subject">{{ $sc['subject']['name'] }}</x-td.pill>
                                     @if ($sc['level_min'])
-                                        <x-td.pill kind="level" :stage="$stage">{{ $sc['curriculum']['name'] ?? '' }} {{ $sc['level_min']['name'] }}{{ $sc['level_max'] && $sc['level_max']['id'] !== $sc['level_min']['id'] ? ' to '.$sc['level_max']['name'] : '' }}</x-td.pill>
+                                        <x-td.pill kind="level" :stage="$stage">{{ $levelIndex[$sc['level_min']['id']]['curriculum'] ?? '' }} {{ $sc['level_min']['name'] }}{{ $sc['level_max'] && $sc['level_max']['id'] !== $sc['level_min']['id'] ? ' to '.$sc['level_max']['name'] : '' }}</x-td.pill>
                                     @else
                                         <span class="text-sm text-td-ink-2">any level</span>
                                     @endif
@@ -93,7 +93,7 @@
             </article>
         </x-td.panel>
 
-        <div class="grid content-start gap-px bg-td-line">
+        <div class="td-panels content-start border-0">
             <x-td.panel title="Share your storefront">
                 <div class="grid gap-4">
                     <x-td.field label="Storefront link" for="share-url" hint="Learners sign in with InfoDot to open it.">

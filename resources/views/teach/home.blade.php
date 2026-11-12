@@ -92,7 +92,7 @@
             @endif
         </x-td.panel>
 
-        <div class="grid content-start gap-px bg-td-line">
+        <div class="td-panels content-start border-0">
             <x-td.panel title="Needs attention">
                 @if ($attention === [])
                     <p class="m-0 text-td-ink-2">Nothing overdue, disputed or about to lapse.</p>

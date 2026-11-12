@@ -78,7 +78,7 @@
                     </tr>
                 </tfoot>
             </x-td.table>
-            <div class="p-4"><x-td.pagination :paginator="$rows" label="Earnings pages" /></div>
+            @if ($rows->hasPages())<div class="p-4"><x-td.pagination :paginator="$rows" label="Earnings pages" /></div>@endif
         @endif
     </x-td.panel>
     <p class="mt-3 text-sm text-td-ink-2">Commission is taken from your price after any discount you funded; platform-funded discounts and credits do not lower what you keep. Payment processing fees are {{ (float) config('money.charges.pass_gateway_fee_percent', 0) > 0 ? 'passed on to you, shown under other charges' : 'paid by the platform' }}.</p>

@@ -32,7 +32,7 @@
                         @endforeach
                     </tbody>
                 </x-td.table>
-                <div class="p-4"><x-td.pagination :paginator="$payouts" label="Payout pages" /></div>
+                @if ($payouts->hasPages())<div class="p-4"><x-td.pagination :paginator="$payouts" label="Payout pages" /></div>@endif
             @endif
         </x-td.panel>
 
