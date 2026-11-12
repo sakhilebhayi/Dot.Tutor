@@ -296,3 +296,17 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Accessibility | 81 of 904 page states with serious violations; 180 with small targets; focus hidden | B | dark-shell colours, missing h1, names, targets | 0 serious of 910; 6 (inline exception) (D-1701 to D-1705) |
 | Young-learner copy | Flesch-Kincaid up to 4.8 on the young step | I | long sentences | shortened on the young step's own pages; rest recorded (D-1708, D-1709) |
 
+### Polish wave: tutor workspace and operations (polish-teach, D-2200 onward)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Phone tables (tutor/41, 43, 50; ops/60, 63, 64, 67) | U | Key figure and actions off-screen at 390 px | Stacked row cards with the key figure on line 1 and the action visible (D-2202) |
+| Two tutor shells, two hours editors (tutor/53, 54, 39) | U | Legacy app layout and a second availability UI | Old addresses forward to the workspace; one calendar editor (D-2201) |
+| Verification wording (tutor/45, 53; ops/59) | C | Three different statuses for one tutor | One standing component, same words both sides; profile decisions recorded (D-2210) |
+| Profile rate and payment line (tutor/53) | C | "Payment outside the platform" against Paystack checkout | Field and line gone; offerings own prices; legacy form refuses a rate-less tutor (D-2204) |
+| Earnings rows (tutor/50) | C | Named the tutor, not the learner | Learner and what was sold (D-2207) |
+| Licence default (tutor/48) | C | CC BY preselected | All rights reserved by default (D-2208) |
+| Ops copy (ops/57, 60, 64, 65, 66, 67) | C | Artisan commands, class names, "user:60", doubled words | Plain operator words (D-2209, D-2213) |
+| Chart axes (tutor/52, ops/57) | I | "0, 1, 1" ticks, 5 px phone labels | Integer nice ticks; readable phone text (D-2211) |
+| Team page (ops/66) | U | 5,230 px of checkbox rows | One line per operator; roles behind a disclosure (D-2212) |
+

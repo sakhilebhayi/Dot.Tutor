@@ -105,6 +105,12 @@ function initUploads(root) {
                 document.open();
                 document.write(xhr.responseText);
                 document.close();
+                // The page's module scripts are already loaded in this window, so the written document does not run
+                // them again: enhance it here, or comboboxes, tabs and toasts stay in their no-script state (D-2205).
+                window.setTimeout(() => {
+                    window.TutorDs?.boot();
+                    boot();
+                }, 0);
             });
             xhr.addEventListener('error', () => {
                 label.textContent = 'The upload stopped. Check your connection and try again.';
