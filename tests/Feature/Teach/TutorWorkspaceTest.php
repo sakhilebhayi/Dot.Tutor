@@ -243,7 +243,7 @@ class TutorWorkspaceTest extends TestCase
         $this->assertStringNotContainsString('Lerato Khumalo', $otherCsv, 'Another tutor\'s report holds only their own earnings');
 
         // Bank details: only the last four digits come back.
-        $this->actingAs($tutor)->put(route('teach.payouts.account'), [
+        $this->actingAs($tutor)->withSession(['tutor.signed_in_at' => time()])->put(route('teach.payouts.account'), [
             'holder_name' => 'L Khumalo', 'account_number' => '6200 1234 567', 'bank_name' => 'First National Bank', 'bank_code' => '250655', 'account_type' => 'personal',
         ])->assertSessionHasNoErrors();
         $this->actingAs($tutor)->get(route('teach.payouts'))->assertOk()->assertSee('4567')->assertDontSee('62001234567');

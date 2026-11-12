@@ -108,7 +108,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/earnings/export', [MoneyController::class, 'export'])->middleware('throttle:teach-exports')->name('earnings.export');
         Route::get('/payouts', [MoneyController::class, 'payouts'])->name('payouts');
         Route::get('/payouts/{payout}', [MoneyController::class, 'payout'])->whereNumber('payout')->name('payouts.show');
-        Route::put('/payouts/account', [MoneyController::class, 'account'])->name('payouts.account');
+        Route::put('/payouts/account', [MoneyController::class, 'account'])->middleware('tutor.recent-auth')->name('payouts.account');
         Route::get('/insights', [MoneyController::class, 'insights'])->name('insights');
     });
 });

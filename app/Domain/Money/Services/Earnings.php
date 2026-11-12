@@ -80,6 +80,21 @@ class Earnings
             return false;
         }
 
+        // The hold exists for complaints: a lesson disputed or reported as a no-show during it is no longer
+        // delivered, so its earning waits for finance instead of joining the next payout (R-47 security S-10).
+        if ($sale->release_rule === Purchasable::RELEASE_ON_DELIVERY) {
+            $state = $this->purchasables->resolve($line->purchasable_type, $line->purchasable_id)?->deliveryState()
+                ?? Purchasable::DELIVERY_NEEDS_REVIEW;
+
+            if ($state !== Purchasable::DELIVERED) {
+                $this->issues->raise('delivery_needs_review', "delivery:{$line->id}:{$state}",
+                    "A paid {$line->purchasable_type} needs review before the tutor is paid ({$line->title})",
+                    ['subject_type' => 'order_line', 'subject_id' => $line->id, 'amount_minor' => $line->cash_minor, 'currency' => $sale->currency]);
+
+                return false;
+            }
+        }
+
         return $this->releaseLine($line);
     }
 

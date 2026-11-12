@@ -14,6 +14,7 @@ use App\Domain\Money\Models\PayoutBatch;
 use App\Domain\Money\Money;
 use App\Domain\Money\Paystack\PaystackClient;
 use App\Domain\Money\Paystack\PaystackConfig;
+use App\Domain\Security\Notifications\PayoutAccountChanged;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,9 @@ class Payouts
         $number = preg_replace('/\D/', '', $data['account_number']);
         $index = PayoutAccount::blindIndex($data['bank_code'], $number);
 
+        $previous = PayoutAccount::where('user_id', $tutor->id)->first();
+        $changed = $previous === null || $previous->blind_index !== $index;
+
         $account = PayoutAccount::updateOrCreate(['user_id' => $tutor->id], [
             'holder_name' => mb_substr(trim($data['holder_name']), 0, 120),
             'account_number' => $number,
@@ -55,6 +59,19 @@ class Payouts
             'blind_index' => $index,
             'recipient_code' => null,
         ]);
+
+        // A new destination waits before money goes to it, the tutor hears about it, and a payout being prepared
+        // for the old account returns to the next batch (R-47 security S-13: a stolen session redirecting earnings).
+        if ($changed && $previous !== null) {
+            $account->forceFill(['details_changed_at' => now()])->save();
+
+            // Only payouts whose bank file has not gone out: an exported one may already be paid from the bank.
+            Payout::where('payee_id', $tutor->id)->where('status', Payout::DRAFT)
+                ->whereIn('batch_id', PayoutBatch::where('status', 'draft')->select('id'))->orderBy('id')->get()
+                ->each(fn (Payout $payout) => $this->markFailed($payout, null, 'Bank details changed: paid in a later batch.'));
+
+            $tutor->notify(new PayoutAccountChanged($account->account_last4, (int) config('security.payout_account_hold_hours', 72)));
+        }
 
         if (PayoutAccount::where('blind_index', $index)->where('user_id', '!=', $tutor->id)->exists()) {
             $this->issues->raise('shared_bank_account', "shared-bank:{$index}", 'One bank account is registered by more than one tutor', [
@@ -92,6 +109,8 @@ class Payouts
                     $amount <= 0 => 'nothing_owed',
                     $amount < $minimum => 'below_minimum',
                     $account === null => 'no_bank_account',
+                    $account->details_changed_at !== null
+                        && $account->details_changed_at->isAfter(now()->subHours((int) config('security.payout_account_hold_hours', 72))) => 'bank_account_recently_changed',
                     default => null,
                 };
 

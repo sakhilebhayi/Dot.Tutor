@@ -1,25 +1,41 @@
 <?php
 
+use App\Domain\Academic\TutorAcademicServiceProvider;
+use App\Domain\Ai\TutorAiServiceProvider;
+use App\Domain\Classroom\TutorClassroomServiceProvider;
+use App\Domain\Comms\TutorCommsServiceProvider;
+use App\Domain\Community\TutorCommunityServiceProvider;
+use App\Domain\Integration\TutorIntegrationServiceProvider;
+use App\Domain\Learning\Providers\TutorLearningServiceProvider;
+use App\Domain\Marketplace\Providers\TutorMarketplaceServiceProvider;
+use App\Domain\Money\TutorMoneyServiceProvider;
+use App\Domain\Ops\TutorOpsServiceProvider;
+use App\Domain\Safety\TutorSafetyServiceProvider;
+use App\Domain\Security\TutorSecurityServiceProvider;
+use App\Domain\Student\TutorStudentServiceProvider;
+use App\Domain\Teach\TutorTeachServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\JetstreamServiceProvider;
+use App\Providers\TutorDesignServiceProvider;
 
 return [
     AppServiceProvider::class,
     FortifyServiceProvider::class,
     JetstreamServiceProvider::class,
-    App\Domain\Safety\TutorSafetyServiceProvider::class,
-    App\Domain\Money\TutorMoneyServiceProvider::class,
-    App\Domain\Learning\Providers\TutorLearningServiceProvider::class,
-    App\Domain\Academic\TutorAcademicServiceProvider::class,
-    App\Domain\Marketplace\Providers\TutorMarketplaceServiceProvider::class,
-    App\Providers\TutorDesignServiceProvider::class,
-    App\Domain\Ai\TutorAiServiceProvider::class,
-    App\Domain\Classroom\TutorClassroomServiceProvider::class,
-    App\Domain\Comms\TutorCommsServiceProvider::class,
-    App\Domain\Community\TutorCommunityServiceProvider::class,
-    App\Domain\Teach\TutorTeachServiceProvider::class,
-    App\Domain\Student\TutorStudentServiceProvider::class,
-    App\Domain\Ops\TutorOpsServiceProvider::class,
-    App\Domain\Integration\TutorIntegrationServiceProvider::class,
+    TutorSafetyServiceProvider::class,
+    TutorMoneyServiceProvider::class,
+    TutorLearningServiceProvider::class,
+    TutorAcademicServiceProvider::class,
+    TutorMarketplaceServiceProvider::class,
+    TutorDesignServiceProvider::class,
+    TutorAiServiceProvider::class,
+    TutorClassroomServiceProvider::class,
+    TutorCommsServiceProvider::class,
+    TutorCommunityServiceProvider::class,
+    TutorTeachServiceProvider::class,
+    TutorStudentServiceProvider::class,
+    TutorOpsServiceProvider::class,
+    TutorSecurityServiceProvider::class,
+    TutorIntegrationServiceProvider::class,
 ];

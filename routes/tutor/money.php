@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/tutor/payouts', [TutorMoneyController::class, 'payouts'])->name('tutor.payouts');
         Route::get('/tutor/payouts/{payout}', [TutorMoneyController::class, 'payout'])->name('tutor.payouts.show');
         Route::get('/tutor/payout-account', [TutorMoneyController::class, 'account'])->name('tutor.account');
-        Route::put('/tutor/payout-account', [TutorMoneyController::class, 'saveAccount'])->name('tutor.account.save');
+        Route::put('/tutor/payout-account', [TutorMoneyController::class, 'saveAccount'])->middleware('tutor.recent-auth')->name('tutor.account.save');
         Route::get('/tutor/coupons', [TutorMoneyController::class, 'coupons'])->name('tutor.coupons');
         Route::post('/tutor/coupons', [TutorMoneyController::class, 'storeCoupon'])->name('tutor.coupons.store');
         Route::post('/tutor/coupons/{coupon}/deactivate', [TutorMoneyController::class, 'deactivateCoupon'])->name('tutor.coupons.deactivate');
