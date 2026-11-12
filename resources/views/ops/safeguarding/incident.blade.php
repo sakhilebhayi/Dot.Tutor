@@ -15,7 +15,7 @@
                     <x-td.state kind="empty" title="No events yet" />
                 @else
                     <div class="p-5">
-                        <x-td.timeline>
+                        <x-td.timeline label="Incident timeline">
                             @foreach ($events as $e)
                                 <x-td.timeline-item :title="ucfirst(str_replace('_', ' ', $e->type))" state="done" :meta="$e->created_at->timezone($tz)->format('j M Y H:i').($e->actor_id ? ' · '.($actors[$e->actor_id] ?? 'User '.$e->actor_id) : ' · system')">
                                     @if ($e->body)<p class="m-0 whitespace-pre-line">{{ $e->body }}</p>@endif
