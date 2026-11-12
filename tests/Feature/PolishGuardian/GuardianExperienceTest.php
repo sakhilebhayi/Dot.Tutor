@@ -119,6 +119,32 @@ class GuardianExperienceTest extends TestCase
         $this->actingAs($guardian)->getJson(route('safety.guardian.dashboard'))->assertOk()->assertJsonPath('children.0.name', 'Lerato');
     }
 
+    public function test_a_passed_safety_deadline_reads_as_overdue_and_the_child_page_lists_an_urgent_report_once(): void
+    {
+        // Fix round D-2308 (critic A guardian/36, 37).
+        $child = $this->child('Lerato');
+        $guardian = $this->adult('Palesa');
+        $this->linkGuardian($child, $guardian, false, 9);
+        $report = app(ReportSink::class)->report($child, $this->adult('Some Tutor'), ReportCategory::InappropriateContactWithMinor, null);
+
+        $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()
+            ->assertSee('A safeguarding officer must take this on by')->assertDontSee('Overdue');
+
+        Incident::query()->whereKey($report->incident_id)->update(['respond_by' => now()->subMinutes(5)]);
+        $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()
+            ->assertSee('Overdue: a safeguarding officer should have taken this on by')->assertDontSee('must take this on by');
+
+        // After the automatic escalation the line says what happened and the new deadline.
+        app(\App\Domain\Safety\Services\Incidents::class)->escalateOverdue();
+        $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()
+            ->assertSee('Nobody took it on in time, so it was raised to more senior staff at')
+            ->assertSee('A senior safeguarding officer must take it on by');
+
+        $page = $this->actingAs($guardian)->get(route('guardian.child', $child->id))->assertOk()->getContent();
+        $this->assertSame(1, substr_count($page, 'Inappropriate contact with a learner under 18'), 'the urgent report is shown once');
+        $this->assertStringContainsString('The report above is the only one.', $page);
+    }
+
     public function test_a_report_made_by_someone_else_does_not_name_them(): void
     {
         $child = $this->child('Lerato');
