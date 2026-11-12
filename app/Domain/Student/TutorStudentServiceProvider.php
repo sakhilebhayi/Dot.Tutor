@@ -8,6 +8,7 @@ use App\Domain\Student\Http\Composers\LearningComposer;
 use App\Domain\Student\Http\Composers\LessonsComposer;
 use App\Domain\Student\Http\Composers\StorefrontComposer;
 use App\Domain\Student\Services\LearnerContext;
+use App\Domain\Student\Support\ViewerZones;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,7 @@ class TutorStudentServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(LearnerContext::class);
+        $this->app->scoped(ViewerZones::class);
     }
 
     public function boot(): void

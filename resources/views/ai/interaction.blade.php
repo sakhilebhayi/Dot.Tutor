@@ -3,7 +3,7 @@
     $back = $interaction->actor_role === 'tutor' ? route('ai.tutor.index') : route('ai.index');
 @endphp
 <x-dynamic-component :component="'layouts::'.$layout" title="Assistant answer">
-    <x-td.page-head title="Assistant answer" :lede="'Request: '.str_replace('_', ' ', $interaction->task).', '.$interaction->created_at?->format('j M Y H:i')">
+    <x-td.page-head title="Assistant answer" :lede="'Request: '.str_replace('_', ' ', $interaction->task).', '.\App\Domain\Student\Support\Times::stamp($interaction->created_at, 'j M Y H:i')">
         <x-slot:actions><x-td.button :href="$back" icon="arrow-left">Back to the assistant</x-td.button></x-slot:actions>
     </x-td.page-head>
 

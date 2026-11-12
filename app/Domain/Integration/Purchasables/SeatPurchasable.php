@@ -30,7 +30,7 @@ class SeatPurchasable implements Purchasable
         $session = $this->seat->session;
 
         return mb_substr(sprintf('Group lesson seat: %s with %s, %s', $session?->subject?->name ?? 'Lesson',
-            $session?->tutorProfile?->displayName() ?? 'a tutor', $session?->starts_at?->format('j M Y H:i') ?? ''), 0, 200);
+            $session?->tutorProfile?->displayName() ?? 'a tutor', $session?->starts_at?->copy()->timezone((string) config('tutor.timezone', 'Africa/Johannesburg'))->format('j M Y H:i T') ?? ''), 0, 200);
     }
 
     public function purchasePrice(User $buyer): Money

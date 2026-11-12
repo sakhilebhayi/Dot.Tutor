@@ -16,7 +16,7 @@
             </div>
             <dl class="st-facts">
                 <dt>Receipt</dt><dd>{{ $receipt->number }}</dd>
-                <dt>Date</dt><dd>{{ Times::when($receipt->issued_at) }}</dd>
+                <dt>Date</dt><dd>{{ Times::stamp($receipt->issued_at) }}</dd>
                 @if ($s['buyer']['name'] ?? null)<dt>Billed to</dt><dd>{{ $s['buyer']['name'] }}</dd>@endif
             </dl>
         </div>

@@ -34,7 +34,7 @@
                             @endunless
                             <span>{{ $item['category_label'] }}</span>
                             @if ($item['created_at'])
-                                <time datetime="{{ $item['created_at'] }}" title="{{ \Illuminate\Support\Carbon::parse($item['created_at'])->timezone(config('tutor.timezone'))->format('j F Y, H:i') }}">
+                                <time datetime="{{ $item['created_at'] }}" title="{{ \App\Domain\Student\Support\Times::stamp($item['created_at'], 'j F Y, H:i') }}">
                                     {{ \Illuminate\Support\Carbon::parse($item['created_at'])->diffForHumans() }}
                                 </time>
                             @endif

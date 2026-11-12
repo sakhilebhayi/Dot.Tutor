@@ -39,7 +39,7 @@
         <x-td.panel title="Payment">
             <div class="st-stack">
                 @if ($order->isSettled())
-                    <p style="margin:0">Paid {{ $order->paid_at ? Times::when($order->paid_at) : '' }}.</p>
+                    <p style="margin:0">Paid {{ $order->paid_at ? Times::stamp($order->paid_at) : '' }}.</p>
                     @if ($order->receipt)<div><x-td.button variant="primary" icon="receipt" :href="route('money.receipts.show', $order->receipt)">View receipt {{ $order->receipt->number }}</x-td.button></div>@endif
                 @elseif ($order->status === Order::AWAITING_GUARDIAN)
                     <x-td.notice tone="info">A parent or guardian must approve this purchase before it can be paid. You can pay here once they have approved it.</x-td.notice>
@@ -60,7 +60,7 @@
                         @endif
                         <form method="POST" action="{{ route('money.checkout.cancel', $order) }}">@csrf<x-td.button type="submit" variant="quiet">Cancel order</x-td.button></form>
                     </div>
-                    @if ($order->expires_at)<p class="st-small" style="margin:0">Held for you until {{ Times::when($order->expires_at) }}.</p>@endif
+                    @if ($order->expires_at)<p class="st-small" style="margin:0">Held for you until {{ Times::stamp($order->expires_at) }}.</p>@endif
                 @endif
             </div>
         </x-td.panel>
