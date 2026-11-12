@@ -176,7 +176,7 @@
         svg .td-chart__tick,
         svg .td-chart__label,
         svg .td-chart__value {
-            font-size: 22px;
+            font-size: 25px;
         }
 
         svg .td-chart__label--thin {

@@ -20,8 +20,8 @@
                     @foreach ($operators as $o)
                         @php($u = $o['user'])
                         <li>
-                            <div class="grid gap-1">
-                                <p class="ops-work__title"><a href="{{ route('ops.users.show', $u) }}">{{ $u->name }}</a> <span class="ops-muted text-sm" style="font-weight:400">{{ $u->email }}</span></p>
+                            <div class="grid min-w-0 gap-1">
+                                <p class="ops-work__title"><a href="{{ route('ops.users.show', $u) }}">{{ $u->name }}</a> <span class="block ops-muted text-sm [overflow-wrap:anywhere]" style="font-weight:400">{{ $u->email }}</span></p>
                                 <p class="ops-work__meta">
                                     @if ($o['roles'] === [])
                                         @include('ops.partials.tag', ['text' => 'Full access, no role yet', 'tone' => 'warning'])

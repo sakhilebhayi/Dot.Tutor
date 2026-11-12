@@ -76,8 +76,8 @@
                                     $chosen = count(array_intersect($ids, $selectedLevels));
                                     $open = $chosen > 0 || array_intersect($ids, $scopeLevelIds) !== [] || $levelGroups->count() === 1;
                                 @endphp
-                                <details class="border-t border-td-line" @if ($open) open @endif>
-                                    <summary class="flex min-h-11 cursor-pointer items-center gap-2 font-semibold">{{ $group }} <span class="text-td-ink-2">({{ $chosen }} chosen)</span></summary>
+                                <details class="group border-t border-td-line" @if ($open) open @endif>
+                                    <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 font-semibold">{{ $group }} <span class="text-td-ink-2">({{ $chosen }} chosen)</span><x-td.icon name="chevron-down" class="ms-auto transition-transform group-open:rotate-180" /></summary>
                                     <div class="grid gap-x-4 gap-y-1 pt-2 grid-cols-2 sm:grid-cols-3">
                                         @foreach ($items as $l)
                                             <x-td.check name="level_ids[]" id="level-{{ $l['value'] }}" :value="$l['value']" :checked="in_array((int) $l['value'], $selectedLevels, true)">{{ \Illuminate\Support\Str::startsWith($l['label'], $group.' ') ? \Illuminate\Support\Str::after($l['label'], $group.' ') : $l['label'] }}<span class="td-sr">, {{ $group }}</span></x-td.check>
