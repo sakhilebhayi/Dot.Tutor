@@ -203,10 +203,16 @@ export function startAiStub(state, tls) {
         const raw = await readBody(req);
         let body = {};
         try { body = raw ? JSON.parse(raw) : {}; } catch { /* ignore */ }
-        if (!(req.headers['x-api-key'] || '').startsWith('sk-ant-e2e')) return send(res, 401, { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } });
+        const key = req.headers['x-api-key'] || (req.headers.authorization || '').replace(/^Bearer /, '');
+        if (!String(key).startsWith('sk-ant-e2e')) {
+            state.ai.rejected = (state.ai.rejected || 0) + 1;
+            state.ai.lastRejectedHeaders = Object.keys(req.headers);
+            return send(res, 401, { type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } });
+        }
         if (url.pathname !== '/v1/messages' || req.method !== 'POST') return send(res, 404, { type: 'error', error: { type: 'not_found_error', message: 'stub' } });
-        const userText = (body.messages?.[0]?.content || []).map((b) => b.text || '').join('\n');
-        const quoted = (userText.match(/<(?:text|source|content)[^>]*>([\s\S]*?)<\/(?:text|source|content)>/i)?.[1] || userText).trim().slice(0, 400);
+        const content = body.messages?.[0]?.content;
+        const userText = typeof content === 'string' ? content : (Array.isArray(content) ? content.map((b) => b.text || '').join('\n') : '');
+        const quoted = (userText.match(/<([a-z_]+)>([\s\S]*?)<\/\1>/i)?.[2] || userText).trim().slice(0, 400);
         state.ai.calls.push({ model: body.model, system: String(body.system || '').slice(0, 200), user: userText.slice(0, 600) });
         const schema = body.output_config?.format?.schema;
         const out = state.ai.refuse ? '' : (schema ? JSON.stringify(fill(schema, quoted)) : `[e2e stub answer] ${quoted.slice(0, 120)}`);
