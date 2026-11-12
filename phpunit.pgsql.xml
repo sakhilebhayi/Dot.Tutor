@@ -32,6 +32,8 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="ANTHROPIC_API_KEY" value=""/>
+        <!-- Same as phpunit.xml: fixtures are adults who never declared an age; the production default 'ask' is pinned in tests/Feature/Security (D-1502). -->
+        <env name="SAFETY_UNKNOWN_AGE_POLICY" value="adult"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

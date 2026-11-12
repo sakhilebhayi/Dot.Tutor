@@ -401,7 +401,9 @@ class RouteAuthorizationMapTest extends TestCase
                 str_contains($type, 'date') || str_contains($type, 'time') => now(),
                 str_contains($type, 'json') => [],
                 str_contains($name, 'email') => Str::random(8).'@example.test',
-                default => Str::lower(Str::random(12)),
+                $name === 'currency' => 'ZAR',
+                // PostgreSQL enforces varchar lengths that SQLite ignores.
+                default => Str::lower(Str::random(min(12, preg_match('/\((\d+)\)/', (string) $column['type'], $m) ? (int) $m[1] : 12))),
             };
         }
 
