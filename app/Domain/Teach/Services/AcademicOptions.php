@@ -5,6 +5,7 @@ namespace App\Domain\Teach\Services;
 use App\Domain\Academic\Models\AcademicLevel;
 use App\Domain\Academic\Models\Curriculum;
 use App\Domain\Academic\Models\Language;
+use App\Domain\Academic\Models\Subject as AcademicSubject;
 use App\Models\Subject;
 
 /**
@@ -18,6 +19,42 @@ class AcademicOptions
     {
         return Subject::query()->active()->whereNull('canonical_subject_id')->orderBy('name')->get(['id', 'name'])
             ->map(fn ($s) => ['value' => (int) $s->id, 'label' => $s->name])->all();
+    }
+
+    /** Subject areas, as the subject picker groups them (D-2205), in reading order. */
+    public const AREAS = [
+        'mathematics' => 'Mathematics',
+        'sciences' => 'Sciences',
+        'languages' => 'Languages',
+        'humanities' => 'Humanities',
+        'commerce' => 'Commerce and accounting',
+        'technology' => 'Technology and computing',
+        'arts' => 'Arts',
+        'life-skills' => 'Life skills and orientation',
+        'services' => 'Services, hospitality and tourism',
+        'academic-skills' => 'Study and research skills',
+    ];
+
+    /**
+     * Subjects for the searchable picker (D-2205), grouped by subject area. The stage is not a property of the
+     * subject (the one Mathematics row serves Grade 1 to Grade 12; its legacy `level` column says "primary"), so it
+     * is chosen in the level range beside the subject, never printed next to the name. Seeded aliases are extra
+     * search words, so "maths", "wiskunde" or "isiZulu HL" find the subject.
+     *
+     * @return list<array{value: int, label: string, group: string, search: string}>
+     */
+    public function subjectChoices(): array
+    {
+        $order = array_flip(array_keys(self::AREAS));
+
+        return AcademicSubject::query()->where('is_active', true)->whereNull('canonical_subject_id')->get()
+            ->sortBy(fn (AcademicSubject $s) => [$order[$s->category] ?? 99, $s->name])
+            ->map(fn (AcademicSubject $s) => [
+                'value' => (int) $s->id,
+                'label' => $s->name,
+                'group' => self::AREAS[$s->category] ?? 'Other subjects',
+                'search' => implode(' ', (array) ($s->aliases ?? [])),
+            ])->values()->all();
     }
 
     /**

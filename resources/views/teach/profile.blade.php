@@ -134,7 +134,7 @@
                         @endif
                         <form method="POST" action="{{ route('teach.profile.scope') }}" class="grid gap-4">
                             @csrf @method('PUT')
-                            <p class="text-sm text-td-ink-2">One line per subject. Pick the lowest and highest level you teach; both come from the same curriculum (for example CAPS Grade 8 to CAPS Grade 12).</p>
+                            <p class="text-sm text-td-ink-2">One line per subject. Type to search: subjects are grouped by area, and other names work too (Maths, Wiskunde, isiZulu HL). Pick the lowest and highest level you teach; both come from the same curriculum (for example CAPS Grade 8 to CAPS Grade 12).</p>
                             @error('scopes')<x-td.notice tone="danger">{{ $message }}</x-td.notice>@enderror
                             @foreach ($errors->getMessages() as $key => $messages)
                                 @if (str_starts_with($key, 'scopes.'))<x-td.notice tone="danger">Line {{ ((int) explode('.', $key)[1]) + 1 }}: {{ $messages[0] }}</x-td.notice>@endif
@@ -143,7 +143,7 @@
                                 <fieldset class="grid gap-3 border-t border-td-line pt-4 md:grid-cols-3">
                                     <legend class="td-sr">Subject line {{ $i + 1 }}</legend>
                                     <x-td.field label="Subject" for="scope-{{ $i }}-subject" :optional="$i > 0">
-                                        <x-td.select name="scopes[{{ $i }}][subject_id]" id="scope-{{ $i }}-subject" :options="$subjects" :value="$row['subject_id']" placeholder="Choose a subject" />
+                                        <x-td.combobox name="scopes[{{ $i }}][subject_id]" id="scope-{{ $i }}-subject" :options="$subjectChoices" :value="$row['subject_id']" placeholder="Type a subject, e.g. Maths" empty-text="No subject matches. Try another name, e.g. Wiskunde or Physics." />
                                     </x-td.field>
                                     <x-td.field label="From level" for="scope-{{ $i }}-min" optional>
                                         <x-td.select name="scopes[{{ $i }}][level_min_id]" id="scope-{{ $i }}-min" :options="$levels" :value="$row['level_min_id']" placeholder="Any level" />

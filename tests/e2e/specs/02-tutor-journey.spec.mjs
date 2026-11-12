@@ -47,7 +47,9 @@ test('tutor journey: register to payout', async () => {
 
     // 3. Subjects and academic levels.
     await step(page, 'scope', async () => {
-        await page.selectOption('select[name="scopes[0][subject_id]"]', String(subjectId('mathematics')));
+        // The subject picker is a searchable list grouped by area (D-2205): type, then choose.
+        await page.fill('#scope-0-subject', 'maths');
+        await page.click(`#scope-0-subject-listbox [role=option][data-value="${subjectId('mathematics')}"]`);
         await page.selectOption('select[name="scopes[0][level_min_id]"]', String(levelId('grade-10')));
         await page.selectOption('select[name="scopes[0][level_max_id]"]', String(levelId('grade-12')));
         await Promise.all([page.waitForURL('**step=languages**'), page.getByRole('button', { name: 'Save and continue' }).click()]);
@@ -119,7 +121,8 @@ test('tutor journey: register to payout', async () => {
     await step(page, 'pricing', async () => {
         await page.goto('/teach/offerings/new?type=one_to_one');
         await page.fill('input[name=title]', 'Grade 11 Maths, one-to-one');
-        await page.selectOption('select[name="level_ids[]"]', [String(levelId('grade-11'))]);
+        // Levels are grouped checkboxes that work on touch (D-2206).
+        await page.check(`input[name="level_ids[]"][value="${levelId('grade-11')}"]`);
         await page.selectOption('select[name=duration_minutes]', '60');
         await page.selectOption('select[name=format]', 'online');
         await page.fill('input[name=price]', '300');

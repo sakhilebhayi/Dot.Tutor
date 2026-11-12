@@ -62,6 +62,7 @@ class OnboardingController extends Controller
             'missing' => $this->progress->missing($profile),
             'onboarding' => $onboarding,
             'subjects' => $options->subjects(),
+            'subjectChoices' => $options->subjectChoices(),
             'levels' => $options->levels(),
             'levelIndex' => $levelIndex,
             'allLanguages' => $options->languages(),
