@@ -265,3 +265,19 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Authorisation | 2 | Policies per domain, no global check | Router-wide map test over every route; one gap fixed (S-16) |
 | Account deletion, data access | 6 | Deletion failed for anyone with money records; no data export | Closure and export, tested (S-20, S-21) |
 | Retention | 6 | No purge outside AI and comms | `tutor:privacy-purge` (S-22); money and safeguarding periods are owner items |
+
+### Performance and accessibility (perf/a11y agent, wave 3, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Matching | 1,219 statements, 785 ms (PostgreSQL) per search | B at scale | per-candidate reads and Carbon per slot | 35 statements, 262 ms (D-1602) |
+| List pages | my bookings 262, people list 237 statements | I | N+1 presenters | 16 and 16-20 (D-1603, D-1604) |
+| Dashboards | ops overview 410 ms, tutor insights 400 ms | I | PHP loops over every row | 95 ms, 50 ms (D-1605) |
+| Tutor students / requests | 1.3 MB / 332 KB HTML | B at scale | unbounded lists | paged (D-1606) |
+| Indexes | 180 unindexed foreign keys | I | parent lookups scanned | lookup indexes (D-1607) |
+| Polling | session row rewritten per poll; 2.7 KB headers | I | | lazy touch, lean answers (D-1608) |
+| SQLite under concurrency | "database is locked" for 29 % of joins | B | no busy timeout | busy 5 s, WAL/IMMEDIATE by env (D-1610) |
+| Front end | 384 to 547 KB first view uncompressed; no compression rules | I | 48 KB mark, Livewire on guest pages, font preloads | 134 to 162 KB gzipped, FCP ~1.45 s Fast 3G (D-1611 to D-1613) |
+| Accessibility | 81 of 904 page states with serious violations; 180 with small targets; focus hidden | B | dark-shell colours, missing h1, names, targets | 0 serious of 910; 6 (inline exception) (D-1701 to D-1705) |
+| Young-learner copy | Flesch-Kincaid up to 4.8 on the young step | I | long sentences | shortened on the young step's own pages; rest recorded (D-1708, D-1709) |
+
