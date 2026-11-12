@@ -2,7 +2,11 @@
 
 namespace App\Domain\Security;
 
+use App\Domain\Safety\Services\AccountStanding;
+use App\Domain\Safety\Services\ContactRedactor;
 use App\Domain\Security\Http\Middleware\RequireRecentSignIn;
+use App\Models\TutorSession;
+use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
@@ -17,6 +21,31 @@ class TutorSecurityServiceProvider extends ServiceProvider
     public function boot(Router $router): void
     {
         $router->aliasMiddleware('tutor.recent-auth', RequireRecentSignIn::class);
+
+        // Free text on a lesson (what the learner wants help with, where to meet) reaches the tutor before a guardian
+        // has approved anything and a group lesson's note reaches every seat holder: contact details are hidden when
+        // a learner under 18 (or of unknown age) is the student, and always on group lessons (R-47 security S-14).
+        TutorSession::saving(function (TutorSession $session): void {
+            if (! $session->isDirty(['notes', 'location_note'])) {
+                return;
+            }
+
+            $student = $session->student_id ? User::query()->find($session->student_id) : null;
+            $protect = $session->kind === TutorSession::KIND_GROUP
+                || ($student !== null && app(AccountStanding::class)->isMinor($student));
+
+            if (! $protect) {
+                return;
+            }
+
+            $redactor = app(ContactRedactor::class);
+
+            foreach (['notes', 'location_note'] as $field) {
+                if (filled($session->{$field}) && $session->isDirty($field)) {
+                    $session->{$field} = $redactor->redact((string) $session->{$field})['text'];
+                }
+            }
+        });
 
         Event::listen(Login::class, function (Login $event): void {
             $request = request();
