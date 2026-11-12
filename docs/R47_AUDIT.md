@@ -169,3 +169,29 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Learning assignment | P | Only a controller (no service); "has taught" ignores group seats | Classroom seam mirrors the rules and counts a learner in the lesson as taught (D-810) |
 | Reminders | M | No lesson reminders | `LessonStartingSoon` event once per lesson for comms (D-812) |
 | External meeting links | M | No fallback when browsers cannot connect | Tutor's own https link per lesson, shown only inside that classroom |
+### Notifications and communication (comms agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| In-app notifications | P | Database notifications for tutor profile decisions and moderation cancellations, a dashboard list, mark read; safety added approval, warning and incident notices | One inbox (`/comms/inbox`, JSON too) for every notification, with type, category, title and subject key; read state; unread count one per subject; badge capped at 9+; `<x-comms::bell />` for the shells |
+| Email | P | Only safety's guardian invitation and approval-request mails; host `MAIL_MAILER=log` | Email copy of every notification the person's choices allow, from the queued delivery worker; on a log mailer each row says "not delivered"; lesson emails carry a calendar file |
+| Push | M | None | Web Push (RFC 8030/8291/8292) on PHP openssl, adapted from Dot.Ehail; off until VAPID keys are set; per-device subscribe, test, revoke on 404/410 |
+| SMS | M | None | Adapter interface with an honest "not configured" default; no numbers collected |
+| Booking notifications | M | No booking confirmations, changes or reminders | Every booking state change notifies the other party (and a minor's guardians); 24 h and 1 h reminders by cron, idempotent |
+| Payments, payouts, learning, verification, reports | M | None (money and learning raise few or no notifications) | Listeners on OrderPaid/OrderRefunded and thin after-commit observers on payments, payouts, enrolments, assignments, resource reviews and take-downs, verification decisions and reports |
+| Preferences | M | None | Per category and channel, defaults, mandatory categories (safety, payments, guardian approvals) shown as facts, quiet hours for push and SMS |
+| Minors | M | Every user treated as an adult | Guardian copies of a minor's lessons, purchases and safety notices; children get in-app only; no marketing to minors; tutors see a minor's first name only |
+| Dot.Notify | M | Not called | Client for Notify's documented ingest contract, off by default; adults only, ids and titles only |
+| Calendar | M | None | `.ics` per lesson (download and email attachment) in the lesson's time zone with a VTIMEZONE |
+
+### Community domain (community agent, 2026-11-10)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Academic learning rooms (brief 5) | Nothing: no rooms, no subject spaces | M | The defining feature did not exist | Subject rooms per offering and audience, stage hubs, profile landing, browsing (docs/R47_COMMUNITY.md) |
+| Q&A and discussions | None | M | No way to ask or answer | Questions, answers, accepted answer, resolved state, discussions, explanations, revision techniques, replies, edit history |
+| Study material in rooms | Library existed (learning), not linked to any space | P | Material had no room | Material posts link published library items; the room lists library material for its subject and level |
+| Study groups and tutor rooms (brief 11) | None | M | No group learning, no tutor-run rooms | Groups with join rules and caps, sessions with calendar files, attendance, revision lists, tasks; free and paid tutor rooms through money |
+| Room safety (brief 15) | Safety rules for rooms existed, `RoomDirectory` bound to a null | P | Room conversations answered 404 | Rooms are `AgeGatedSpace`s; `RoomDirectory` bound; age gates, pre-moderation, redaction, reports and holds enforced server side |
+| Engagement mechanics | None | F (correctly absent) | Brief: no likes or popularity | Indicators only: questions resolved, answers accepted, resources contributed, sessions attended, milestones |
+| Freshness | None | M | No way to see new activity | Versioned activity endpoint with ETag/304 and a polling notice |
