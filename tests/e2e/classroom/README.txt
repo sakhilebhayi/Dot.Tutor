@@ -19,3 +19,6 @@ script errors. Screenshots go to ./shots.
 
 Honest limits: both browsers run on one machine, so the path is a host candidate; no TURN server exists, so a relay is not
 tested; Chrome only (no Safari, Firefox or real phones); screen sharing is not exercised here.
+
+Folded into the browser end-to-end suite (R-47 QA): tests/e2e/specs/08-classroom-webrtc.spec.mjs runs the same checks inside
+node tests/e2e/run.mjs (throwaway app, no seeder, no STUN). This standalone script still works against a dev server.

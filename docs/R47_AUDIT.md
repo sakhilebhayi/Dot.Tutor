@@ -265,3 +265,19 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | Authorisation | 2 | Policies per domain, no global check | Router-wide map test over every route; one gap fixed (S-16) |
 | Account deletion, data access | 6 | Deletion failed for anyone with money records; no data export | Closure and export, tested (S-20, S-21) |
 | Retention | 6 | No purge outside AI and comms | `tutor:privacy-purge` (S-22); money and safeguarding periods are owner items |
+
+### Browser end-to-end acceptance (qa agent, 2026-11-12)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| No browser end-to-end suite (only the classroom's two-browser script, run by hand) | 3 | Section 25 journeys proven only over HTTP | `tests/e2e`: every journey, nine failure scenarios, the classroom check and a route sweep, in real Chrome against stubs, internet refused (`docs/R47_QA.md`) |
+| Tutor assessment page once assigned | 1 | 500 (`Assignment::learner` missing) | Relation added, regression assertion |
+| Rooms "Tutors and courses" tab | 2 | Empty for Grade 11 when tutors teach Grades 10 to 12 (directory matched range ends only) | Range covered by level rank (D-1809) |
+| Learner home and library | 2 | Said AI and machine translation were off when they were on | Fixed check (D-1812) |
+| Refusals raised by services as validation errors | 2 | Silent redirect on every shell (no field to show them) | Error toast with the first message (D-1808) |
+| SQLite under concurrent requests | 2 | "database is locked" 500s; env settings ignored | Read from env (D-1807) |
+| Default avatars | 2 | Initials sent to ui-avatars.com from the browser, CSP violation | Local SVG (security S-30 made the same fix in parallel) |
+| Sign-in, legal, account and legacy pages | 4 | No h1 | One h1 each |
+| Expected refusals (classroom 409, marketplace 4xx) | 4 | Logged as ERROR with stack traces | Not reported; 5xx still are |
+| Sign-in landing | 3 | Everyone to `/dashboard` | Role home (D-1801) |
+| Classroom and community events | 3 | Nobody notified | Comms listeners (D-1830 to D-1839) |
