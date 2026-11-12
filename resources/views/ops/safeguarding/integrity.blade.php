@@ -1,5 +1,5 @@
 @php
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $names = $people($cases->getCollection()->pluck('subject_user_id')->filter()->unique()->all());
 @endphp
 <x-layouts::operations title="Academic integrity">

@@ -44,3 +44,23 @@ Source: critic B (`scratchpad/tutor-jury/critic-B.md`), tutor and ops fixes. Bra
 - `npm run build`, `view:cache`, `route:cache`: pass.
 - E2E (`node tests/e2e/run.mjs`, all nine specs including `09-route-sweep`): all nine pass after the final trunk merge (route sweep 648 s). The first run caught D-2214 (no script after an upload), fixed.
 - Browser (390 and 1440, light and dark): see `docs/R47_SKILLS.md`.
+
+## Fix round after jury round 2 (fix-ops, D-2400 to D-2408)
+
+Source: `scratchpad/tutor-jury-r2/critic-B.md`. Branch `feat/r47-fix-ops`.
+
+| Critic fix | What changed | Where |
+|---|---|---|
+| 1. Finance desk (ops/73): old shell, monospace, uppercase headers, API path in copy, 21:33 vs 23:33 | `/money/ops` forwards to `/ops/payments?tab=exceptions` (old view deleted; exceptions, orders, refunds and batches with their actions are on ops/payments and ops/payouts). Every ops time uses the reader's zone (`Times::zone()`); the payments lede names it. Smoke checks the redirect. | `MoneyPagesController::ops`, `resources/views/ops/**`, `tests/Support/signed-in-smoke.sh` |
+| 2 and 12. Verification state (tutor/50, 51; ops/67) | "Qualification checked, level pending" when a record is verified and no level is set; ops/67 prompts with the supported level and a prefilled reason; the approved profile's last step is "What is left"; the under-18s step waits for screening. | `TutorStanding`, `ops/verification/tutor`, `teach/profile`, `teach/partials/onboarding-steps` |
+| 6. Two workspace sizes | Dense step on the content, not the document. | `layouts/partials/frame`, `resources/css/ds/shells.css` |
+| 7. Ops rail clipped at 900 px | 36 px rows, tighter groups, the list scrolls and shows the current item. | `shells.css`, `layouts/partials/drawer-script` |
+| 8. Incident page (ops/70) | "Protect first": reported person, Hide the reported content, Suspend <name> (safety `Moderation` via the report's act route), live countdown from `respond_by`. | `SafeguardingController::incident`, `ops/safeguarding/incident`, `resources/js/ds/countdown.js`, `confirm.js` |
+| 9. Phone tables (64-m, 65-m, 73-m) | `stack` on attendance and cohorts; 73 is gone (forwarded). | `classroom::after`, `ops/overview` |
+| 11 (part). Classroom opening time | Day named when not today, and the same sentence under the disabled Join. The "Recording and privacy" text size and the disabled button colour are not changed (classroom styling, outside this list). | `classroom::room` |
+| 13. Audit history raw ids | Names, lessons and phrases through `PlainWords`. | `PlainWords`, `ops/partials/audit-table` |
+| 14. Today on the phone | Lessons first when there is one; empty requests on one line. | `teach/home`, `teach/partials/today-*` |
+
+Not done here: the public storefront's "Not yet verified" label and badge (fix-public owns public pages; `TutorStanding::levelWaiting()` is available to them); critic fixes 3 to 5, 10 and 15 (other owners or taste).
+
+Checks: `php artisan test --compact` 1,023 tests, 1,016 pass, 7 skipped (+7: `tests/Feature/Ops/FixOpsTest.php` 6, `tests/Feature/Classroom/ClassroomOpensDayTest.php` 1; updated `MoneyPagesTest` (redirect) and `PolishTeachTest` (money in details)); `node --test tests/js/*.test.mjs` with 3 new in `tests/js/fix-ops.test.mjs`. Other checks are in the agent report.

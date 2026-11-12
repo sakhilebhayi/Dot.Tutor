@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); $b = $booking; @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); $b = $booking; @endphp
 <x-layouts::operations title="Booking {{ $b->id }}">
     <x-td.page-head :title="($b->subject?->name ?? 'Lesson').' · '.$b->starts_at?->timezone($tz)->format('j M Y H:i')" lede="Booking {{ $b->id }}. The timeline is append-only.">
         <x-slot:actions><x-td.button :href="route('ops.reviews.bookings')" icon="arrow-left" variant="quiet">All bookings</x-td.button></x-slot:actions>

@@ -7,6 +7,18 @@
     $ends = $session->endsAt()->copy()->timezone($tz);
     $tutorName = $session->tutorProfile?->user?->name ?? 'the tutor';
     $lobbyOpen = $admission->allowed || $admission->code === 'too_early';
+    // When the room opens, with the day whenever it is not today (R-47 fix D-2406: "opens at 09:50" for a lesson three
+    // days away). Same zone as the lesson time above.
+    $opensText = null;
+    if ($admission->opensAt) {
+        $opens = $admission->opensAt->copy()->timezone($tz);
+        $days = (int) \Carbon\CarbonImmutable::now($tz)->startOfDay()->diffInDays($opens->copy()->startOfDay(), false);
+        $opensText = match (true) {
+            $days === 0 => 'today at '.$opens->format('H:i'),
+            $days === 1 => 'tomorrow, '.$opens->format('D j M').', at '.$opens->format('H:i'),
+            default => $opens->format('D j M').' at '.$opens->format('H:i').($days > 1 ? ' (in '.$days.' days)' : ''),
+        };
+    }
     $codeTone = in_array($admission->code, ['too_early', 'not_confirmed'], true) ? 'info' : 'warning';
     // The state chip says what is true before anyone joins (D-2106): an ended, closed or cancelled lesson is not
     // "Not joined". The tutor of an ended lesson may reopen it by joining again, so their chip says Ended too.
@@ -44,7 +56,7 @@
         @unless ($admission->allowed)
             <x-td.notice :tone="$codeTone" :title="$admission->message" id="cr-gate" data-code="{{ $admission->code }}">
                 @if ($admission->code === 'too_early')
-                    <p>The classroom opens at <time datetime="{{ $admission->opensAt?->toIso8601String() }}">{{ $admission->opensAt?->copy()->timezone($tz)->format('H:i') }}</time>. Test your camera and microphone below while you wait; this page lets you join when it opens.</p>
+                    <p>The classroom opens <time datetime="{{ $admission->opensAt?->toIso8601String() }}">{{ $opensText }}</time>. Test your camera and microphone below while you wait; this page lets you join when it opens.</p>
                 @elseif ($admission->code === 'guardian_approval_missing')
                     <p>Live lessons with children need a parent's or guardian's approval for each lesson. The request goes to every linked guardian; they approve it from their guardian page.</p>
                 @elseif ($admission->code === 'guardian_consent_required')
@@ -103,7 +115,7 @@
                             {{ $role === 'guardian' ? 'Join to watch' : ($role === 'tutor' && $classroom->isEnded() ? 'Reopen the lesson' : 'Join the lesson') }}
                         </x-td.button>
                     </div>
-                    <p id="cr-lobby-msg" class="cr-lobby__msg" role="status"></p>
+                    <p id="cr-lobby-msg" class="cr-lobby__msg" role="status">@if (! $admission->allowed && $admission->code === 'too_early' && $opensText)Join opens {{ $opensText }}.@endif</p>
                     <p class="cr-muted cr-lobby__privacy">Only you see the preview. Nobody sees or hears you until you join.</p>
                 </div>
                 <div class="cr-lobby__form">

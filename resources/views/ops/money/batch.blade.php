@@ -1,6 +1,6 @@
 @php
     use App\Domain\Money\Money;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $m = fn ($minor) => Money::of((int) $minor, $batch->currency ?: Money::defaultCurrency())->format();
 @endphp
 <x-layouts::operations title="Payout batch {{ $batch->id }}">

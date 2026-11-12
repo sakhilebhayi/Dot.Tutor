@@ -1,6 +1,6 @@
 @php
     use App\Domain\Money\Money;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $m = fn ($minor, $cur = null) => Money::of((int) $minor, $cur ?: Money::defaultCurrency())->format();
 @endphp
 <x-layouts::operations title="Payouts">

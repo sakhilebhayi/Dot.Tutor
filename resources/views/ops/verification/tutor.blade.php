@@ -1,7 +1,9 @@
 @php
     use App\Domain\Marketplace\Enums\VerificationLevel;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $current = VerificationLevel::tryFrom((string) $tutor->verification_level);
+    // A verified record with no level set: prompt the reviewer with the level that record supports (D-2401).
+    $waiting = app(\App\Domain\Integration\Support\TutorStanding::class)->levelWaiting($tutor);
     $name = $tutor->user?->name ?? 'Deleted account';
 @endphp
 <x-layouts::operations :title="$name.' · verification'">
@@ -39,12 +41,15 @@
             <x-td.panel title="Verification level">
                 <form method="POST" action="{{ route('ops.verification.level', $tutor) }}" class="ops-act ops-act--stack">
                     @csrf
+                    @if ($waiting)
+                        <x-td.notice tone="warning" title="{{ $waiting['qualification']->title }} is verified, but no level is set">Learners still see this tutor as not verified. The record supports <strong>{{ $waiting['level']->label() }}</strong>: check the level below and save it.</x-td.notice>
+                    @endif
                     <p class="m-0 text-sm ops-muted">A level is accepted only when a verified record of a supporting kind exists. Removing the level shows "Not yet verified".</p>
                     <x-td.field label="Level" for="level">
-                        <x-td.select name="level" id="level" :value="$current?->value" placeholder="No level (not yet verified)" :options="collect($levels)->mapWithKeys(fn ($l) => [$l->value => $l->label()])->all()" />
+                        <x-td.select name="level" id="level" :value="old('level', $current?->value ?? $waiting['level']->value ?? null)" placeholder="No level (not yet verified)" :options="collect($levels)->mapWithKeys(fn ($l) => [$l->value => $l->label()])->all()" />
                     </x-td.field>
-                    <x-td.field label="Reason" for="level-reason"><x-td.input name="reason" id="level-reason" required minlength="5" /></x-td.field>
-                    <div><x-td.button type="submit">Save level</x-td.button></div>
+                    <x-td.field label="Reason" for="level-reason"><x-td.input name="reason" id="level-reason" required minlength="5" :value="$waiting ? 'Supported by the verified record: '.$waiting['qualification']->title : null" /></x-td.field>
+                    <div><x-td.button type="submit" :variant="$waiting ? 'primary' : 'secondary'">{{ $waiting ? 'Save level: '.$waiting['level']->label() : 'Save level' }}</x-td.button></div>
                 </form>
             </x-td.panel>
         </div>

@@ -10,6 +10,7 @@ import { initShelf } from './shelf.js';
 import { initConfirm } from './confirm.js';
 import { initTableStacks } from './table-stack.js';
 import { initTabOverflow } from './tabs-overflow.js';
+import { initCountdowns } from './countdown.js';
 import { initPublicMenu } from './public-menu.js';
 import { initPrint } from './print.js';
 
@@ -24,6 +25,7 @@ function boot(root = document) {
     initConfirm();
     initTableStacks(root);
     initTabOverflow(root);
+    initCountdowns(root);
     initPublicMenu(root);
     initPrint(root);
 }

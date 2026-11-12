@@ -101,8 +101,8 @@
                 @if (! $hasCohorts)
                     <x-td.state kind="empty" title="No learner has had a lesson in the last six months">Each row will show learners by the month of their first lesson and how many had another lesson one, two and three months later.</x-td.state>
                 @else
-                    <x-td.table caption="Share of each month's new learners with a lesson in a later month" class="ops-heat" dense>
-                        <thead><tr><th scope="col">First lesson</th><th scope="col" class="is-num">Learners</th><th scope="col">1 month on</th><th scope="col">2 months on</th><th scope="col">3 months on</th></tr></thead>
+                    <x-td.table caption="Share of each month's new learners with a lesson in a later month" class="ops-heat" dense stack>
+                        <thead><tr><th scope="col">First lesson</th><th scope="col" class="is-num" data-stack="key">Learners</th><th scope="col">1 month on</th><th scope="col">2 months on</th><th scope="col">3 months on</th></tr></thead>
                         <tbody>
                             @foreach ($d['cohorts'] as $row)
                                 <tr>

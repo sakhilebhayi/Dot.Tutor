@@ -1,7 +1,7 @@
 @php
     use App\Domain\Ops\Access\OpsRole;
     use App\Domain\Safety\Enums\AgeBand;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $band = AgeBand::from($account['age_band']);
 @endphp
 <x-layouts::operations :title="$person->name">

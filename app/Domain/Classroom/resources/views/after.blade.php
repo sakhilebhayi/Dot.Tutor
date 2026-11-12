@@ -52,8 +52,8 @@
             </x-td.panel>
 
             <x-td.panel title="Attendance" flush>
-                <x-td.table caption="Who was in the classroom, from real joins" caption-hidden>
-                    <thead><tr><th>Person</th><th>Role</th><th>First joined</th><th>Last left</th><th class="is-num">Minutes</th><th class="is-num">Joins</th></tr></thead>
+                <x-td.table caption="Who was in the classroom, from real joins" caption-hidden stack>
+                    <thead><tr><th>Person</th><th>Role</th><th>First joined</th><th>Last left</th><th class="is-num" data-stack="key">Minutes</th><th class="is-num">Joins</th></tr></thead>
                     <tbody>
                         @foreach ($attendance as $row)
                             <tr>

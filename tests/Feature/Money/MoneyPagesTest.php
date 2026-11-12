@@ -93,6 +93,9 @@ class MoneyPagesTest extends TestCase
 
         $this->actingAs($tutor)->get('/money/earnings')->assertOk()->assertSee('Pending')->assertSee("R255.00", false);
         $this->actingAs($tutor)->get('/money/ops')->assertForbidden();
-        $this->actingAs($this->financeOperator())->get('/money/ops')->assertOk()->assertSee('Finance operations');
+        // The old finance desk forwards to the operations console's exceptions tab (R-47 fix D-2400).
+        $finance = $this->financeOperator();
+        $this->actingAs($finance)->get('/money/ops')->assertRedirect(route('ops.payments', ['tab' => 'exceptions']));
+        $this->actingAs($finance)->get(route('ops.payments', ['tab' => 'exceptions']))->assertOk()->assertSee('Exceptions and unmatched payments')->assertDontSee('/api/tutor/money/ops');
     }
 }

@@ -1,6 +1,6 @@
 @php
     use App\Domain\Safety\Enums\ScreeningKind;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $label = fn ($k) => ScreeningKind::tryFrom($k instanceof \BackedEnum ? $k->value : (string) $k)?->label() ?? $k;
     $unscreened = $tutors->filter(fn ($t) => $t['missing'] !== []);
 @endphp

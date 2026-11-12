@@ -2,7 +2,9 @@
 
 namespace App\Domain\Integration\Support;
 
-use App\Domain\Marketplace\Services\TutorPresenter;
+use App\Domain\Marketplace\Enums\QualificationStatus;
+use App\Domain\Marketplace\Enums\VerificationLevel;
+use App\Domain\Marketplace\Models\TutorQualification;
 use App\Domain\Safety\Services\Screening;
 use App\Enums\TutorProfileStatus;
 use App\Models\TutorProfile;
@@ -38,12 +40,12 @@ class TutorStanding
         };
 
         $level = $profile->verificationLevel();
-        $reviewing = $level === null && $profile->qualificationRecords()->where('status', 'submitted')->exists();
-        $checked = $level === null && ! $reviewing && TutorPresenter::hasVerifiedRecord($profile);
+        $waiting = $level === null ? $this->levelWaiting($profile) : null;
+        $reviewing = $level === null && $waiting === null && $profile->qualificationRecords()->where('status', 'submitted')->exists();
         $qualification = match (true) {
             $level !== null => [true, 'Qualification verified', $level->label().', from a reviewed record.'],
-            // A verified record without a level (fix round D-2302): the same words as the public profile.
-            $checked => [null, TutorPresenter::CHECKED_LABEL, TutorPresenter::CHECKED_DETAIL],
+            // A record was verified but no reviewer has set the level yet (D-2401): checked, not yet a level.
+            $waiting !== null => [null, 'Qualification checked, level pending', $waiting['qualification']->title.' was verified. A reviewer still has to set the verification level.'],
             $reviewing => [null, 'Qualification in review', 'Evidence was sent and is waiting for a reviewer.'],
             default => [false, 'Qualification not verified', 'Anything the profile says about qualifications is self-declared.'],
         };
@@ -58,5 +60,35 @@ class TutorStanding
             ['key' => 'qualification', 'ok' => $qualification[0], 'text' => $qualification[1], 'detail' => $qualification[2]],
             ['key' => 'minors', 'ok' => $minors[0], 'text' => $minors[1], 'detail' => $minors[2]],
         ];
+    }
+
+    /**
+     * A verified qualification with no verification level set yet, and the highest level that record supports, so a
+     * reviewer can be prompted to set it (D-2401). Null when a level is set or nothing is verified.
+     *
+     * @return array{qualification: TutorQualification, level: VerificationLevel}|null
+     */
+    public function levelWaiting(TutorProfile $profile): ?array
+    {
+        if ($profile->verificationLevel() !== null) {
+            return null;
+        }
+
+        $verified = $profile->qualificationRecords()->where('status', QualificationStatus::Verified->value)->get();
+        if ($verified->isEmpty()) {
+            return null;
+        }
+
+        $levels = VerificationLevel::cases();
+        usort($levels, fn (VerificationLevel $a, VerificationLevel $b) => $b->matchingWeight() <=> $a->matchingWeight());
+        foreach ($levels as $candidate) {
+            $kinds = array_map(fn ($k) => $k->value, $candidate->supportingKinds());
+            $record = $verified->first(fn (TutorQualification $q) => in_array($q->kind, $kinds, true));
+            if ($record !== null) {
+                return ['qualification' => $record, 'level' => $candidate];
+            }
+        }
+
+        return null;
     }
 }
