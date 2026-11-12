@@ -2,6 +2,7 @@
 
 namespace App\Domain\Learning\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,5 +21,11 @@ class Assignment extends Model
     public function assessment(): BelongsTo
     {
         return $this->belongsTo(Assessment::class, 'assessment_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function learner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'learner_id');
     }
 }
