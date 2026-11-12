@@ -73,7 +73,7 @@ class TutorPreflight extends Command
     /** Static files the pages ask for by path (not through Vite). */
     public const STATIC_FILES = [
         'icons/td-sprite.svg',
-        'classroom/icons.svg',
+        'icons/classroom.svg',
         'comms/push.js',
         'comms-sw.js',
         'robots.txt',
