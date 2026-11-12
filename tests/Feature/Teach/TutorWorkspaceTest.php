@@ -270,4 +270,18 @@ class TutorWorkspaceTest extends TestCase
         $this->get('/u/lerato-maths')->assertRedirect(route('marketplace.tutors.show', $profile));
         $this->actingAs($tutor)->get(route('teach.storefront'))->assertOk()->assertSee('/u/lerato-maths')->assertSee('no credit or discount', false);
     }
+
+    public function test_a_minors_request_waiting_for_a_guardian_shows_only_as_a_number(): void
+    {
+        $this->setUpWorld();
+        [$tutor, $profile] = $this->tutorReadyToTeach('Lerato Khumalo', 30000);
+        $child = $this->person('Young Learner Name');
+        $this->makeSession($profile, $child, $this->subject('mathematics'), ['status' => 'awaiting_guardian', 'guardian_status' => 'pending']);
+
+        $this->actingAs($tutor)->get(route('teach.home'))->assertOk()->assertSee('waiting for their guardian')->assertDontSee('Young Learner Name');
+        $this->actingAs($tutor)->get(route('teach.bookings', ['view' => 'waiting']))->assertOk()->assertSee('for a guardian')->assertDontSee('Young Learner Name');
+        $this->actingAs($tutor)->get(route('teach.calendar', ['week' => now()->addDays(2)->format('Y-m-d')]))->assertOk()->assertDontSee('Young Learner Name');
+        $this->actingAs($tutor)->get(route('teach.students'))->assertOk()->assertDontSee('Young Learner Name');
+        $this->actingAs($tutor)->get(route('teach.students.show', $child->id))->assertNotFound();
+    }
 }

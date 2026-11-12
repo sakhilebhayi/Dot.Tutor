@@ -17,6 +17,6 @@ export function formatMinor(minor, currency = 'ZAR') {
     const negative = minor < 0;
     const abs = Math.abs(minor);
     const whole = String(Math.floor(abs / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    const cents = String(abs % 100).padStart(2, '0');
+    const cents = String(abs % 100).padStart(2, '0'); // taste-skill-ignore: cents of a price
     return `${negative ? '−' : ''}${symbol}${whole}.${cents}`;
 }

@@ -108,15 +108,10 @@
                 @endif
             </x-td.panel>
             <x-td.panel title="Waiting on a guardian">
-                @if ($guardianHolds->isEmpty())
+                @if ($guardianHolds === 0)
                     <p class="m-0 text-td-ink-2">No requests from under-18s are waiting for a parent or guardian.</p>
                 @else
-                    <p class="mt-0 text-sm text-td-ink-2">A learner under 18 asked for these. You see them to answer after a guardian approves.</p>
-                    <ul class="m-0 list-none p-0">
-                        @foreach ($guardianHolds->take(4) as $s)
-                            @include('teach.partials.booking-row', ['s' => $s, 'tz' => $tz, 'compact' => true])
-                        @endforeach
-                    </ul>
+                    <p class="m-0"><strong>{{ $guardianHolds }}</strong> {{ \Illuminate\Support\Str::plural('request', $guardianHolds) }} from a learner under 18 {{ $guardianHolds === 1 ? 'is' : 'are' }} waiting for their guardian. You see who and when once a guardian approves; nothing is needed from you now.</p>
                 @endif
             </x-td.panel>
             <x-td.panel title="Messages">

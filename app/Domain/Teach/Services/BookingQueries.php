@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 class BookingQueries
 {
     /** States a lesson in the calendar can be in (booked or being decided). */
-    public const ON_CALENDAR = ['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress', 'completed', 'no_show', 'disputed'];
+    public const ON_CALENDAR = ['pending', 'awaiting_payment', 'confirmed', 'in_progress', 'completed', 'no_show', 'disputed'];
 
     /** @return Builder<TutorSession> */
     public function base(TutorProfile $profile): Builder
@@ -40,10 +40,13 @@ class BookingQueries
             ->with(['sessions' => fn ($q) => $q->orderBy('starts_at')])->orderBy('id')->get();
     }
 
-    /** @return Collection<int, TutorSession> */
-    public function guardianHolds(TutorProfile $profile): Collection
+    /**
+     * How many requests from under-18s wait for a guardian. Only the number: the tutor learns who and when once the
+     * guardian approves (comms D-1017, tutor UI D-1208), so a refused request never reaches them.
+     */
+    public function guardianHoldCount(TutorProfile $profile): int
     {
-        return $this->base($profile)->where('status', SessionStatus::AwaitingGuardian->value)->orderBy('starts_at')->get();
+        return TutorSession::query()->where('tutor_profile_id', $profile->id)->where('status', SessionStatus::AwaitingGuardian->value)->count();
     }
 
     /** @return Collection<int, TutorSession> */

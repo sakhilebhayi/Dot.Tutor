@@ -43,7 +43,7 @@ class HomeController extends Controller
             'week' => $week,
             'requests' => $bookings->requests($profile),
             'series' => $bookings->pendingSeries($profile),
-            'guardianHolds' => $bookings->guardianHolds($profile),
+            'guardianHolds' => $bookings->guardianHoldCount($profile),
             'attention' => $bookings->needingAttention($profile),
             'money' => $money->for($user, $tz),
             'unread' => $unread,

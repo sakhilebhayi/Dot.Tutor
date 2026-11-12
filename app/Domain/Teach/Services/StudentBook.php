@@ -29,11 +29,11 @@ class StudentBook
     public function learnerIds(TutorProfile $profile): array
     {
         $fromLessons = TutorSession::query()->where('tutor_profile_id', $profile->id)->whereNotNull('student_id')
-            ->where('status', '!=', 'cancelled')->distinct()->pluck('student_id');
+            ->whereNotIn('status', ['cancelled', 'awaiting_guardian'])->distinct()->pluck('student_id');
         $fromSeats = TutorSessionParticipant::query()->whereHas('session', fn ($q) => $q->where('tutor_profile_id', $profile->id))
-            ->where('status', '!=', 'cancelled')->distinct()->pluck('learner_id');
+            ->whereNotIn('status', ['cancelled', 'awaiting_guardian'])->distinct()->pluck('learner_id');
         $fromPackages = TutorPackagePurchase::query()->where('tutor_profile_id', $profile->id)
-            ->where('status', '!=', 'cancelled')->distinct()->pluck('learner_id');
+            ->whereNotIn('status', ['cancelled', 'awaiting_guardian'])->distinct()->pluck('learner_id');
         $fromCourses = $profile->user_id ? Enrolment::query()->whereIn('course_id', Course::query()->where('owner_id', $profile->user_id)->select('id'))
             ->distinct()->pluck('user_id') : collect();
 
@@ -61,7 +61,7 @@ class StudentBook
         $users = User::query()->whereIn('id', $ids)
             ->when($search, fn ($q, $s) => $q->where('name', 'like', '%'.str_replace(['%', '_'], ['\%', '\_'], $s).'%'))
             ->orderBy('name')->get(['id', 'name']);
-        $sessions = TutorSession::query()->where('tutor_profile_id', $profile->id)->whereIn('student_id', $ids)
+        $sessions = TutorSession::query()->where('tutor_profile_id', $profile->id)->whereIn('student_id', $ids)->where('status', '!=', 'awaiting_guardian')
             ->get(['id', 'student_id', 'status', 'starts_at'])->groupBy('student_id');
         $courseIds = $profile->user_id ? Course::query()->where('owner_id', $profile->user_id)->pluck('id') : collect();
         $enrolments = Enrolment::query()->whereIn('course_id', $courseIds)->whereIn('user_id', $ids)
@@ -76,7 +76,7 @@ class StudentBook
                 'id' => $u->id,
                 'name' => $u->name,
                 'completed' => $mine->where('status', 'completed')->count(),
-                'upcoming' => $mine->whereIn('status', ['confirmed', 'awaiting_payment', 'pending', 'awaiting_guardian'])->filter(fn ($s) => $s->starts_at->greaterThan($now))->count(),
+                'upcoming' => $mine->whereIn('status', ['confirmed', 'awaiting_payment', 'pending'])->filter(fn ($s) => $s->starts_at->greaterThan($now))->count(),
                 'next' => $mine->whereIn('status', ['confirmed', 'awaiting_payment'])->filter(fn ($s) => $s->starts_at->greaterThan($now))->sortBy('starts_at')->first()?->starts_at,
                 'last' => $mine->where('status', 'completed')->sortByDesc('starts_at')->first()?->starts_at,
                 'courses' => $enrolments->get($u->id, collect())->count(),
@@ -93,7 +93,7 @@ class StudentBook
         $assessmentIds = $profile->user_id ? Assessment::query()->where('owner_id', $profile->user_id)->pluck('id') : collect();
 
         return [
-            'sessions' => TutorSession::query()->where('tutor_profile_id', $profile->id)->where('student_id', $learner->id)
+            'sessions' => TutorSession::query()->where('tutor_profile_id', $profile->id)->where('student_id', $learner->id)->where('status', '!=', 'awaiting_guardian')
                 ->with(['subject:id,name', 'offering:id,title'])->orderByDesc('starts_at')->limit(50)->get(),
             'packages' => TutorPackagePurchase::query()->where('tutor_profile_id', $profile->id)->where('learner_id', $learner->id)
                 ->with('offering:id,title')->orderByDesc('id')->get(),

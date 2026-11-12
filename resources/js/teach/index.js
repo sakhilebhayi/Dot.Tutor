@@ -99,8 +99,12 @@ function initUploads(root) {
                 }
             });
             xhr.addEventListener('load', () => {
-                // The server redirected (success or validation errors flashed into the session): show that page.
-                window.location.assign(xhr.responseURL || window.location.href);
+                // The XHR already followed the server's redirect, and that request read the one-time flash (the
+                // success message or the validation errors). Show the page it received instead of loading it again.
+                history.replaceState(null, '', xhr.responseURL || window.location.href);
+                document.open();
+                document.write(xhr.responseText);
+                document.close();
             });
             xhr.addEventListener('error', () => {
                 label.textContent = 'The upload stopped. Check your connection and try again.';

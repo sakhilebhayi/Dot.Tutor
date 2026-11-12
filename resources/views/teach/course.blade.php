@@ -20,6 +20,16 @@
         </x-slot:actions>
     </x-td.page-head>
 
+    {{-- The learning studio routes answer back here with a "status" message or validation errors. --}}
+    @if (session('status'))
+        <x-td.notice tone="success" class="mb-4" role="status">{{ session('status') }}</x-td.notice>
+    @endif
+    @if ($errors->any())
+        <x-td.notice tone="danger" title="That was not saved" class="mb-4">
+            <ul class="m-0 pl-5">@foreach ($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+        </x-td.notice>
+    @endif
+
     <x-td.tabs label="Course steps" :items="$tabs" class="mb-6" />
 
     @switch($tab)

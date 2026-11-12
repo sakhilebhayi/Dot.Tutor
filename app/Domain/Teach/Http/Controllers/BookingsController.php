@@ -38,16 +38,16 @@ class BookingsController extends Controller
 
         $counts = [
             'requests' => $bookings->base($profile)->where('status', SessionStatus::Pending->value)->count(),
-            'waiting' => $bookings->base($profile)->whereIn('status', [SessionStatus::AwaitingGuardian->value, SessionStatus::AwaitingPayment->value])->count(),
+            'waiting' => $bookings->base($profile)->where('status', SessionStatus::AwaitingPayment->value)->count(),
         ];
 
         $list = match ($view) {
             'requests' => $bookings->requests($profile)->where('tutor_booking_series_id', null)->values(),
             'upcoming' => $bookings->base($profile)->whereIn('status', ['confirmed', 'in_progress'])->where('kind', '!=', 'group')
                 ->where('starts_at', '>=', $now->subHours(6))->orderBy('starts_at')->paginate(25)->withQueryString(),
-            'waiting' => $bookings->base($profile)->whereIn('status', ['awaiting_guardian', 'awaiting_payment'])->orderBy('starts_at')->paginate(25)->withQueryString(),
+            'waiting' => $bookings->base($profile)->where('status', 'awaiting_payment')->orderBy('starts_at')->paginate(25)->withQueryString(),
             'groups' => $bookings->base($profile)->where('kind', 'group')->whereIn('status', ['confirmed', 'in_progress'])
-                ->with('participants.learner:id,name')->orderBy('starts_at')->paginate(25)->withQueryString(),
+                ->with(['participants' => fn ($q) => $q->where('status', '!=', 'awaiting_guardian'), 'participants.learner:id,name'])->orderBy('starts_at')->paginate(25)->withQueryString(),
             'past' => $bookings->base($profile)->whereIn('status', ['completed', 'no_show', 'disputed'])->orderByDesc('starts_at')->paginate(25)->withQueryString(),
             'cancelled' => $bookings->base($profile)->where('status', 'cancelled')->orderByDesc('starts_at')->paginate(25)->withQueryString(),
             default => collect(),
@@ -58,6 +58,7 @@ class BookingsController extends Controller
             'tz' => $tz,
             'view' => $view,
             'counts' => $counts,
+            'guardianHolds' => $bookings->guardianHoldCount($profile),
             'list' => $list,
             'series' => $view === 'requests' ? $bookings->pendingSeries($profile) : collect(),
             'packages' => $view === 'packages'

@@ -27,11 +27,11 @@
                 @endif
                 @foreach ($day['lessons'] as $s)
                     @php $st = \App\Enums\SessionStatus::from($s->status); @endphp
-                    <a href="{{ route('teach.bookings', ['view' => $st === \App\Enums\SessionStatus::Pending ? 'requests' : (in_array($st->value, ['awaiting_guardian', 'awaiting_payment'], true) ? 'waiting' : ($s->isGroup() ? 'groups' : 'upcoming'))]) }}#booking-{{ $s->id }}"
+                    <a href="{{ route('teach.bookings', ['view' => $st === \App\Enums\SessionStatus::Pending ? 'requests' : ($st->value === 'awaiting_payment' ? 'waiting' : ($s->isGroup() ? 'groups' : 'upcoming'))]) }}#booking-{{ $s->id }}"
                        @class([
                            'block rounded-td border px-2 py-1 text-sm no-underline text-td-ink',
                            'border-td-primary bg-td-primary-soft' => in_array($st->value, ['confirmed', 'in_progress'], true),
-                           'border-dashed border-td-edge bg-td-surface' => in_array($st->value, ['pending', 'awaiting_guardian', 'awaiting_payment'], true),
+                           'border-dashed border-td-edge bg-td-surface' => in_array($st->value, ['pending', 'awaiting_payment'], true),
                            'border-td-line bg-td-sunken' => in_array($st->value, ['completed', 'no_show', 'disputed'], true),
                        ])>
                         <span class="block font-bold tabular-nums">{{ $s->starts_at->copy()->timezone($tz)->format('H:i') }}, {{ $s->duration_minutes }} min</span>
@@ -42,7 +42,7 @@
             </div>
         @endforeach
     </section>
-    <p class="mt-2 text-sm text-td-ink-2">Solid: confirmed. Dashed: a request, or waiting for payment or a guardian. Grey: finished.</p>
+    <p class="mt-2 text-sm text-td-ink-2">Solid: confirmed. Dashed: a request, or waiting for payment. Grey: finished.</p>
 
     <div class="td-panels mt-6 md:grid-cols-2">
         <x-td.panel title="Weekly open hours">

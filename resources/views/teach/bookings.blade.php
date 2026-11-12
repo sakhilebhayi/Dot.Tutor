@@ -11,7 +11,7 @@
     $empty = [
         'requests' => ['No requests waiting', 'New lesson requests appear here. Accept to hold the time; decline with a reason the learner reads.'],
         'upcoming' => ['No upcoming lessons', 'Accepted and paid lessons show here, with Start from 15 minutes before.'],
-        'waiting' => ['Nothing waiting', 'Lessons you accepted that wait for payment, and requests from under-18s that wait for a guardian, show here.'],
+        'waiting' => ['Nothing waiting for payment', 'Lessons you accepted show here until the learner pays; the time is held until then.'],
         'past' => ['No past lessons yet', 'Completed lessons, no-shows and disputes are kept here.'],
         'cancelled' => ['Nothing cancelled', 'Cancelled and declined bookings are kept here with their reasons.'],
     ];
@@ -104,6 +104,9 @@
                 </ul>
                 <p class="mb-0 mt-3 text-sm text-td-ink-2">Weeks that clashed with your calendar were skipped when the learner booked. You can also answer each week on its own below.</p>
             </x-td.panel>
+        @endif
+        @if ($view === 'waiting' && $guardianHolds > 0)
+            <x-td.notice class="mb-6">{{ $guardianHolds }} {{ \Illuminate\Support\Str::plural('request', $guardianHolds) }} from a learner under 18 {{ $guardianHolds === 1 ? 'waits' : 'wait' }} for a guardian. You see who and when once a guardian approves.</x-td.notice>
         @endif
         <x-td.panel :title="collect($tabs)->firstWhere('current', true)['label']">
             @if ($list->isEmpty())

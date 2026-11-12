@@ -26,7 +26,8 @@ class LifecycleIntegrityTest extends TestCase
             SessionStatus::values(),
         );
         $this->assertEqualsCanonicalizing(
-            ['pending', 'approved', 'rejected', 'suspended'],
+            // R-47 tutor UI added draft: a profile being written in the guided onboarding, not sent (decision D-1201).
+            ['draft', 'pending', 'approved', 'rejected', 'suspended'],
             TutorProfileStatus::values(),
         );
         $this->assertSame(['pending', 'awaiting_guardian', 'awaiting_payment', 'confirmed', 'in_progress'], SessionStatus::holdingTime());
