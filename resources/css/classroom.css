@@ -65,6 +65,16 @@
         background: var(--td-success);
     }
 
+    .cr-status[data-state='ended'] {
+        background: var(--td-sunken);
+        color: var(--td-ink);
+    }
+
+    .cr-status[data-state='ended']::before {
+        background: var(--td-ink);
+        border-radius: 2px;
+    }
+
     .cr-status[data-state='warn'] {
         background: var(--td-warning-soft);
         color: var(--td-warning-ink);
@@ -217,15 +227,30 @@
     }
 
     /* ── Pre-join ──────────────────────────────────────────────────────────── */
+    /* Phone: preview, then Join, then the checks, so Join is on the first screen (D-2107). Desk: preview on the
+       left; the checks and then Join on the right. */
     .cr-lobby {
         display: grid;
-        gap: var(--td-space-6);
+        gap: var(--td-space-4) var(--td-space-6);
         grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: 'preview' 'join' 'form';
+    }
+
+    .cr-lobby__preview { grid-area: preview; }
+    .cr-lobby__join { grid-area: join; display: grid; gap: var(--td-space-2); align-content: start; }
+    .cr-lobby__form { grid-area: form; }
+    .cr-lobby__join .cr-lobby__msg,
+    .cr-lobby__join .cr-lobby__privacy { margin: 0; }
+
+    @media (max-width: 59.98rem) {
+        .cr-lobby__join .td-btn { width: 100%; }
     }
 
     @media (min-width: 60rem) {
         .cr-lobby {
             grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+            grid-template-rows: auto 1fr;
+            grid-template-areas: 'preview form' 'preview join';
             align-items: start;
         }
     }
