@@ -18,6 +18,7 @@
 @import './student/student.css';
 @import './classroom.css';
 @import './ops.css';
+@import './a11y.css';
 
 @source '../views/**/*.blade.php';
 @source '../../storage/framework/views/*.php';

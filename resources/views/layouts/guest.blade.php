@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    @include('layouts.partials.head', ['title' => null, 'livewire' => true])
+    @include('layouts.partials.head', ['title' => null, 'livewire' => $livewire])
 </head>
 <body class="td-guest-body">
     <a class="td-skip" href="#main-content">Skip to content</a>
@@ -17,6 +17,8 @@
         @include('layouts.partials.public-foot', ['credits' => []])
     </div>
     <x-td.toasts />
-    @livewireScripts
+    @if ($livewire)
+        @livewireScripts
+    @endif
 </body>
 </html>

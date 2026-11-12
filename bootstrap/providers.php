@@ -10,6 +10,7 @@ use App\Domain\Learning\Providers\TutorLearningServiceProvider;
 use App\Domain\Marketplace\Providers\TutorMarketplaceServiceProvider;
 use App\Domain\Money\TutorMoneyServiceProvider;
 use App\Domain\Ops\TutorOpsServiceProvider;
+use App\Domain\Perf\TutorPerfServiceProvider;
 use App\Domain\Safety\TutorSafetyServiceProvider;
 use App\Domain\Security\TutorSecurityServiceProvider;
 use App\Domain\Student\TutorStudentServiceProvider;
@@ -37,5 +38,6 @@ return [
     TutorStudentServiceProvider::class,
     TutorOpsServiceProvider::class,
     TutorSecurityServiceProvider::class,
+    TutorPerfServiceProvider::class,
     TutorIntegrationServiceProvider::class,
 ];

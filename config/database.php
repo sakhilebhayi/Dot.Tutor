@@ -38,7 +38,12 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => env('DB_BUSY_TIMEOUT'),
+            // SQLite under concurrent requests (R-47 D-1610, docs/R47_PERF.md section 3): without a busy timeout a
+            // second writer fails at once with "database is locked" (29 % of classroom joins in the 4-worker load
+            // run). WAL lets readers run beside the writer; IMMEDIATE takes the write lock at BEGIN, so a read that
+            // turns into a write cannot deadlock. For a SQLite production database set DB_JOURNAL_MODE=wal and
+            // DB_TRANSACTION_MODE=IMMEDIATE (PostgreSQL, the documented production engine, ignores these).
+            'busy_timeout' => env('DB_BUSY_TIMEOUT', 5000),
             'journal_mode' => env('DB_JOURNAL_MODE'),
             'synchronous' => env('DB_SYNCHRONOUS'),
             'transaction_mode' => env('DB_TRANSACTION_MODE', 'DEFERRED'),

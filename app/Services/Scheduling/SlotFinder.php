@@ -24,10 +24,32 @@ use Illuminate\Support\Collection;
 class SlotFinder
 {
     /**
+     * $sessions, when given, are the tutor's sessions already fetched by the caller (matching fetches every
+     * candidate's in one query, R-47 D-1602); they must cover the range and are filtered here exactly as the query
+     * below would. Weekly hours and blocked dates come from loaded relations when the caller eager-loaded them.
+     *
+     * @param  Collection<int, TutorSession>|null  $sessions
      * @return list<array{date: string, slots: list<CarbonImmutable>}> one entry per
      *                                                                 tutor-local day, today first, including days with no slots
      */
-    public function forTutor(TutorProfile $profile, int $durationMinutes, ?CarbonInterface $now = null, ?int $days = null): array
+    public function forTutor(TutorProfile $profile, int $durationMinutes, ?CarbonInterface $now = null, ?int $days = null, ?Collection $sessions = null): array
+    {
+        $tz = $profile->scheduleTimezone();
+
+        return array_map(fn (array $day) => [
+            'date' => $day['date'],
+            'slots' => array_map(fn (int $t) => CarbonImmutable::createFromTimestamp($t, $tz), $day['starts']),
+        ], $this->startTimestamps($profile, $durationMinutes, $now, $days, $sessions));
+    }
+
+    /**
+     * forTutor() as plain Unix timestamps: the same slots, without a Carbon object per slot. Matching scores
+     * hundreds of tutors with thousands of open slots per search and only counts them (R-47 D-1602).
+     *
+     * @param  Collection<int, TutorSession>|null  $sessions
+     * @return list<array{date: string, starts: list<int>}>
+     */
+    public function startTimestamps(TutorProfile $profile, int $durationMinutes, ?CarbonInterface $now = null, ?int $days = null, ?Collection $sessions = null): array
     {
         $tz = $profile->scheduleTimezone();
         $nowTs = ($now ?? Carbon::now())->getTimestamp();
@@ -35,7 +57,7 @@ class SlotFinder
         $stepSeconds = max(1, (int) config('tutor.slot_step_minutes')) * 60;
         $durationSeconds = $durationMinutes * 60;
 
-        $windows = $profile->availabilityWindows()->get()->groupBy('weekday');
+        $windows = ($profile->relationLoaded('availabilityWindows') ? $profile->availabilityWindows : $profile->availabilityWindows()->get())->groupBy('weekday');
         $blocked = $this->blockedDates($profile);
 
         // Date arithmetic on plain 'Y-m-d' strings in UTC: no DST can touch it.
@@ -52,27 +74,29 @@ class SlotFinder
             $profile,
             $this->localInstant($dayRows[0][0], '00:00', $tz)->getTimestamp(),
             $this->localInstant(CarbonImmutable::parse($dayRows[$days - 1][0], 'UTC')->addDay()->toDateString(), '00:00', $tz)->getTimestamp(),
-        );
+            $sessions,
+        )->all();
+        $zone = new \DateTimeZone($tz);
 
         foreach ($dayRows as [$date, $weekday]) {
-            $slots = [];
+            $starts = [];
 
             if (! isset($blocked[$date])) {
                 foreach ($windows->get($weekday, []) as $window) {
-                    $from = $this->localInstant($date, $window->start_time, $tz)->getTimestamp();
-                    $to = $this->localInstant($date, $window->end_time, $tz)->getTimestamp();
+                    $from = $this->localTimestamp($date, $window->start_time, $zone);
+                    $to = $this->localTimestamp($date, $window->end_time, $zone);
 
                     for ($t = $from; $t + $durationSeconds <= $to; $t += $stepSeconds) {
                         if ($t <= $nowTs || $this->collides($busy, $t, $t + $durationSeconds)) {
                             continue;
                         }
-                        $slots[] = CarbonImmutable::createFromTimestamp($t, $tz);
+                        $starts[] = $t;
                     }
                 }
             }
 
-            usort($slots, fn ($a, $b) => $a->getTimestamp() <=> $b->getTimestamp());
-            $result[] = ['date' => $date, 'slots' => $slots];
+            sort($starts);
+            $result[] = ['date' => $date, 'starts' => $starts];
         }
 
         return $result;
@@ -111,6 +135,12 @@ class SlotFinder
         return 'outside_hours';
     }
 
+    /** localInstant() as a timestamp without a Carbon object (same parsing: native DateTime under Carbon). */
+    private function localTimestamp(string $date, string $time, \DateTimeZone $zone): int
+    {
+        return \DateTimeImmutable::createFromFormat('!Y-m-d H:i', "{$date} {$time}", $zone)->getTimestamp();
+    }
+
     /** A local wall-clock moment as an absolute instant; a time skipped by DST resolves forward. */
     private function localInstant(string $date, string $time, string $tz): CarbonImmutable
     {
@@ -120,17 +150,30 @@ class SlotFinder
     /** @return array<string, bool> */
     private function blockedDates(TutorProfile $profile): array
     {
-        return $profile->blockedDates()->pluck('date')
+        return ($profile->relationLoaded('blockedDates') ? $profile->blockedDates->pluck('date') : $profile->blockedDates()->pluck('date'))
             ->mapWithKeys(fn ($d) => [substr((string) $d, 0, 10) => true])
             ->all();
     }
 
     /**
+     * @param  Collection<int, TutorSession>|null  $sessions  pre-fetched sessions (see forTutor)
      * @return Collection<int, array{0: int, 1: int}> [startTs, endTs] of the tutor's pending/confirmed sessions in range
      */
-    private function busyIntervals(TutorProfile $profile, int $fromTs, int $toTs): Collection
+    private function busyIntervals(TutorProfile $profile, int $fromTs, int $toTs, ?Collection $sessions = null): Collection
     {
         $longest = TutorSession::longestDurationMinutes();
+
+        if ($sessions !== null) {
+            $holding = SessionStatus::holdingTime();
+
+            return $sessions
+                ->filter(fn (TutorSession $s) => (int) $s->tutor_profile_id === (int) $profile->id
+                    && in_array($s->status, $holding, true)
+                    && $s->starts_at->getTimestamp() < $toTs
+                    && $s->starts_at->getTimestamp() > $fromTs - $longest * 60)
+                ->map(fn (TutorSession $s) => [$s->starts_at->getTimestamp(), $s->endsAt()->getTimestamp()])
+                ->values();
+        }
 
         return TutorSession::query()
             ->where('tutor_profile_id', $profile->id)
@@ -141,9 +184,15 @@ class SlotFinder
             ->map(fn (TutorSession $s) => [$s->starts_at->getTimestamp(), $s->endsAt()->getTimestamp()]);
     }
 
-    /** @param  Collection<int, array{0: int, 1: int}>  $busy */
-    private function collides(Collection $busy, int $startTs, int $endTs): bool
+    /** @param  list<array{0: int, 1: int}>  $busy */
+    private function collides(array $busy, int $startTs, int $endTs): bool
     {
-        return $busy->contains(fn ($b) => $b[0] < $endTs && $b[1] > $startTs);
+        foreach ($busy as [$from, $to]) {
+            if ($from < $endTs && $to > $startTs) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

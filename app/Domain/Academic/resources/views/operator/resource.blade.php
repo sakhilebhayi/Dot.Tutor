@@ -43,7 +43,7 @@
             <thead><tr>
                 @foreach($config['columns'] as $column)<th>{{ \Illuminate\Support\Str::headline(str_replace('.', ' ', $column)) }}</th>@endforeach
                 @if($hasActiveFlag)<th>State</th>@endif
-                <th></th>
+                <th><span class="td-sr">Actions</span></th>
             </tr></thead>
             <tbody>
             @forelse($rows as $row)

@@ -17,7 +17,7 @@
 
     <div class="t-panel table-scroll" style="padding:0;overflow-x:auto;" role="region" aria-label="Teaching languages" tabindex="0">
         <table class="t-table">
-            <thead><tr><th>Tutor</th><th>Language</th><th>Declared level</th><th>Verified</th><th></th></tr></thead>
+            <thead><tr><th>Tutor</th><th>Language</th><th>Declared level</th><th>Verified</th><th><span class="td-sr">Actions</span></th></tr></thead>
             <tbody>
             @forelse($rows as $row)
                 <tr>

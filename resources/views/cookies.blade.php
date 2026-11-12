@@ -5,7 +5,7 @@
                 <x-authentication-card-logo />
             </div>
 
-            <div class="w-full sm:max-w-2xl mt-8 p-6 sm:p-10 bg-white border border-[var(--line)] shadow-lg overflow-hidden sm:rounded-xl prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-[var(--ink)] prose-p:text-[var(--moss)] prose-li:text-[var(--moss)] prose-a:text-[var(--ink)] hover:prose-a:text-[var(--leaf)]">
+            <div class="w-full sm:max-w-2xl mt-8 p-6 sm:p-10 bg-[var(--td-surface)] border border-[var(--line)] shadow-lg overflow-hidden sm:rounded-xl prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-[var(--ink)] prose-p:text-[var(--moss)] prose-li:text-[var(--moss)] prose-a:text-[var(--ink)] prose-strong:text-[var(--ink)] prose-em:text-[var(--moss)] prose-th:text-[var(--ink)] prose-td:text-[var(--moss)] prose-code:text-[var(--ink)] prose-blockquote:text-[var(--moss)] hover:prose-a:text-[var(--leaf)]">
                 <h1>Cookie Policy</h1>
                 {!! $cookies !!}
             </div>

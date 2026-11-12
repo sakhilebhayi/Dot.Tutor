@@ -9,23 +9,32 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 /** The tutor's students: who they teach, how often, progress the learner shares through courses and assessments, and private notes. */
 class StudentsController extends Controller
 {
+    public const PER_PAGE = 50;
+
     public function index(Request $request, StudentBook $book): View
     {
         $profile = TutorContext::profile($request);
         $search = trim((string) $request->query('q', '')) ?: null;
-        $students = $book->list($profile, $search);
+        $filter = $request->query('filter') === 'repeat' ? 'repeat' : null;
+        // A page at a time: a tutor with a popular course can have thousands of students, and one table of all of
+        // them was 1.3 MB of HTML (R-47 D-1606, docs/R47_PERF.md).
+        $page = $book->page($profile, $search, $filter === 'repeat', self::PER_PAGE, LengthAwarePaginator::resolveCurrentPage(),
+            ['path' => $request->url(), 'query' => $request->query()]);
 
         return view('teach.students', [
             'profile' => $profile,
             'tz' => TutorContext::tz($profile),
-            'students' => $students,
+            'rows' => $page['rows'],
+            'total' => $page['total'],
+            'repeat' => $page['repeat'],
             'search' => $search,
-            'filter' => $request->query('filter') === 'repeat' ? 'repeat' : null,
+            'filter' => $filter,
         ]);
     }
 

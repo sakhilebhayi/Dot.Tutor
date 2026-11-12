@@ -18,6 +18,9 @@ class AcademicScopeAdapter implements AcademicScopePort
     /** @var array<int, ?AcademicLevel> */
     private array $levels = [];
 
+    /** @var array<int, ?string> */
+    private array $curriculumNames = [];
+
     public function __construct(private readonly AcademicScope $scope) {}
 
     public function isAvailable(): bool
@@ -44,7 +47,11 @@ class AcademicScopeAdapter implements AcademicScopePort
 
     public function curriculumName(int $curriculumId): ?string
     {
-        return Curriculum::query()->whereKey($curriculumId)->value('name');
+        if (! array_key_exists($curriculumId, $this->curriculumNames)) {
+            $this->curriculumNames[$curriculumId] = Curriculum::query()->whereKey($curriculumId)->value('name');
+        }
+
+        return $this->curriculumNames[$curriculumId];
     }
 
     public function validateTeachingScope(int $subjectId, ?int $curriculumId, ?int $levelMinId, ?int $levelMaxId): ?string

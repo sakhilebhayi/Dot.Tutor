@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <x-authentication-card>
+    <x-authentication-card title="Sign in to Dot.Tutor">
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>
@@ -36,7 +36,7 @@
 
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))
-                    <a class="underline text-sm text-[var(--ink)] hover:text-[var(--leaf)] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--gold)]" href="{{ route('password.request') }}">
+                    <a class="underline inline-block py-1 text-sm text-[var(--ink)] hover:text-[var(--leaf)] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--gold)]" href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 @endif

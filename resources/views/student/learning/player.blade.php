@@ -108,16 +108,10 @@
                     @foreach ($data['outline'] as $section)
                         <p class="st-outline__section">{{ $section['title'] }}</p>
                         <ul class="st-outline">
+                            {{-- One line per lesson: a 300-lesson course printed 170 KB of indentation (R-47 D-1611). --}}
                             @foreach ($section['lessons'] as $item)
-                                <li>
-                                    @if ($canOpen($item))
-                                        <a href="{{ route('learning.learn', [$course, $item['id']]) }}" @if ($lesson && $lesson['id'] === $item['id']) aria-current="page" @endif>
-                                            <x-td.icon :name="in_array($item['id'], $done, true) ? 'circle-check' : 'circle-dashed'" /><span>{{ $item['title'] }}@if (in_array($item['id'], $done, true))<span class="td-sr"> (done)</span>@endif</span>
-                                        </a>
-                                    @else
-                                        <span class="st-outline__locked"><x-td.icon name="lock" /><span>{{ $item['title'] }}</span></span>
-                                    @endif
-                                </li>
+                                @php($isDone = in_array($item['id'], $done, true))
+                                <li>@if ($canOpen($item))<a href="{{ route('learning.learn', [$course, $item['id']]) }}" @if ($lesson && $lesson['id'] === $item['id']) aria-current="page" @endif><x-td.icon :name="$isDone ? 'circle-check' : 'circle-dashed'" /><span>{{ $item['title'] }}@if ($isDone)<span class="td-sr"> (done)</span>@endif</span></a>@else<span class="st-outline__locked"><x-td.icon name="lock" /><span>{{ $item['title'] }}</span></span>@endif</li>
                             @endforeach
                         </ul>
                     @endforeach

@@ -3,7 +3,7 @@
     <div class="td-wrap td-public-foot__grid">
         <div>
             <a class="td-wordmark" href="{{ url('/') }}" style="color:inherit">
-                <img src="{{ asset('images/mark.png') }}" alt="" width="32" height="32">
+                <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                 <span>Dot.Tutor</span>
             </a>
             <p style="max-width:34ch;margin:var(--td-space-4) 0 0">Learning and tutoring from Grade 1 to doctoral study, in the languages South Africa speaks. Part of the Dot ecosystem; sign in with your InfoDot account.</p>

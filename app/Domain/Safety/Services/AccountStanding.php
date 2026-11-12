@@ -14,7 +14,40 @@ use App\Models\User;
  */
 class AccountStanding
 {
+    /** @var array<int, bool> primed: a minor's processing consent is in force */
+    private array $primedConsent = [];
+
+    /** @var array<int, ?AccountRestriction> primed: the latest suspension in effect */
+    private array $primedSuspension = [];
+
     public function __construct(private readonly AgeResolver $ages) {}
+
+    /**
+     * For list pages (ops people list, D-1604): read every listed person's age, guardian links, consents and
+     * suspensions in a handful of queries; summary() then answers from them for those people.
+     *
+     * @param  iterable<User>  $users
+     */
+    public function prime(iterable $users): void
+    {
+        $list = collect($users);
+        $ids = $list->map(fn (User $u) => (int) $u->id)->all();
+        if ($ids === []) {
+            return;
+        }
+        $this->ages->prime($list);
+
+        $consenting = Consent::query()->inForce()->whereIn('learner_id', $ids)->where('kind', Consent::PROCESSING)
+            ->whereIn('guardian_link_id', GuardianLink::query()->active()->whereIn('learner_id', $ids)->select('id'))
+            ->pluck('learner_id')->map(fn ($id) => (int) $id)->flip();
+        $suspensions = AccountRestriction::query()->inEffect()->whereIn('user_id', $ids)->where('kind', AccountRestriction::SUSPENSION)
+            ->orderByDesc('id')->get()->unique('user_id')->keyBy('user_id');
+
+        foreach ($ids as $id) {
+            $this->primedConsent[$id] = $consenting->has($id);
+            $this->primedSuspension[$id] = $suspensions->get($id);
+        }
+    }
 
     public function band(User $user): AgeBand
     {
@@ -34,6 +67,10 @@ class AccountStanding
 
     public function hasGuardianConsent(User $learner): bool
     {
+        if (array_key_exists((int) $learner->id, $this->primedConsent)) {
+            return $this->primedConsent[(int) $learner->id];
+        }
+
         return Consent::query()->inForce()
             ->where('learner_id', $learner->id)
             ->where('kind', Consent::PROCESSING)
@@ -49,6 +86,10 @@ class AccountStanding
 
     public function activeSuspension(User $user): ?AccountRestriction
     {
+        if (array_key_exists((int) $user->id, $this->primedSuspension)) {
+            return $this->primedSuspension[(int) $user->id];
+        }
+
         return AccountRestriction::query()->inEffect()
             ->where('user_id', $user->id)->where('kind', AccountRestriction::SUSPENSION)
             ->orderByDesc('id')->first();

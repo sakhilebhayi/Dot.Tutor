@@ -123,8 +123,8 @@
                             @endif
                             @foreach ($languageCodes as $code)
                                 @php($l = $languages[$code] ?? null)
-                                <a href="{{ $lang === $code ? $tabUrl($tab) : $tabUrl($tab, ['lang' => $code]) }}" class="no-underline" aria-label="{{ $lang === $code ? 'Show every language' : 'Show only posts in '.($l?->name_en ?? $code) }}">
-                                    <x-td.language-chip :code="$code" :name="$l?->name_en ?? strtoupper($code)" :endonym="$l?->name_native" :match="$lang === $code" />
+                                <a href="{{ $lang === $code ? $tabUrl($tab) : $tabUrl($tab, ['lang' => $code]) }}" class="no-underline" @if ($lang === $code) aria-current="true" @endif>
+                                    <x-td.language-chip :code="$code" :name="$l?->name_en ?? strtoupper($code)" :endonym="$l?->name_native" :match="$lang === $code" /><span class="td-sr">{{ $lang === $code ? ': showing only these posts, choose to show every language' : ': show only posts in this language' }}</span>
                                 </a>
                             @endforeach
                         </div>

@@ -19,7 +19,7 @@
             <x-td.state kind="empty" title="No confirmed lessons coming up">Lessons appear here once they are confirmed.</x-td.state>
         @else
             <x-td.table caption="Confirmed lessons coming up" caption-hidden>
-                <thead><tr><th>When ({{ $tz }})</th><th>Lesson</th><th>With</th><th></th><th><span class="td-sr">Classroom</span></th></tr></thead>
+                <thead><tr><th>When ({{ $tz }})</th><th>Lesson</th><th>With</th><th><span class="td-sr">You are</span></th><th><span class="td-sr">Classroom</span></th></tr></thead>
                 <tbody>
                     @foreach ($upcoming as $s)
                         @php $r = $row($s); $open = now()->gte($access->opensAt($s)); @endphp

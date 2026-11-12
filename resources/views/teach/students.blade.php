@@ -1,9 +1,5 @@
-@php
-    $rows = $filter === 'repeat' ? $students->where('repeat', true) : $students;
-    $repeat = $students->where('repeat', true)->count();
-@endphp
 <x-layouts::workspace title="Students" step="dense">
-    <x-td.page-head title="Students" :lede="$students->isEmpty() ? 'Everyone who books you, takes a seat, buys a package or enrols in your courses appears here.' : $students->count().' '.\Illuminate\Support\Str::plural('student', $students->count()).', '.$repeat.' of them with two or more completed lessons.'" />
+    <x-td.page-head title="Students" :lede="$total === 0 ? 'Everyone who books you, takes a seat, buys a package or enrols in your courses appears here.' : $total.' '.\Illuminate\Support\Str::plural('student', $total).', '.$repeat.' of them with two or more completed lessons.'" />
 
     <form method="GET" action="{{ route('teach.students') }}" class="mb-4 flex flex-wrap items-end gap-3" role="search">
         <x-td.field label="Find a student" for="q"><x-td.input name="q" type="search" :value="$search" /></x-td.field>
@@ -43,4 +39,5 @@
             </x-td.table>
         @endif
     </x-td.panel>
+    <x-td.pagination :paginator="$rows" label="Student pages" class="mt-4" />
 </x-layouts::workspace>

@@ -1,1 +1,1 @@
-<input type="checkbox" {!! $attributes->merge(['class' => 'size-5 align-middle']) !!}>
+<input type="checkbox" {!! $attributes->merge(['class' => 'size-6 align-middle']) !!}>

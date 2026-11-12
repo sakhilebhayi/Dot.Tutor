@@ -2,10 +2,12 @@
 
 namespace App\Domain\Safety\Services;
 
+use App\Domain\Safety\Contracts\BatchBirthDateSource;
 use App\Domain\Safety\Contracts\BirthDateSource;
 use App\Domain\Safety\Enums\AgeBand;
 use App\Domain\Safety\Models\AgeRecord;
 use App\Domain\Safety\Models\GuardianLink;
+use App\Domain\Safety\Models\ScreeningCheck;
 use App\Enums\TutorProfileStatus;
 use App\Models\TutorProfile;
 use App\Models\User;
@@ -20,7 +22,63 @@ use Carbon\CarbonImmutable;
  */
 class AgeResolver
 {
+    /** @var array<int, ?CarbonImmutable> birth dates read by prime(), by user id (list pages only, D-1604) */
+    private array $primedBirthDates = [];
+
+    /** @var array<int, bool> whether a primed user has an active guardian link */
+    private array $primedLinked = [];
+
+    /** @var array<int, bool> attestedAdult() for primed users, read in bulk (security S-03 checks, D-1604) */
+    private array $primedAttested = [];
+
     public function __construct(private readonly BirthDateSource $source) {}
+
+    /**
+     * Read every listed person's date of birth and guardian link in three queries instead of several per person.
+     * Only list pages call this, and only this instance answers from what it read; a person not primed is read
+     * as before.
+     *
+     * @param  iterable<User>  $users
+     */
+    public function prime(iterable $users): void
+    {
+        $ids = [];
+        foreach ($users as $user) {
+            $ids[] = (int) $user->id;
+        }
+        if ($ids === []) {
+            return;
+        }
+
+        $records = AgeRecord::query()->whereIn('user_id', $ids)
+            ->orderByRaw("case when source = 'operator_verified' then 0 else 1 end")
+            ->orderByDesc('id')
+            ->get()
+            ->unique('user_id')
+            ->keyBy('user_id');
+        $missing = array_values(array_diff($ids, $records->keys()->map(fn ($id) => (int) $id)->all()));
+        $declared = $this->source instanceof BatchBirthDateSource && $missing !== [] ? $this->source->birthDatesFor($missing) : null;
+        $linked = GuardianLink::query()->active()->whereIn('learner_id', $ids)->pluck('learner_id')->map(fn ($id) => (int) $id)->flip();
+
+        // attestedAdult() in four queries for the whole list: operators, approved tutors, guardians, cleared screenings.
+        $operators = User::query()->whereIn('id', $ids)->where('is_platform_operator', true)->pluck('id')->map(fn ($id) => (int) $id)->flip();
+        $tutors = TutorProfile::query()->whereIn('user_id', $ids)->where('status', TutorProfileStatus::Approved->value)->pluck('user_id')->map(fn ($id) => (int) $id)->flip();
+        $guardians = GuardianLink::query()->active()->whereIn('guardian_id', $ids)->pluck('guardian_id')->map(fn ($id) => (int) $id)->flip();
+        $required = (array) config('safety.screening.required_kinds');
+        $cleared = ScreeningCheck::query()->whereIn('user_id', $ids)->where('status', ScreeningCheck::CLEARED)->get()
+            ->filter->isCurrent()->groupBy('user_id')
+            ->map(fn ($checks) => array_diff($required, $checks->map(fn (ScreeningCheck $c) => $c->kind->value)->unique()->all()) === []);
+
+        foreach ($ids as $id) {
+            $this->primedAttested[$id] = $operators->has($id) || $tutors->has($id) || $guardians->has($id) || ($required === [] ? true : (bool) $cleared->get($id, false));
+            if ($records->has($id)) {
+                $this->primedBirthDates[$id] = $records[$id]->birth_date;
+            } elseif ($declared !== null) {
+                $this->primedBirthDates[$id] = $declared[$id] ?? null;
+            }
+            $this->primedLinked[$id] = $linked->has($id);
+        }
+    }
 
     public function birthDate(User $user): ?CarbonImmutable
     {
@@ -44,7 +102,8 @@ class AgeResolver
             return $known;
         }
 
-        if (GuardianLink::query()->active()->where('learner_id', $user->id)->exists()) {
+        $linked = $this->primedLinked[(int) $user->id] ?? GuardianLink::query()->active()->where('learner_id', $user->id)->exists();
+        if ($linked) {
             return AgeBand::Teen;
         }
 
@@ -63,6 +122,10 @@ class AgeResolver
      */
     public function attestedAdult(User $user): bool
     {
+        if (array_key_exists((int) $user->id, $this->primedAttested)) {
+            return $this->primedAttested[(int) $user->id];
+        }
+
         if ($user->is_platform_operator) {
             return true;
         }
@@ -85,6 +148,10 @@ class AgeResolver
 
     private function lookup(User $user): ?CarbonImmutable
     {
+        if (array_key_exists((int) $user->id, $this->primedBirthDates)) {
+            return $this->primedBirthDates[(int) $user->id];
+        }
+
         $record = AgeRecord::query()->where('user_id', $user->id)
             ->orderByRaw("case when source = 'operator_verified' then 0 else 1 end")
             ->orderByDesc('id')

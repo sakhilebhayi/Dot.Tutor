@@ -63,6 +63,7 @@ class UsersController extends OpsController
             ->orderByDesc('id')
             ->paginate(25)->withQueryString();
 
+        $standing->prime($users->getCollection()); // a handful of queries for the page, not ~9 per person (D-1604)
         $tutors = TutorProfile::query()->whereIn('user_id', $users->pluck('id'))->pluck('status', 'user_id');
         $guardians = GuardianLink::query()->active()->whereIn('guardian_id', $users->pluck('id'))->pluck('guardian_id')->flip();
 

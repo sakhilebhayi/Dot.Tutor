@@ -74,7 +74,11 @@ class ReviewService
             ? $session->participants()->where('learner_id', $learner->id)->where('status', SeatStatus::Attended->value)->exists()
             : $session->student_id === $learner->id;
 
-        return $onBooking && ! $session->reviews()->where('rated_by', $learner->id)->exists();
+        $reviewed = $session->relationLoaded('reviews') // a list that eager-loaded reviews asks no query per row (D-1603)
+            ? $session->reviews->contains(fn ($review) => (int) $review->rated_by === (int) $learner->id)
+            : $session->reviews()->where('rated_by', $learner->id)->exists();
+
+        return $onBooking && ! $reviewed;
     }
 
     public function reply(SessionRating $review, User $tutor, string $reply): SessionRating

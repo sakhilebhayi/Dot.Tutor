@@ -18,7 +18,12 @@
         <x-td.notice tone="danger" title="Your account is paused">An operator paused this account. You can read, but booking, paying and messaging are off. <a class="td-link" href="{{ route('safety.account') }}">See why</a>.</x-td.notice>
     @elseif ($ctx['limited'])
         <x-td.notice tone="warning" title="A parent or guardian needs to join you first">
-            Before you can book a lesson, pay or message a tutor, a parent or guardian links to your account and says yes. You can still look around and practise.
+            @if ($young)
+                {{-- Young step: Grade 1-3 reading level, short sentences (R-47 a11y D-1708). --}}
+                A grown-up who looks after you must join first. Then you can book lessons. You can still look around and practise.
+            @else
+                Before you can book a lesson, pay or message a tutor, a parent or guardian links to your account and says yes. You can still look around and practise.
+            @endif
             <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" variant="primary" :href="route('safety.account')" icon="hand-heart">Invite a parent or guardian</x-td.button></div>
         </x-td.notice>
     @endif
@@ -69,7 +74,11 @@
             <x-td.button type="submit" variant="primary" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
         </div>
         <p class="td-hint" id="need-hint">
-            Say it in your own words. We read the grade, subject, language and budget, show you what we understood, and explain why each tutor fits.
+            @if ($young)
+                Say it your way. We show you tutors who can help, and why.
+            @else
+                Say it in your own words. We read the grade, subject, language and budget, show you what we understood, and explain why each tutor fits.
+            @endif
             @if (Route::has('ai.need.form') && $aiConfigured)
                 If we miss something, <a class="td-link" href="{{ route('ai.need.form') }}">the AI assistant can reword it</a>.
             @endif
@@ -142,7 +151,7 @@
         <div class="st-stack">
             <x-td.panel title="{{ $young ? 'Work from your tutor' : 'Work due' }}" flush>
                 @if ($work === [])
-                    <x-td.state kind="empty" title="Nothing due">When a tutor sets you a quiz or test, it shows here with its due date.</x-td.state>
+                    <x-td.state kind="empty" title="Nothing due">{{ $young ? 'Quizzes from your tutor show here.' : 'When a tutor sets you a quiz or test, it shows here with its due date.' }}</x-td.state>
                 @else
                     <ul class="st-list">
                         @foreach ($work as $item)
