@@ -20,6 +20,7 @@ use App\Domain\Academic\Models\Country;
 use App\Domain\Academic\Services\LearnerProfiles;
 use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Models\TutorTeachingScope;
+use App\Domain\Ops\Access\RoleAdministration;
 use App\Domain\Safety\Services\Guardians;
 use App\Models\Subject;
 use App\Models\TutorAvailabilityWindow;
@@ -114,8 +115,8 @@ $offering->subjects()->syncWithoutDetaching([$maths->id]);
 $operator = $person('operator', 'Sipho Operator');
 $operator->forceFill(['is_platform_operator' => true])->save();
 // Operator roles arrive with the ops domain (ops:grant); grant admin through its own service when it is present.
-if (class_exists(App\Domain\Ops\Access\RoleAdministration::class) && Schema::hasTable('ops_role_assignments')) {
-    app(App\Domain\Ops\Access\RoleAdministration::class)->setRoles(null, $operator, ['admin']);
+if (class_exists(RoleAdministration::class) && Schema::hasTable('ops_role_assignments')) {
+    app(RoleAdministration::class)->setRoles(null, $operator, ['admin']);
 }
 
 echo json_encode([
