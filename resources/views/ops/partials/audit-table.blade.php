@@ -4,6 +4,7 @@
     $plain = \App\Domain\Ops\Support\PlainWords::class;
     $actorNames = $entries->isEmpty() ? [] : \App\Models\User::query()->whereIn('id', $entries->pluck('actor_id')->filter()->unique())->pluck('name', 'id')->all();
     $tz = \App\Domain\Student\Support\Times::zone();
+    $subjects = $entries->isEmpty() ? [] : $plain::subjects($entries, $tz);
 @endphp
 <x-td.panel title="Audit history" flush>
     @if ($entries->isEmpty())
@@ -20,7 +21,7 @@
                             <a href="{{ route('ops.audit', ['action' => $e->action]) }}">{{ $plain::action($e->action) }}</a>
                             @if ($area = $plain::area($e->action))<span class="block ops-muted">{{ $area }}</span>@endif
                         </td>
-                        <td class="text-sm">{{ $e->subject_type ? $plain::thing($e->subject_type).' '.$e->subject_id : '' }}</td>
+                        <td class="text-sm">{{ $plain::subject($e->subject_type, $e->subject_id, $subjects) }}</td>
                         <td class="text-sm">{{ $plain::details($e->context ?? []) }}</td>
                     </tr>
                 @endforeach
