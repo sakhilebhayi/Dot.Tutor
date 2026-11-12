@@ -120,15 +120,15 @@
     }
 
     .td-tabs[data-more-end] {
-        mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent); /* taste-skill-ignore: an alpha mask that fades the scrolling edge, not a colour fill */
     }
 
     .td-tabs[data-more-start] {
-        mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent);
+        mask-image: linear-gradient(to left, #000 calc(100% - 3rem), transparent); /* taste-skill-ignore: an alpha mask that fades the scrolling edge, not a colour fill */
     }
 
     .td-tabs[data-more-start][data-more-end] {
-        mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+        mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent); /* taste-skill-ignore: an alpha mask that fades the scrolling edge, not a colour fill */
     }
 
     /* Tutor standing (x-td.tutor-standing, D-2210): three facts in a column, glyph and words, a soft tone each. */
