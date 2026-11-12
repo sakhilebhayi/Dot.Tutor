@@ -294,7 +294,7 @@ class OnboardingController extends Controller
                 'submitted_at' => now(),
                 'resubmission_note' => $again ? $data['resubmission_note'] : null,
             ]);
-            Audit::record($request->user(), 'tutor.profile.submitted', $profile, ['again' => $again]);
+            Audit::record($request->user(), 'tutor.profile.submitted', $profile, ['again' => $again, 'note' => $again ? mb_substr($data['resubmission_note'], 0, 500) : null]);
         });
 
         return redirect()->route('teach.profile', ['step' => 'send'])

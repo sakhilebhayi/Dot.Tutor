@@ -181,3 +181,15 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Room safety (brief 15) | Safety rules for rooms existed, `RoomDirectory` bound to a null | P | Room conversations answered 404 | Rooms are `AgeGatedSpace`s; `RoomDirectory` bound; age gates, pre-moderation, redaction, reports and holds enforced server side |
 | Engagement mechanics | None | F (correctly absent) | Brief: no likes or popularity | Indicators only: questions resolved, answers accepted, resources contributed, sessions attended, milestones |
 | Freshness | None | M | No way to see new activity | Versioned activity endpoint with ETag/304 and a polling notice |
+
+### Tutor workspace (tutor UI agent, 2026-11-12)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Tutor application: one legacy form (headline, bio, free-text qualifications, decimal rate, subjects) that put the application in the operator queue at once | 2 | No guidance, no draft, no scope by level, languages or evidence; unfinished applications reached operators | Nine-step guided onboarding over profile v2, scope, languages, evidence and offerings; draft state until sent; required steps checked; re-send needs a note (D-1201, D-1202) |
+| Tutor workspace: wave-1 minimal pages (`/my/bookings`, `/money/earnings`, `/learning/studio`) in the old layout, no home | 3 | No business dashboard, students, calendar of lessons, storefront editor, insights or income report | 13 workspace screens in the ds shell (see R47_UI_TUTOR.md); the wave-1 pages still exist for their owners |
+| Commission and net visible only through the money JSON preview | 4 (for tutors) | A tutor could not see what they keep before saving a price | Live and server-rendered "you keep" on offerings and course price (D-1204) |
+| Requests from minors waiting for a guardian | 2 | The wave-1 booking list showed them with the learner's name | Number only until approved (D-1208), tested |
+| Referral links, promotional page, share link | 6 | Missing | Attribution-only referral link, `/u/{handle}`, printable promotional page (D-1209) |
+| Upload progress for course files | 6 | Missing | XHR progress enhancement that keeps the server's messages (D-1212) |
+

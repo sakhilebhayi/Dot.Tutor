@@ -18,7 +18,7 @@ return new class extends Migration
             // Whether the tutor wants to teach learners under 18 (drives the safeguarding step; the gate decides).
             $table->boolean('teaches_minors')->default(false);
             $table->timestamp('submitted_at')->nullable();
-            // What the tutor changed when sending again after a decision (shown to the reviewing operator).
+            // What the tutor changed when sending again after a decision, kept for the review (also in the audit context).
             $table->text('resubmission_note')->nullable();
             $table->timestamps();
         });
