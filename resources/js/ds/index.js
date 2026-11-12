@@ -11,6 +11,7 @@ import { initConfirm } from './confirm.js';
 import { initTableStacks } from './table-stack.js';
 import { initTabOverflow } from './tabs-overflow.js';
 import { initPublicMenu } from './public-menu.js';
+import { initPrint } from './print.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -24,6 +25,7 @@ function boot(root = document) {
     initTableStacks(root);
     initTabOverflow(root);
     initPublicMenu(root);
+    initPrint(root);
 }
 
 if (document.readyState === 'loading') {

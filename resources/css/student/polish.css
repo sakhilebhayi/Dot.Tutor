@@ -605,3 +605,37 @@
         margin-top: var(--td-space-3);
     }
 }
+
+/* Fix round (fix-public, D-2307): the receipt. "Items paid" sits inside the panel's padding, rows stack on phones,
+   and a printed receipt carries only the receipt. */
+@layer components {
+    .st-receipt-table caption {
+        padding: var(--td-space-4) var(--td-space-5) var(--td-space-3);
+    }
+}
+
+@media print {
+    .td-rail,
+    .td-top,
+    .td-bottom,
+    .td-skip,
+    .shell-backdrop,
+    .td-page-head__actions,
+    .td-no-print,
+    .td-toasts {
+        display: none !important;
+    }
+
+    .td-app,
+    .td-main,
+    .td-page {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .table-scroll {
+        overflow: visible !important;
+    }
+}
