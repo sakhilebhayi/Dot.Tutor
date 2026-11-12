@@ -82,7 +82,7 @@
             @endif
 
             @if ($showTimes)
-                <form method="POST" action="{{ route('learn.book.store', $offering->id) }}" class="st-stack">
+                <form method="POST" action="{{ route('learn.book.store', $offering->id) }}" class="st-stack" id="book-form">
                     @csrf
                     <input type="hidden" name="idempotency_key" value="{{ $key }}">
                     @if ($usablePackage)<input type="hidden" name="package_purchase_id" value="{{ $usablePackage->id }}">@endif
@@ -91,21 +91,43 @@
                         @if ($days === [])
                             <x-td.state kind="empty" title="No open times in the next two weeks">The tutor has not opened any time in that period. Try another tutor, or check back later.</x-td.state>
                         @else
-                            <fieldset aria-describedby="times-hint">
+                            @php
+                                // One day at a time (R-47 polish D-2017, critic A 3): a strip of days, then that day's times.
+                                // Pure CSS (:has) shows the chosen day; without it every day is listed as before.
+                                $chosen = old('starts_at', $preselect);
+                                $openDay = 0;
+                                foreach ($days as $i => $day) {
+                                    foreach ($day['slots'] as $slot) {
+                                        if ($slot->utc()->toIso8601String() === $chosen) { $openDay = $i; break 2; }
+                                    }
+                                }
+                            @endphp
+                            <fieldset class="st-picker" aria-describedby="times-hint">
                                 <legend class="td-sr">Open times</legend>
-                                @foreach ($days as $day)
-                                    <p class="st-day">{{ Times::day($day['slots'][0]) }}</p>
-                                    <div class="st-times">
-                                        @foreach ($day['slots'] as $slot)
-                                            @php $iso = $slot->utc()->toIso8601String(); @endphp
-                                            <label class="st-time">
-                                                <input type="radio" name="starts_at" value="{{ $iso }}" required @checked(old('starts_at', $preselect) === $iso)>
-                                                <span>{{ Times::clock($slot) }}</span>
-                                            </label>
-                                        @endforeach
+                                <div class="st-daystrip" role="radiogroup" aria-label="Day">
+                                    @foreach ($days as $i => $day)
+                                        @php $first = Times::local($day['slots'][0]); @endphp
+                                        <label class="st-daystrip__day">
+                                            <input type="radio" name="day_pick" value="{{ $i }}" id="day-{{ $i }}" @checked($i === $openDay)>
+                                            <span><span class="st-daystrip__dow">{{ $first->format('D') }}</span><span class="st-daystrip__date">{{ $first->format('j M') }}</span><span class="st-daystrip__count">{{ count($day['slots']) }} {{ \Illuminate\Support\Str::plural('time', count($day['slots'])) }}</span></span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                @foreach ($days as $i => $day)
+                                    <div class="st-picker__day" data-day="{{ $i }}">
+                                        <p class="st-day">{{ Times::day($day['slots'][0]) }}</p>
+                                        <div class="st-times">
+                                            @foreach ($day['slots'] as $slot)
+                                                @php $iso = $slot->utc()->toIso8601String(); @endphp
+                                                <label class="st-time">
+                                                    <input type="radio" name="starts_at" value="{{ $iso }}" @checked($chosen === $iso)>
+                                                    <span>{{ Times::clock($slot) }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 @endforeach
-                                <p class="td-hint" id="times-hint" style="margin:var(--td-space-3) 0 0">Only times the tutor has opened and nobody has booked. {{ Times::zoneNote() }}</p>
+                                <p class="td-hint" id="times-hint" style="margin:var(--td-space-3) 0 0">{{ ($ctx['step'] ?? 'standard') === 'young' ? 'Pick a day, then a time. ' : 'Pick a day, then a time. Only times the tutor has opened and nobody has booked. ' }}{{ Times::zoneNote() }}</p>
                             </fieldset>
                         @endif
                     </x-td.panel>
@@ -142,14 +164,11 @@
                         </div>
                     </x-td.panel>
 
-                    <div class="st-form__actions">
-                        <x-td.button type="submit" variant="primary" size="lg" :disabled="(bool) $blocked || $days === []">{{ $isWeekly ? 'Request weekly lessons' : 'Request this lesson' }}</x-td.button>
-                    </div>
                 </form>
             @endif
         </div>
 
-        <aside class="st-stack" aria-label="Price and terms">
+        <aside class="st-stack st-sticky" aria-label="Price and terms">
             <x-td.panel title="What you pay">
                 <div class="st-stack">
                     @if ($usablePackage)
@@ -160,9 +179,17 @@
                             @if ($free)<span>Free</span>@else<x-td.money :minor="$data['price_minor']" :currency="$data['currency']" />@endif
                         </div>
                         @unless ($free)
-                            <p class="st-small" style="margin:0">This is the whole price. Dot.Tutor's commission comes out of the tutor's share; nothing is added to what you pay.</p>
-                            <p class="st-small" style="margin:0">You pay only after the tutor accepts{{ $ctx['minor'] ? ' and your parent or guardian approves' : '' }}. Payment is by Paystack.</p>
+                            @if (($ctx['step'] ?? 'standard') === 'young')
+                                <p class="st-small" style="margin:0">This is the whole price. Nothing is paid until your parent or guardian says yes and the tutor says yes.</p>
+                            @else
+                                <p class="st-small" style="margin:0">This is the whole price. Dot.Tutor's commission comes out of the tutor's share; nothing is added to what you pay.</p>
+                                <p class="st-small" style="margin:0">You pay only after the tutor accepts{{ $ctx['minor'] ? ' and your parent or guardian approves' : '' }}. Payment is by Paystack.</p>
+                            @endif
                         @endunless
+                    @endif
+                    @if ($showTimes)
+                        {{-- The one submit for the booking form, kept beside the price (sticky on wide screens). --}}
+                        <x-td.button type="submit" form="book-form" variant="primary" size="lg" block :disabled="(bool) $blocked || $days === []">{{ $isWeekly ? 'Request weekly lessons' : (($ctx['step'] ?? 'standard') === 'young' ? 'Ask for this lesson' : 'Request this lesson') }}</x-td.button>
                     @endif
                 </div>
             </x-td.panel>

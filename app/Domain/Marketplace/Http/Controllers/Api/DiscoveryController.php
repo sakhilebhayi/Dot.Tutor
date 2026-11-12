@@ -180,7 +180,7 @@ class DiscoveryController extends Controller
     /** The tutor's photo: private file, streamed to signed-in users while the tutor is approved (or to its owner). */
     public function photo(Request $request, TutorProfile $tutorProfile, PrivateFiles $files): StreamedResponse
     {
-        abort_unless($tutorProfile->isApproved() || $tutorProfile->user_id === $request->user()->id, 404);
+        abort_unless($tutorProfile->isApproved() || ($request->user() !== null && $tutorProfile->user_id === $request->user()->id), 404);
         abort_unless($files->exists($tutorProfile->photo_path), 404);
 
         return $files->stream($tutorProfile->photo_path, 'image/jpeg', 'tutor-'.$tutorProfile->id, inline: true);

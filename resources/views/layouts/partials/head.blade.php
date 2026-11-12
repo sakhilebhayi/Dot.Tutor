@@ -3,10 +3,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ filled($title ?? null) ? $title.' | Dot.Tutor' : 'Dot.Tutor' }}</title>
-@if (filled($description ?? null))
-    <meta name="description" content="{{ $description }}">
-@endif
+@php
+    // Search and sharing (R-47 polish D-2014): one title per page, a description, the canonical address (no query
+    // string) and Open Graph / Twitter cards with the self-hosted card image. Pages pass title and description.
+    $metaTitle = filled($title ?? null) ? $title.' | Dot.Tutor' : 'Dot.Tutor';
+    $metaDescription = filled($description ?? null) ? $description : 'Dot.Tutor matches learners from Grade 1 to doctoral study with tutors by subject, level, curriculum and the language they really teach in, and says why each one fits.';
+    $metaCanonical = $canonical ?? url()->current();
+@endphp
+<title>{{ $metaTitle }}</title>
+<meta name="description" content="{{ $metaDescription }}">
+<link rel="canonical" href="{{ $metaCanonical }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dot.Tutor">
+<meta property="og:title" content="{{ $metaTitle }}">
+<meta property="og:description" content="{{ $metaDescription }}">
+<meta property="og:url" content="{{ $metaCanonical }}">
+<meta property="og:image" content="{{ asset('images/og-card.png') }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Dot.Tutor: tutors by subject, level and language, beside eight coloured book spines, one per stage of study.">
+<meta property="og:locale" content="en_ZA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $metaTitle }}">
+<meta name="twitter:description" content="{{ $metaDescription }}">
+<meta name="twitter:image" content="{{ asset('images/og-card.png') }}">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f4f7f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121a17" media="(prefers-color-scheme: dark)">

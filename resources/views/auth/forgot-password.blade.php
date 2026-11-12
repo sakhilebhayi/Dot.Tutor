@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Reset your password" description="Ask for a link to choose a new Dot.Tutor password.">
     <x-authentication-card title="Reset your password">
         <x-slot name="logo">
             <x-authentication-card-logo />
@@ -22,7 +22,7 @@
 
             <div class="block">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             </div>
 
             <div class="flex items-center justify-end mt-4">

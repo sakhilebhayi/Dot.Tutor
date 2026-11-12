@@ -32,8 +32,10 @@ class BookingPurchasable implements Purchasable
     {
         $subject = $this->session->subject?->name ?? 'Lesson';
         $tutor = $this->session->tutorProfile?->user?->name;
+        // The title is frozen on the order line, so it names its zone (platform zone, e.g. "15 Nov 2026 10:00 SAST"):
+        // a bare UTC wall clock here disagreed with every other screen (R-47 polish D-2001).
 
-        return mb_substr(sprintf('%s lesson%s, %s, %d min', $subject, $tutor ? ' with '.$tutor : '', $this->session->starts_at->format('j M Y H:i'), $this->session->duration_minutes), 0, 200);
+        return mb_substr(sprintf('%s lesson%s, %s, %d min', $subject, $tutor ? ' with '.$tutor : '', $this->session->starts_at->copy()->timezone((string) config('tutor.timezone', 'Africa/Johannesburg'))->format('j M Y H:i T'), $this->session->duration_minutes), 0, 200);
     }
 
     public function purchasePrice(User $buyer): Money

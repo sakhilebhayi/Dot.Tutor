@@ -15,7 +15,13 @@ class EcosystemErrorPagesTest extends TestCase
         $response->assertStatus($code);
         $response->assertSee($expectedHeading);
         $response->assertSee('Dot.Tutor', false);
-        $response->assertSee('the rest of the Dot Ecosystem', false);
+        $response->assertSee('Skip to content');
+        if ($code === 404) {
+            // A missing page offers this site's routes, not the other Dot platforms (R-47 polish D-2016).
+            $response->assertDontSee('the rest of the Dot Ecosystem', false)->assertSee('Find a tutor')->assertSee('Rooms by level');
+        } else {
+            $response->assertSee('the rest of the Dot Ecosystem', false);
+        }
     }
 
     public static function errorCodes(): array

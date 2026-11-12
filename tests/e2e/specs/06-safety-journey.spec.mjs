@@ -9,7 +9,7 @@ import {
     newContext, closeBrowser, closeLeftovers, world, one, sql, until, step, watch, hygiene, shot, infoDotSignIn, makePerson, evidenceLog,
     cspViolations, mailsTo, uniq, api, formPost, artisan,
 } from '../lib/harness.mjs';
-import { levelId, subjectId, screenTutor, firstSlotOn, dbTime } from '../lib/flows.mjs';
+import { levelId, subjectId, screenTutor, firstSlotOn, dbTime, chooseSlot, bookSubmit } from '../lib/flows.mjs';
 
 const ev = evidenceLog('06-safety');
 
@@ -88,8 +88,8 @@ test('safety journey: a child, a guardian, refusals, a report and an incident', 
         const offering = one('select id from tutor_offerings where tutor_profile_id = ? order by id limit 1', [screened.profile_id]).id;
         await page.goto(`/learn/book/${offering}`);
         const slot = await firstSlotOn(page, 2);
-        await page.check(`input[name=starts_at][value="${slot}"]`);
-        await Promise.all([page.waitForURL('**/learn/lessons/**'), page.locator('form[action*="/learn/book/"] button[type=submit]').last().click()]);
+        await chooseSlot(page, slot);
+        await Promise.all([page.waitForURL('**/learn/lessons/**'), bookSubmit(page).click()]);
         lessonId = Number(new URL(page.url()).pathname.split('/').pop());
         const s = one('select status, guardian_status from tutor_sessions where id = ?', [lessonId]);
         assert.equal(s.status, 'awaiting_guardian');

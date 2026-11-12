@@ -20,6 +20,15 @@ use App\Domain\Marketplace\Http\Controllers\Api\TutorWorkspaceController;
 use App\Domain\Marketplace\Http\Controllers\Web\MarketplacePageController;
 use Illuminate\Support\Facades\Route;
 
+// ---------------------------------------------------------------- Public discovery (R-47 polish D-2003)
+// A signed-out visitor can search approved tutors and read a storefront: approved tutors only (unapproved is 404),
+// tutor free text through safety's view_contact rule (contact details hidden from guests), no learner data.
+// Booking, paying, messaging and reporting stay behind sign-in; guests are rate-limited per address
+// (tutor-guest-search, tutor-public-pages: TutorStudentServiceProvider).
+Route::get('/tutors/{tutorProfile}/photo', [DiscoveryController::class, 'photo'])->middleware('throttle:tutor-public-pages')->name('marketplace.tutors.photo');
+Route::get('/find-a-tutor', [MarketplacePageController::class, 'find'])->middleware(['throttle:tutor-guest-search', 'throttle:marketplace-matching'])->name('marketplace.find');
+Route::get('/t/{tutorProfile}', [MarketplacePageController::class, 'storefront'])->middleware('throttle:tutor-public-pages')->name('marketplace.tutors.show');
+
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
     // ---------------------------------------------------------------- JSON API
@@ -98,9 +107,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     });
 
     // ---------------------------------------------------------------- Pages (minimal; wave 2 builds the real screens)
-    Route::get('/tutors/{tutorProfile}/photo', [DiscoveryController::class, 'photo'])->name('marketplace.tutors.photo');
-    Route::get('/find-a-tutor', [MarketplacePageController::class, 'find'])->middleware('throttle:marketplace-matching')->name('marketplace.find');
-    Route::get('/t/{tutorProfile}', [MarketplacePageController::class, 'storefront'])->name('marketplace.tutors.show');
     Route::post('/t/{tutorProfile}/offerings/{offering}/book', [MarketplacePageController::class, 'book'])->middleware('throttle:bookings')->name('marketplace.book');
     Route::get('/my/bookings', [MarketplacePageController::class, 'bookings'])->name('marketplace.bookings');
     Route::post('/my/bookings/{tutorSession}/{action}', [MarketplacePageController::class, 'act'])

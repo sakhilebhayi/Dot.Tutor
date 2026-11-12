@@ -8,7 +8,7 @@ import {
     newContext, closeBrowser, closeLeftovers, world, one, sql, until, step, watch, hygiene, shot, interceptCheckout, infoDotSignIn,
     stub, signIn, cspViolations, evidenceLog, uniq, api,
 } from '../lib/harness.mjs';
-import { levelId, subjectId, acceptOnTeach, payOnLessonPage, attendLesson, firstSlotOn, setPracticeFor } from '../lib/flows.mjs';
+import { levelId, subjectId, acceptOnTeach, payOnLessonPage, attendLesson, firstSlotOn, setPracticeFor, chooseSlot, bookSubmit } from '../lib/flows.mjs';
 
 const ev = evidenceLog('01-student');
 
@@ -91,8 +91,8 @@ test('student journey: InfoDot to progress', async () => {
     await step(page, 'book', async () => {
         await Promise.all([page.waitForURL(`**/learn/book/${tutor.offerings[0]}`), page.getByRole('link', { name: 'Request this lesson' }).click()]);
         const slot = await firstSlotOn(page, 2);
-        await page.check(`input[name=starts_at][value="${slot}"]`);
-        await Promise.all([page.waitForURL('**/learn/lessons/**'), page.locator('form[action*="/learn/book/"] button[type=submit]').last().click()]);
+        await chooseSlot(page, slot);
+        await Promise.all([page.waitForURL('**/learn/lessons/**'), bookSubmit(page).click()]);
         lessonId = Number(new URL(page.url()).pathname.split('/').pop());
         const s = one('select status, price_minor, student_id from tutor_sessions where id = ?', [lessonId]);
         assert.equal(s.student_id, learnerId);

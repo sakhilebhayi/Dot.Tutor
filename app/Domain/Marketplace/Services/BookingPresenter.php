@@ -8,6 +8,7 @@ use App\Domain\Marketplace\Models\TutorPackagePurchase;
 use App\Domain\Marketplace\Models\TutorSessionEvent;
 use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Domain\Marketplace\Support\MinorUnits;
+use App\Domain\Student\Support\Times;
 use App\Enums\SessionStatus;
 use App\Models\TutorSession;
 use App\Models\User;
@@ -89,7 +90,7 @@ class BookingPresenter
             'payment_hold_expires_at' => $p->hold_expires_at?->copy()->utc()->toIso8601String(),
             'next_step' => match ($p->status) {
                 SeatStatus::AwaitingGuardian->value => 'Waiting for a guardian to approve this seat.',
-                SeatStatus::AwaitingPayment->value => 'Pay to keep this seat. It is held until '.$p->hold_expires_at?->copy()->utc()->format('H:i').' UTC.',
+                SeatStatus::AwaitingPayment->value => 'Pay to keep this seat. It is held until '.Times::stamp($p->hold_expires_at, 'H:i').'.',
                 SeatStatus::Confirmed->value => 'Your seat is confirmed.',
                 default => null,
             },
@@ -137,7 +138,7 @@ class BookingPresenter
         return match (SessionStatus::from($s->status)) {
             SessionStatus::AwaitingGuardian => 'Waiting for a guardian to approve. The tutor sees the request after that.',
             SessionStatus::Pending => 'Waiting for the tutor to accept or decline.',
-            SessionStatus::AwaitingPayment => 'Accepted by the tutor. Pay to confirm it'.($s->hold_expires_at ? ' by '.$s->hold_expires_at->copy()->utc()->format('Y-m-d H:i').' UTC' : '').'.',
+            SessionStatus::AwaitingPayment => 'Accepted by the tutor. Pay to confirm it'.($s->hold_expires_at ? ' by '.Times::stamp($s->hold_expires_at, 'D j M, H:i') : '').'.',
             SessionStatus::Confirmed => $s->isGroup() ? 'Scheduled. Learners can take seats until it is full.' : 'Confirmed.',
             SessionStatus::InProgress => 'The lesson is under way.',
             SessionStatus::Completed => 'Completed.',

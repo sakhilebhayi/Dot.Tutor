@@ -4,7 +4,7 @@
     <x-td.panel title="Earlier versions" flush>
         @forelse ($revisions as $revision)
             <article class="grid gap-2 border-b border-td-line px-5 py-4 last:border-b-0">
-                <p class="m-0 text-sm text-td-ink-2">Replaced <time datetime="{{ $revision->created_at?->toIso8601String() }}">{{ $revision->created_at?->format('j M Y, H:i') }}</time></p>
+                <p class="m-0 text-sm text-td-ink-2">Replaced <time datetime="{{ $revision->created_at?->toIso8601String() }}">{{ \App\Domain\Student\Support\Times::stamp($revision->created_at, 'j M Y, H:i') }}</time></p>
                 @if ($revision->title)<p class="m-0 font-semibold">{{ $revision->title }}</p>@endif
                 <div class="whitespace-pre-line" style="max-width: var(--td-measure)">{{ $revision->body }}</div>
             </article>

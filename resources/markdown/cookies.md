@@ -1,28 +1,34 @@
-_Last updated: 7 August 2026_
+_Last updated: 12 November 2026_
 
 This Cookie Policy explains how **BluePin Inc** ("BluePin", "we", "us", "our") uses cookies on Dot.Tutor.
 
 ## 1. What cookies we use
 
-Dot.Tutor uses one essential cookie, `dot-tutor-session`, to keep you signed in and to protect your session against cross-site request forgery. This cookie is strictly necessary for Dot.Tutor to work — without it, you'd need to sign in again on every page.
+Dot.Tutor uses only cookies it needs to work:
 
-We don't use advertising, tracking, or third-party analytics cookies.
+- **a session cookie**, which keeps you signed in as you move between pages;
+- **`XSRF-TOKEN`**, which protects the forms you send (booking a lesson, paying, leaving a review) against cross-site request forgery; and
+- **a "remember me" cookie**, only if you ask to stay signed in.
 
-## 2. Why we use it
+Without them you would need to sign in again on every page.
 
-The `dot-tutor-session` cookie lets Dot.Tutor recognise you as you move between pages after signing in, and helps protect the authenticity of requests you submit (booking a session, cancelling a session, leaving a review, etc.).
+We do not use advertising, tracking, or third-party analytics cookies.
 
-## 3. How long it lasts
+## 2. Settings kept on your device
 
-The session cookie lasts for the duration of your browsing session, or longer if you select "Remember me" when signing in, per your browser's session-cookie handling.
+If you choose a light or dark theme, that choice is kept in your browser's local storage on that device only. It is not sent to us.
+
+## 3. How long they last
+
+The session and `XSRF-TOKEN` cookies last while you are signed in and expire after a period without activity. The "remember me" cookie lasts until you sign out.
 
 ## 4. Managing cookies
 
-Because this cookie is essential to signing in and using Dot.Tutor, there's no in-app way to disable it while remaining signed in. You can block or delete cookies through your browser settings, but doing so will prevent you from staying signed in to Dot.Tutor.
+Because these cookies are needed to sign in and use Dot.Tutor, there is no setting in the app to turn them off while staying signed in. You can block or delete cookies in your browser settings, but you will then not stay signed in to Dot.Tutor.
 
 ## 5. Changes to this Policy
 
-We may update this Cookie Policy from time to time. If we make material changes, we'll update the "Last updated" date above.
+We may update this Cookie Policy from time to time. If we make material changes, we will update the "Last updated" date above.
 
 ## 6. Contact us
 

@@ -22,7 +22,7 @@ class ProgressController extends Controller
 
         return view('student.progress', [
             'insights' => $feed->insights($user),
-            'bySubject' => collect($mastery)->groupBy(fn ($row) => $row['subject_id'] ? ($subjects[$row['subject_id']] ?? 'Other') : 'Other')->sortKeys(),
+            'bySubject' => collect($mastery)->groupBy(fn ($row) => $row['subject_id'] ? ($subjects[$row['subject_id']] ?? 'Topics without a subject') : 'Topics without a subject')->sortKeys(),
             'recent' => $feed->recentEvents($user, 15),
         ]);
     }

@@ -61,8 +61,8 @@
         </div>
 
         <aside class="st-stack">
-            <details class="td-panel" @if ($errors->any()) open @endif>
-                <summary class="td-panel__head" style="cursor:pointer"><h2 class="td-panel__title">Share material</h2></summary>
+            <details class="td-panel st-disclosure" @if ($errors->any()) open @endif>
+                <summary class="td-panel__head"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span class="st-disclosure__label"><h2 class="td-panel__title">Share material</h2><span class="st-disclosure__hint">Add notes, worksheets or past papers to the study library</span></span></summary>
                 <form method="POST" action="{{ route('learning.library.store') }}" enctype="multipart/form-data" class="st-form td-panel__body">
                     @csrf
                     <x-td.field label="Title" for="r-title"><x-td.input name="title" id="r-title" required maxlength="160" /></x-td.field>

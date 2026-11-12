@@ -70,7 +70,16 @@ class ResponsiveShellTest extends TestCase
 
     public function test_the_drawer_footer_has_sign_out_and_a_team_switcher(): void
     {
-        $user = $this->makeUser('Switcher Student');
+        // R-47 polish D-2023: the switcher is for a tutor (or operator) who uses more than one team; a learner with the
+        // same two teams sees only sign-out.
+        $learner = $this->makeUser('Plain Learner');
+        Team::factory()->create(['user_id' => $learner->id, 'personal_team' => false, 'name' => 'Learner Second Team']);
+        $xpath = $this->assertResponsiveShell($this->actingAs($learner)->get(route('dashboard')));
+        $this->assertSame(0, $xpath->query('//details[contains(@class, "team-switch")]')->length);
+        $this->assertSame(1, $xpath->query('//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);
+
+        $user = $this->makeUser('Switcher Tutor');
+        $this->makeTutor([], null, $user);
         $second = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false, 'name' => 'Matric Maths Study Group']);
 
         $xpath = $this->assertResponsiveShell($this->actingAs($user)->get(route('dashboard')));

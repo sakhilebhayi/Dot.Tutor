@@ -98,7 +98,7 @@
         <div class="td-panels content-start border-0">
             <x-td.panel title="Share your storefront">
                 <div class="grid gap-4">
-                    <x-td.field label="Storefront link" for="share-url" hint="Learners sign in with InfoDot to open it.">
+                    <x-td.field label="Storefront link" for="share-url" hint="Anyone can open it without an account; booking and messages need sign-in. Contact details in your text are hidden from visitors.">
                         <x-td.input name="share_url" id="share-url" :value="$shareUrl" readonly :hint="true" data-teach-copy-source />
                     </x-td.field>
                     <x-td.button size="sm" data-teach-copy="share-url" hidden>Copy link</x-td.button>

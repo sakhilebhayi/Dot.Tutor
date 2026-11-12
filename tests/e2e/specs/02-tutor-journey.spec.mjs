@@ -8,7 +8,7 @@ import {
     newContext, closeBrowser, closeLeftovers, world, one, sql, until, step, watch, hygiene, shot, interceptCheckout, infoDotSignIn,
     signIn, makePerson, artisan, evidenceLog, uniq, fixtureFile, cspViolations,
 } from '../lib/harness.mjs';
-import { levelId, subjectId, payOnLessonPage, attendLesson, firstSlotOn, dbTime } from '../lib/flows.mjs';
+import { levelId, subjectId, payOnLessonPage, attendLesson, firstSlotOn, dbTime, chooseSlot, bookSubmit } from '../lib/flows.mjs';
 
 const ev = evidenceLog('02-tutor');
 
@@ -164,8 +164,8 @@ test('tutor journey: register to payout', async () => {
     await step(page, 'request and accept', async () => {
         await lpage.goto(`/learn/book/${offeringId}`);
         const slot = await firstSlotOn(lpage, 2);
-        await lpage.check(`input[name=starts_at][value="${slot}"]`);
-        await Promise.all([lpage.waitForURL('**/learn/lessons/**'), lpage.locator('form[action*="/learn/book/"] button[type=submit]').last().click()]);
+        await chooseSlot(lpage, slot);
+        await Promise.all([lpage.waitForURL('**/learn/lessons/**'), bookSubmit(lpage).click()]);
         lessonId = Number(new URL(lpage.url()).pathname.split('/').pop());
         await page.goto('/teach');
         assert.match(await page.innerText('main'), /1 request/i, 'Today leads with the waiting request');

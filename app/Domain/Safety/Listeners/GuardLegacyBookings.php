@@ -52,7 +52,7 @@ class GuardLegacyBookings
 
         $this->approvals->request($student, 'booking', $session, [
             'summary' => trim(($subject?->name ?? 'Lesson').' with '.($tutor?->name ?? 'a tutor')
-                .' on '.$session->starts_at->timezone(config('tutor.timezone'))->format('j M Y H:i')),
+                .' on '.$session->starts_at->timezone(config('tutor.timezone'))->format('j M Y H:i T')),
         ]);
     }
 

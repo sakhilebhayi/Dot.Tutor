@@ -61,6 +61,31 @@
         transform: translateY(1px);
     }
 
+    /* Hover is never colour alone (R-47 polish D-2008, critics A20/B17): the label's underline draws in and an end
+       arrow steps forward, the way the shelf spines move on the landing. Pointer devices only; under reduced motion
+       the change is instant (base.css). */
+    .td-btn > span:not(.td-sr) {
+        text-decoration-line: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 0.3em;
+        text-decoration-color: transparent;
+        transition: text-decoration-color var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    .td-btn > .td-icon {
+        transition: transform var(--td-dur-short) var(--td-ease-out);
+    }
+
+    @media (hover: hover) {
+        .td-btn:not(:disabled, [aria-disabled='true']):hover > span:not(.td-sr) {
+            text-decoration-color: currentColor;
+        }
+
+        .td-btn:not(:disabled, [aria-disabled='true']):hover > span + .td-icon {
+            transform: translateX(3px);
+        }
+    }
+
     .td-btn:disabled,
     .td-btn[aria-disabled='true'] {
         opacity: 0.55;

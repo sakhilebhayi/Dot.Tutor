@@ -19,7 +19,7 @@
                     <li class="st-row">
                         <div>
                             <p class="st-row__title">{{ $order->lines->pluck('title')->implode(', ') ?: 'Order' }}</p>
-                            <p class="st-row__meta">{{ Times::when($order->created_at) }} · {{ $order->total()->format() }}@if ($order->refunded_minor) · {{ \App\Domain\Money\Money::of($order->refunded_minor, $order->currency)->format() }} refunded @endif</p>
+                            <p class="st-row__meta">{{ Times::stamp($order->created_at) }} · {{ $order->total()->format() }}@if ($order->refunded_minor) · {{ \App\Domain\Money\Money::of($order->refunded_minor, $order->currency)->format() }} refunded @endif</p>
                         </div>
                         <div class="st-row__end">
                             <span class="td-badge td-badge--{{ $tone }}"><x-td.icon :name="$icon" />{{ $word }}</span>

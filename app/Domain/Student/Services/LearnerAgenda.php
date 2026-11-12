@@ -2,6 +2,7 @@
 
 namespace App\Domain\Student\Services;
 
+use App\Domain\Classroom\Models\Classroom;
 use App\Domain\Community\Models\Post;
 use App\Domain\Community\Models\RoomMember;
 use App\Domain\Learning\Contracts\ProgressFeed;
@@ -56,6 +57,28 @@ class LearnerAgenda
     }
 
     /** Completed lessons this learner can still review. @return Collection<int, TutorSession> */
+    /**
+     * The learner's most recent finished lesson, with the tutor's published summary when there is one (R-47 polish
+     * D-2024: home showed five empty states to a learner who had just had a lesson).
+     *
+     * @return array{lesson: TutorSession, summary: ?string}|null
+     */
+    public function lastLesson(User $user): ?array
+    {
+        $lesson = TutorSession::query()
+            ->with(['tutorProfile.user', 'subject', 'offering'])
+            ->where('student_id', $user->id)
+            ->where('status', SessionStatus::Completed->value)
+            ->orderByDesc('starts_at')->orderByDesc('id')
+            ->first();
+        if ($lesson === null) {
+            return null;
+        }
+        $summary = Classroom::query()->where('tutor_session_id', $lesson->id)->whereNotNull('summary_published_at')->value('summary');
+
+        return ['lesson' => $lesson, 'summary' => is_string($summary) && trim($summary) !== '' ? $summary : null];
+    }
+
     public function lessonsToReview(User $user, int $limit = 3): Collection
     {
         return TutorSession::query()

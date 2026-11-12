@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Sign in" description="Sign in to Dot.Tutor to book lessons, join your rooms and see your progress.">
     <x-authentication-card title="Sign in to Dot.Tutor">
         <x-slot name="logo">
             <x-authentication-card-logo />
@@ -18,7 +18,7 @@
 
             <div>
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             </div>
 
             <div class="mt-4">
@@ -41,7 +41,7 @@
                 @endif
 
                 <x-button class="ms-4">
-                    {{ __('Log in') }}
+                    {{ __('Sign in') }}
                 </x-button>
             </div>
         </form>
