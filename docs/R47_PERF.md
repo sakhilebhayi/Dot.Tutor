@@ -182,7 +182,7 @@ holding every time.
 | Suite | Branch point | After (trunk with security merged) |
 |---|---|---|
 | PHP, SQLite | 906 tests, 899 passed, 7 skipped | 956 tests, 949 passed, 7 skipped, 0 failed |
-| PHP, PostgreSQL (`bin/test-pgsql.sh`) | | 955 passed/skipped as SQLite (run before the last budget test was added), 0 failed |
+| PHP, PostgreSQL (`bin/test-pgsql.sh`) | | 956 tests, 949 passed, 7 skipped, 0 failed |
 
 New: `tests/Feature/Perf/PollCostTest` (4), `RoomPollCostTest` (1), `ListQueryBudgetTest` (4: matching, people list,
 bookings list, primed age resolver), `ConcurrencyInvariantsTest` (6). Changed tests: none.
