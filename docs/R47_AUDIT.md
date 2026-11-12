@@ -209,3 +209,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Progress and flashcards | JSON only | M | No learner-facing progress or flashcard pages | Progress in words; flashcard create, review and grade |
 | Purchases and account | None | M | No list of orders; no place for languages, step and guardian status | `/learn/purchases`, `/learn/account` |
 | Young learners | Ds step existed, never switched on | P | A Grade 3 learner saw the full interface | Step decided by level and age band (D-1101), checked in the browser |
+
+### Deploy pipeline and operations (deploy agent, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Release gate | `ci.yml`: PHPUnit on SQLite only | P | No PostgreSQL run, no JS tests, no build check, nothing proved the upgrade of a populated database | SQLite and PostgreSQL 16 suites, upgrade rehearsal on both engines, JS tests, build + manifest check, production-like signed-in smoke (D-1905, D-1910) |
+| Upgrade path | No rehearsal; `academic:sync` an owner/deploy item (D-202) | M | A live database with tutors, lessons and reviews had never been migrated in a test | `scripts/ops/upgrade-rehearsal.sh`: no row lost or changed, cents exact, subjects adopted or linked with ids kept, unmapped level text reported; deploy runs `academic:sync` after every migrate |
+| Database safety | Rollback tar only (no PostgreSQL data) | B | A failed R-47 migration on PostgreSQL had no restore point | pg_dump or SQLite online backup before maintenance mode, engine read from the host `.env` (D-1902); daily backup and restore drill scripts (D-1909) |
+| Readiness | No preflight; smoke fetched `/`, `/login`, `/up` and the build | M | Nothing told the owner what was missing, and a broken host could leave maintenance mode | `tutor:preflight` gate (FAIL keeps the site down) with the paid-lesson readiness line (D-1900, D-1901); wider live smoke (guest redirects, guessed private files, headers, fonts, sprites, service worker) |
+| Routing vs public folders | `/classroom` page and `public/classroom/` folder | B | Apache serves the folder before `index.php`: the lesson list answered 403 on the live host layout | Sprite moved to `public/icons/classroom.svg`, regression test, stale docroot folder moved aside (D-1903) |
+| View comments | Head partial named `resources/js/ds/theme.js` in a comment beside `@vite` | B (deploy trap) | Breaks the stricter manifest check other Dot deploys use | Comment reworded; check runs in CI and deploy (D-1904) |
+| Static files | Deploy synced only `build/` to the docroot | B | R-47 fonts, sprites, push script and `/comms-sw.js` would 404 where the docroot holds copies | Every `public/` entry kept in step (D-1907) |
+| `.env.example` | `APP_URL` of the live host, `BROADCAST_CONNECTION=reverb`, no R-47 variable documented | P | CI copied a live-host URL and a broadcaster the host cannot run; owners had no list of the new settings | Safe values, every R-47 variable documented with its default (D-1908) |
+| Owner runbook | `docs/deployment.md` (pre-R-47) | M | No first-steps order, monitoring thresholds, incident or restore procedure for the R-47 platform | `docs/R47_OPERATIONS.md` |

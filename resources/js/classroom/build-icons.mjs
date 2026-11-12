@@ -1,4 +1,4 @@
-// Builds public/classroom/icons.svg, the classroom's own icon sprite (Lucide, ISC licence), in the same way as the
+// Builds public/icons/classroom.svg, the classroom's own icon sprite (Lucide, ISC licence), in the same way as the
 // design system's resources/js/ds/build-sprite.mjs. Committed output; runs only when someone adds an icon:
 //   node resources/js/classroom/build-icons.mjs <unpacked lucide-static>
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -18,7 +18,7 @@ if (!lucide) {
     process.exit(1);
 }
 const here = dirname(fileURLToPath(import.meta.url));
-const out = join(here, '../../../public/classroom/icons.svg');
+const out = join(here, '../../../public/icons/classroom.svg');
 const symbols = ICONS.map((name) => {
     const inner = readFileSync(join(lucide, 'icons', `${name}.svg`), 'utf8')
         .replace(/<!--[\s\S]*?-->/g, '').replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/\s*\n\s*/g, '').trim();
