@@ -1,5 +1,5 @@
 <x-guest-layout :livewire="true">
-    <x-authentication-card>
+    <x-authentication-card title="Confirm it is you">
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>

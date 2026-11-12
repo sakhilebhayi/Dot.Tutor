@@ -31,7 +31,7 @@
 
             <div class="table-scroll" role="region" aria-label="Weekly windows" tabindex="0">
             <table class="t-table">
-                <thead><tr><th>Day</th><th>Open</th><th></th></tr></thead>
+                <thead><tr><th>Day</th><th>Open</th><th><span class="td-sr">Actions</span></th></tr></thead>
                 <tbody>
                 @foreach($weekdays as $number => $name)
                     @forelse($windows->get($number, collect()) as $window)

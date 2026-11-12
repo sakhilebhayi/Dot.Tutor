@@ -27,7 +27,7 @@
     </section>
 
     @if ($bySubject->isEmpty())
-        <x-td.state kind="empty" title="No topics yet">Quizzes in your courses and work from your tutors fill this in. Flashcards help you remember, but they are not marked, so they do not count here.
+        <x-td.state kind="empty" title="No topics yet">@if ($young)Your quizzes fill this in. Cards help you remember. They do not count here.@else Quizzes in your courses and work from your tutors fill this in. Flashcards help you remember, but they are not marked, so they do not count here.@endif
             <x-slot:actions><x-td.button :href="route('practice.index')" icon="list-checks">Go to practice</x-td.button></x-slot:actions>
         </x-td.state>
     @else

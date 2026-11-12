@@ -1,0 +1,61 @@
+/*
+ * R-47 accessibility pass (docs/R47_A11Y.md, D-1700 onward). Rules the sweep found missing across many screens, kept
+ * in one place on the design system's tokens. Target size: WCAG 2.2 SC 2.5.8 asks 24 x 24 px for a pointer target
+ * that is not inside a sentence; the young-learner step (data-td-step="young") asks 44 px, the size small fingers and
+ * new readers need (brief section 23, DESIGN.md young step).
+ */
+@layer components {
+    /* Stand-alone text links and disclosures: at least 24 px tall. Vertical padding on an inline link grows its hit
+       area without moving the line (padding does not change an inline box's line height). */
+    .td-link,
+    .td-public-foot a,
+    .td-public-top a,
+    a.td-wordmark {
+        padding-block: 3px;
+    }
+
+    summary {
+        min-block-size: 24px;
+    }
+
+    /* The young-learner step: 44 px for everything a child taps. */
+    [data-td-step='young'] .td-link,
+    [data-td-step='young'] a.td-wordmark {
+        padding-block: 9px;
+    }
+
+    [data-td-step='young'] a.td-pill,
+    [data-td-step='young'] summary,
+    [data-td-step='young'] .td-btn {
+        min-block-size: 44px;
+    }
+
+    /* The sign-in card's page heading (the guest pages had no h1). */
+    .td-auth__title {
+        margin: 0 0 var(--td-space-5);
+        font-family: var(--td-font-display);
+        font-stretch: var(--td-display-stretch);
+        font-size: var(--td-text-xl);
+        line-height: var(--td-leading-tight);
+        color: var(--td-ink);
+    }
+}
+
+/* WCAG 2.4.11 focus not obscured: a control reached by Tab scrolls clear of the sticky top bar and of the learner's
+   bottom bar on phones (the sweep found buttons focused behind the bottom bar). */
+html {
+    scroll-padding-top: calc(4rem + var(--td-space-2));
+}
+
+@media (max-width: 47.98rem) {
+    html:has(.td-app--learner) {
+        scroll-padding-bottom: calc(4.25rem + env(safe-area-inset-bottom) + var(--td-space-2));
+    }
+}
+
+/* Chrome does not match :focus-visible when Tab lands in a date, time or file input's inner field, so the base rule
+   (:focus:not(:focus-visible) { outline: none }) removed their ring. Unlayered on purpose, to win over that rule. */
+.td-input:is([type='date'], [type='time'], [type='datetime-local'], [type='month'], [type='week'], [type='file']):is(:focus, :focus-within) {
+    outline: 2.5px solid var(--td-focus);
+    outline-offset: 1px;
+}

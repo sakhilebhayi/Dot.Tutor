@@ -3,7 +3,7 @@
     $young = $ctx['step'] === 'young';
 @endphp
 <x-student.shell title="Practice">
-    <x-td.page-head title="Practice" lede="Work from your tutors, quizzes in your courses, and flashcards that come back when you are about to forget them.">
+    <x-td.page-head title="Practice" :lede="$young ? 'Quizzes, work from your tutor, and cards to help you remember.' : 'Work from your tutors, quizzes in your courses, and flashcards that come back when you are about to forget them.'">
         <x-slot:actions><x-td.button variant="quiet" icon="chart-no-axes-column" :href="route('learn.progress')">Progress</x-td.button></x-slot:actions>
     </x-td.page-head>
 
