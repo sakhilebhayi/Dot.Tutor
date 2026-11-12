@@ -32,7 +32,7 @@
                     <x-td.notice tone="info" title="Sent, under review">An operator is reviewing your profile{{ $onboarding?->submitted_at ? ' (sent '.$onboarding->submitted_at->timezone($profile->scheduleTimezone())->format('j M Y, H:i').')' : '' }}. You can keep editing; changes are part of the review.</x-td.notice>
                     @break
                 @case('approved')
-                    <x-td.notice tone="success" title="Approved">Learners can find and book you. Verification levels are separate: they come only from reviewed evidence.</x-td.notice>
+                    <x-td.notice tone="success" title="Approved">Learners can find and book you. Approval is not a verification level: that comes only from reviewed evidence.</x-td.notice>
                     @break
                 @case('rejected')
                     <x-td.notice tone="danger" title="Not approved">
@@ -47,6 +47,7 @@
                     </x-td.notice>
                     @break
             @endswitch
+            <x-td.tutor-standing :profile="$profile" class="md:grid-cols-3" />
         </div>
     @endif
 
@@ -351,7 +352,7 @@
             @if ($profile && in_array($step, ['qualifications', 'send'], true))
                 <x-td.panel title="Verification levels">
                     <p class="mb-4 text-td-ink-2">From peer tutor to professional: each level needs a reviewed record of its kind. Dot.Tutor never assigns a level from what a profile says.</p>
-                    <p class="mb-4">Your level now: @include('teach.partials.verify-level', ['level' => $verification['level'], 'reviewing' => $qualifications->contains('status', 'submitted')])</p>
+                    <p class="mb-4">Your level now: <strong>{{ $verification['label'] }}</strong>{{ $verification['level'] ? '' : ($qualifications->contains('status', 'submitted') ? ', evidence in review' : '') }}</p>
                     <x-td.table caption="Verification levels and the evidence each needs" caption-hidden>
                         <thead><tr><th scope="col">Level</th><th scope="col">What Dot.Tutor checks</th><th scope="col">Evidence that counts</th></tr></thead>
                         <tbody>

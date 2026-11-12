@@ -102,7 +102,9 @@ class CommandCentreScreensTest extends TestCase
         $this->get(route('ops.verification', ['tab' => 'tutors']))->assertOk();
         $this->get(route('ops.verification', ['tab' => 'languages']))->assertOk();
         $this->get(route('ops.verification', ['tab' => 'applications']))->assertOk();
-        $this->get(route('ops.verification.tutor', $profile))->assertOk()->assertSee('Not screened');
+        // One standing summary, the same words as the tutor's workspace (D-2210).
+        $this->get(route('ops.verification.tutor', $profile))->assertOk()
+            ->assertSee('Listed')->assertSee('Qualification in review')->assertSee('Not cleared to teach under-18s');
 
         $report = Report::query()->firstOrFail();
         $this->get(route('ops.safeguarding'))->assertOk()->assertSee('A child-safety report is open')->assertSee('Child safety · 1 hour');

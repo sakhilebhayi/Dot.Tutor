@@ -12,30 +12,19 @@
     <div class="grid gap-6">
         <div class="td-panels td-panels--2">
             <x-td.panel title="Standing">
+                <x-td.tutor-standing :profile="$tutor" class="mb-4" />
                 <dl class="ops-facts">
-                    <dt>Profile</dt><dd>@include('ops.partials.tag', match ($tutor->status) {
-                        'approved' => ['text' => 'Approved', 'tone' => 'success'],
-                        'suspended' => ['text' => 'Suspended', 'tone' => 'danger'],
-                        'rejected' => ['text' => 'Rejected', 'tone' => 'danger'],
-                        default => ['text' => 'Application waiting', 'tone' => 'info'],
-                    })</dd>
-                    <dt>Level</dt><dd>{{ $current?->label() ?? 'Not yet verified' }}</dd>
                     <dt>Subjects</dt><dd>{{ $tutor->subjects->pluck('name')->join(', ') ?: 'None listed' }}</dd>
-                    <dt>Work with minors</dt><dd>
-                        @if ($screened)
-                            @include('ops.partials.tag', ['text' => 'Screening current', 'tone' => 'success', 'icon' => 'shield-check'])
-                        @else
-                            @include('ops.partials.tag', ['text' => 'Not screened', 'tone' => 'warning'])
-                            <span class="text-sm ops-muted">Missing: {{ collect($missingScreening)->map(fn ($k) => \App\Domain\Safety\Enums\ScreeningKind::tryFrom($k)?->label() ?? $k)->join(', ') ?: 'nothing' }}. Minors cannot book this tutor until a safeguarding officer records it.</span>
-                        @endif
-                    </dd>
+                    @unless ($screened)
+                        <dt>Screening missing</dt><dd>{{ collect($missingScreening)->map(fn ($k) => \App\Domain\Safety\Enums\ScreeningKind::tryFrom($k)?->label() ?? $k)->join(', ') ?: 'Nothing listed' }}. A safeguarding officer records it.</dd>
+                    @endunless
                     @if ($tutor->rejected_reason || $tutor->suspended_reason)
                         <dt>Reason given</dt><dd>{{ $tutor->suspended_reason ?: $tutor->rejected_reason }}</dd>
                     @endif
                 </dl>
                 <form method="POST" action="{{ route('ops.verification.standing', $tutor) }}" class="ops-act mt-5">
                     @csrf
-                    <x-td.field label="Reason (needed to reject or suspend)" for="standing-reason" optional><x-td.input name="reason" id="standing-reason" /></x-td.field>
+                    <x-td.field :label="$tutor->status === 'approved' ? 'Reason (required to suspend)' : ($tutor->status === 'pending' ? 'Reason (required to reject)' : 'Note')" for="standing-reason" :optional="! in_array($tutor->status, ['approved', 'pending'], true)"><x-td.input name="reason" id="standing-reason" /></x-td.field>
                     @if ($tutor->status === 'pending')
                         <x-td.button type="submit" name="action" value="approve" variant="primary" size="sm">Approve</x-td.button>
                         <x-td.button type="submit" name="action" value="reject" size="sm">Reject</x-td.button>
@@ -102,7 +91,7 @@
 
         <div class="td-panels td-panels--2">
             <x-td.panel title="Decisions" flush>
-                @if ($decisions->isEmpty())
+                @if ($decisions === [])
                     <x-td.state kind="empty" title="No decisions yet">Every verification decision is kept here and cannot be edited.</x-td.state>
                 @else
                     <x-td.table caption="Verification decisions, newest first" caption-hidden dense stack>
@@ -110,10 +99,10 @@
                         <tbody>
                             @foreach ($decisions as $d)
                                 <tr>
-                                    <td class="ops-num text-sm" style="white-space:nowrap">{{ $d->created_at?->timezone($tz)->format('j M Y H:i') }}</td>
-                                    <td>{{ $d->subject === 'level' ? 'Level' : 'Qualification' }}</td>
-                                    <td class="text-sm">{{ str_replace('_', ' ', $d->from_value ?? 'none') }} to {{ str_replace('_', ' ', $d->to_value ?? 'none') }}</td>
-                                    <td class="text-sm">{{ $d->reason }}</td>
+                                    <td class="ops-num text-sm" style="white-space:nowrap">{{ $d['at']?->timezone($tz)->format('j M Y H:i') }}</td>
+                                    <td>{{ $d['what'] }}</td>
+                                    <td class="text-sm">{{ $d['change'] }}</td>
+                                    <td class="text-sm">{{ $d['reason'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -126,7 +115,7 @@
                 @empty
                     <p class="m-0 ops-muted">No teaching language listed.</p>
                 @endforelse
-                <p class="mt-3 mb-0 text-sm"><a href="{{ route('ops.verification', ['tab' => 'languages']) }}">Verify teaching languages</a></p>
+                <div class="mt-3"><x-td.button :href="route('ops.verification', ['tab' => 'languages'])" size="sm" icon="languages">Verify teaching languages</x-td.button></div>
             </x-td.panel>
         </div>
     </div>

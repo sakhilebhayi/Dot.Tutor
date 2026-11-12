@@ -22,7 +22,7 @@
                     <p class="m-0 mt-2 text-xl">{{ $store['headline'] }}</p>
                 </div>
             </div>
-            <p class="m-0">@include('teach.partials.verify-level', ['level' => $store['verification']['level']])</p>
+            <p class="m-0">@include('student.partials.verification', ['verification' => $store['verification']])</p>
             <p class="m-0 text-sm text-td-ink-2">{{ $store['verification']['description'] }}</p>
         </header>
 

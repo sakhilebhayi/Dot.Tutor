@@ -58,6 +58,10 @@
             font-weight: 650;
         }
 
+        .td-table--stack.is-stackable [data-stack='title'] :is(.text-sm, .ops-muted) {
+            font-weight: 400;
+        }
+
         .td-table--stack.is-stackable tr:not(:has(> [data-stack='key'])) > [data-stack='title'] {
             grid-column: 1 / -1;
         }
@@ -125,5 +129,44 @@
 
     .td-tabs[data-more-start][data-more-end] {
         mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    }
+
+    /* Tutor standing (x-td.tutor-standing, D-2210): three facts in a column, glyph and words, a soft tone each. */
+    .td-standing {
+        display: grid;
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .td-standing__fact {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--td-space-2);
+        align-items: start;
+        padding: var(--td-space-2) var(--td-space-3);
+        border-radius: var(--td-radius);
+        background: var(--td-sunken);
+        color: var(--td-ink);
+    }
+
+    .td-standing__fact .td-icon {
+        margin-top: 0.2em;
+    }
+
+    .td-standing__fact--done {
+        background: var(--td-success-soft);
+        color: var(--td-success-ink);
+    }
+
+    .td-standing__fact--waiting {
+        background: var(--td-info-soft);
+        color: var(--td-info-ink);
+    }
+
+    .td-standing__detail {
+        display: block;
+        font-size: var(--td-text-sm);
     }
 }

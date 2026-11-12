@@ -14,6 +14,8 @@
         <x-td.notice tone="info" title="Only you can see this until you are approved" class="mb-6">Learners cannot open your storefront or book you before an operator approves your profile. <a class="td-link" href="{{ route('teach.profile') }}">Profile and verification</a></x-td.notice>
     @endunless
 
+    <x-td.tutor-standing :profile="$profile" class="mb-6 md:grid-cols-3" />
+
     <div class="td-panels td-panels--2">
         <x-td.panel title="Preview">
             <article class="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 [overflow-wrap:anywhere]" aria-label="Storefront preview">
@@ -22,7 +24,7 @@
                     <div class="grid min-w-0 gap-2">
                         <h3 class="m-0 font-td-display text-2xl">{{ $store['name'] }}</h3>
                         <p class="m-0">{{ $store['headline'] ?: 'No headline yet' }}</p>
-                        <div>@include('teach.partials.verify-level', ['level' => $store['verification']['level']])</div>
+                        <div>@include('student.partials.verification', ['verification' => $store['verification']])</div>
                     </div>
                 </header>
                 @if ($store['introduction'])<p class="m-0 whitespace-pre-line">{{ $store['introduction'] }}</p>@endif
@@ -55,7 +57,7 @@
                     @else
                         <div class="flex flex-wrap gap-2">
                             @foreach ($store['languages'] as $l)
-                                <x-td.language-chip :code="$l['code']" :name="$l['name']" role="teaches" :verified="(bool) $l['verified']" />
+                                <x-td.language-chip :code="$l['code']" :name="$l['name']" :verified="(bool) $l['verified']" />
                             @endforeach
                         </div>
                     @endif
