@@ -32,7 +32,8 @@
         </x-td.state>
     @else
         @foreach ($bySubject as $subject => $rows)
-            <x-td.panel :title="$subject" flush>
+            {{-- One group needs no "Other" heading of its own (R-47 polish D-2028, critic A 26). --}}
+            <x-td.panel :title="$bySubject->count() === 1 ? 'Your topics' : $subject" flush>
                 <ul class="st-list">
                     @foreach ($rows as $row)
                         @php [$word, $icon, $tone] = $levelWords[$row['level']] ?? [ucfirst($row['level']), 'info', '']; @endphp
