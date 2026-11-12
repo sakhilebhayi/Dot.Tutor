@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations title="Bookings">
     <x-td.page-head title="Bookings" lede="Every lesson booking, newest start first, with its state. Open one for its full timeline." />
     @include('ops.reviews._tabs')

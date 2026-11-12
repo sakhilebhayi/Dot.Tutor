@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations title="Reviews and disputes">
     <x-td.page-head title="Reviews and disputes" lede="Disputed lessons and tutor reviews held for a moderator. Only reviews from learners who took the lesson are ever published." />
     @include('ops.reviews._tabs')

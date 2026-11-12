@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations title="{{ $incident->reference }}">
     @include('ops.safeguarding._head', ['title' => $incident->reference.' · '.$incident->title, 'lede' => ucfirst($incident->severity).' incident, opened '.$incident->created_at->timezone($tz)->format('j M Y, H:i').'. The timeline cannot be edited.'])
 

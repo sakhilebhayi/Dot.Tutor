@@ -201,9 +201,12 @@ fi
 step "operator"
 if sign_in operator; then
   for P in /operator/tutor-profiles /operator/verification /operator/subjects /operator/academic /safety/operator/queue /safety/operator/incidents \
-           /money/ops /rooms/moderation /ai/operator/log; do
+           /ops/payments /rooms/moderation /ai/operator/log; do
     page "$P" "<html"
   done
+  # The old finance desk forwards to the operations console (R-47 fix D-2400).
+  redirects_to "/money/ops" "/ops/payments"
+  page "/ops/payments?tab=exceptions" "Exceptions and unmatched payments"
   # Operator queues that have no screen of their own yet answer JSON.
   for P in /safety/operator/screening /safety/operator/integrity /safety/operator/audit /learning/library/moderation; do
     json "$P"

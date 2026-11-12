@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); $sev = ['critical' => 'danger', 'high' => 'warning', 'medium' => 'neutral']; @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); $sev = ['critical' => 'danger', 'high' => 'warning', 'medium' => 'neutral']; @endphp
 <x-layouts::operations title="Incidents">
     @include('ops.safeguarding._head', ['title' => 'Incidents', 'lede' => 'An incident nobody acknowledges is raised one level each time its timer runs out (up to three) and every operator is told. Acknowledging takes ownership and stops the timer.'])
 

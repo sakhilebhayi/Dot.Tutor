@@ -3,7 +3,7 @@
 @php
     $plain = \App\Domain\Ops\Support\PlainWords::class;
     $actorNames = $entries->isEmpty() ? [] : \App\Models\User::query()->whereIn('id', $entries->pluck('actor_id')->filter()->unique())->pluck('name', 'id')->all();
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
 @endphp
 <x-td.panel title="Audit history" flush>
     @if ($entries->isEmpty())

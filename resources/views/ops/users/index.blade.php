@@ -42,7 +42,7 @@
                                     default => ['text' => 'Active', 'tone' => 'success'],
                                 })
                             </td>
-                            <td class="text-sm ops-num">{{ $u->created_at?->timezone(config('tutor.timezone'))->format('j M Y') }}</td>
+                            <td class="text-sm ops-num">{{ $u->created_at?->timezone(\App\Domain\Student\Support\Times::zone())->format('j M Y') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

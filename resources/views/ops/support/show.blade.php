@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations :title="$conversation->subject ?: 'Support request '.$conversation->id">
     <x-td.page-head :title="$conversation->subject ?: 'Support request '.$conversation->id" lede="Opening this conversation is recorded in the audit log.">
         <x-slot:actions><x-td.button :href="route('ops.support')" icon="arrow-left" variant="quiet">Support</x-td.button></x-slot:actions>

@@ -1,4 +1,4 @@
-@php $tz = config('tutor.timezone'); @endphp
+@php $tz = \App\Domain\Student\Support\Times::zone(); @endphp
 <x-layouts::operations title="Report {{ $report->id }}">
     @include('ops.safeguarding._head', ['title' => $report->category->label(), 'lede' => 'Report '.$report->id.', filed '.$report->created_at->timezone($tz)->format('j M Y, H:i').'. Opening it is recorded in the audit log.'])
 

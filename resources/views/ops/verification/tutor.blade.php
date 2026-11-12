@@ -1,6 +1,6 @@
 @php
     use App\Domain\Marketplace\Enums\VerificationLevel;
-    $tz = config('tutor.timezone');
+    $tz = \App\Domain\Student\Support\Times::zone();
     $current = VerificationLevel::tryFrom((string) $tutor->verification_level);
     $name = $tutor->user?->name ?? 'Deleted account';
 @endphp

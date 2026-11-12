@@ -5,13 +5,10 @@ namespace App\Domain\Money\Http\Controllers;
 use App\Domain\Money\CheckoutStart;
 use App\Domain\Money\Contracts\PurchaseApprovals;
 use App\Domain\Money\Models\Earning;
-use App\Domain\Money\Models\FinanceIssue;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\Payment;
 use App\Domain\Money\Models\Payout;
-use App\Domain\Money\Models\PayoutBatch;
 use App\Domain\Money\Models\Receipt;
-use App\Domain\Money\Models\Refund;
 use App\Domain\Money\Paystack\PaystackConfig;
 use App\Domain\Money\Services\Earnings;
 use App\Domain\Money\Services\Orders;
@@ -98,13 +95,13 @@ class MoneyPagesController extends Controller
         ]);
     }
 
-    public function ops(): View
+    /**
+     * The old finance desk (R-47 fix D-2400): it printed UTC wall-clock times on a learner-shell page. Everything it
+     * listed (open exceptions, orders, refunds in flight, payout batches) lives in the operations console, in the
+     * operator's own time zone and with the actions beside it, so the address now forwards there.
+     */
+    public function ops(): RedirectResponse
     {
-        return view('money::ops', [
-            'issues' => FinanceIssue::where('status', 'open')->orderByDesc('id')->limit(50)->get(),
-            'orders' => Order::orderByDesc('id')->limit(30)->get(),
-            'refunds' => Refund::whereIn('status', Refund::OPEN)->orderByDesc('id')->limit(30)->get(),
-            'batches' => PayoutBatch::orderByDesc('id')->limit(10)->get(),
-        ]);
+        return redirect()->route('ops.payments', ['tab' => 'exceptions']);
     }
 }
