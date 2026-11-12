@@ -39,8 +39,8 @@ Source: critic B (`scratchpad/tutor-jury/critic-B.md`), tutor and ops fixes. Bra
 
 ## Checks
 
-- `php artisan test --compact`: 987 tests, 980 pass, 7 skipped (trunk 980; +7 in `tests/Feature/Teach/PolishTeachTest.php`; updated: `TutorOnboardingTest`, `TutorAvailabilityTest`, `ResponsiveShellTest`, `TutorWorkspaceTest`, `CourseStudioAndMaterialsTest`, `CommandCentreScreensTest`, each where the behaviour changed on purpose). `RoutePermissions::MAP` untouched; `OperatorRouteMatrixTest` green.
+- `php artisan test --compact` after merging trunk (polish-guardian, report): 1,000 tests, 993 pass, 7 skipped, 0 fail. Before that merge: 987 / 980 pass (trunk d5fe666: 980; +7 in `tests/Feature/Teach/PolishTeachTest.php`; updated: `TutorOnboardingTest`, `TutorAvailabilityTest`, `ResponsiveShellTest`, `TutorWorkspaceTest`, `CourseStudioAndMaterialsTest`, `CommandCentreScreensTest`, each where the behaviour changed on purpose). `RoutePermissions::MAP` untouched; `OperatorRouteMatrixTest` green.
 - `node --test tests/js/*.test.mjs`: 17 pass (3 new in `tests/js/polish-teach.test.mjs`).
 - `npm run build`, `view:cache`, `route:cache`: pass.
-- E2E: see "E2E" below.
+- E2E (`node tests/e2e/run.mjs`, all nine specs including `09-route-sweep`): all pass before the trunk merge; the run after the merge is recorded in the final report. The first run caught D-2214 (no script after an upload), fixed.
 - Browser (390 and 1440, light and dark): see `docs/R47_SKILLS.md`.
