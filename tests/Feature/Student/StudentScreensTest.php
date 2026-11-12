@@ -192,7 +192,8 @@ class StudentScreensTest extends TestCase
         $this->assertStringStartsWith('https://checkout.paystack.com/', (string) $pay->headers->get('Location'));
         $this->paystackConfirmsLatestPayment();
         $this->assertSame('confirmed', $session->fresh()->status);
-        $this->actingAs($learner)->get(route('learn.lessons.show', $session))->assertOk()->assertSee('Add to my calendar')->assertSee('full refund');
+        $this->actingAs($learner)->get(route('learn.lessons.show', $session))->assertOk()->assertSee('Add to my calendar')->assertSee('full refund')
+            ->assertSee('Join the classroom')->assertSee(route('classroom.show', $session), false);
 
         // Cancel within the free notice: the marketplace records a full refund due.
         $this->actingAs($learner)->post(route('learn.lessons.cancel', $session), ['reason' => 'Exam moved'])->assertRedirect(route('learn.lessons.show', $session));
