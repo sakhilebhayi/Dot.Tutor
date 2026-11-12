@@ -1,6 +1,6 @@
 // Small helpers for the classroom modules (adapted from Dot.Engage's meeting util.js).
 
-let sprite = '/classroom/icons.svg';
+let sprite = '/icons/classroom.svg';
 export function setSprite(url) { if (url) sprite = url; }
 
 export const $ = (id) => document.getElementById(id);

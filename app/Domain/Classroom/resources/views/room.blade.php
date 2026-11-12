@@ -13,7 +13,7 @@
         : 'with '.$tutorName;
 @endphp
 <x-dynamic-component :component="'layouts::'.$shell" :title="$title">
-    <div class="cr" id="classroom-root" data-classroom data-sprite="{{ asset('classroom/icons.svg') }}"
+    <div class="cr" id="classroom-root" data-classroom data-sprite="{{ asset('icons/classroom.svg') }}"
         data-config='@json($config, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP)'>
 
         <header class="cr-head">

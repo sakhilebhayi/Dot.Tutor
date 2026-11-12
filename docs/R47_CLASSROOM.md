@@ -4,7 +4,7 @@ Brief sections 12 (live tutoring and virtual classrooms), 15 (minors in live les
 section 25 steps "attend the lesson" (student) and "deliver the lesson" (tutor). Code in `app/Domain/Classroom`, routes in
 `routes/tutor/classroom.php`, provider `App\Domain\Classroom\TutorClassroomServiceProvider` (registered before the
 integration provider), config `config/classroom.php`, migration `2026_11_10_800000_create_classroom_tables.php`, client in
-`resources/js/classroom`, styles `resources/css/classroom.css`, icons `public/classroom/icons.svg`, tests
+`resources/js/classroom`, styles `resources/css/classroom.css`, icons `public/icons/classroom.svg`, tests
 `tests/Feature/Classroom` (30), `tests/js/classroom-board.test.mjs` (3), two-browser check `tests/e2e/classroom`.
 
 ## 1. What exists
