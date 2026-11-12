@@ -1,7 +1,7 @@
 // Multi-step flows several specs share, each done through the app's own screens. Every helper asserts what the
 // database must hold after it, so a spec that calls one gets that evidence for free.
 import assert from 'node:assert/strict';
-import { one, sql, until, newContext, signIn, world, stub, step } from './harness.mjs';
+import { one, sql, until, newContext, signIn, world, stub, step, makePerson, fixtureFile } from './harness.mjs';
 
 export const levelId = (code, curriculum = 'za-caps') => one('select l.id from academic_levels l join curricula c on c.id = l.curriculum_id where c.code = ? and l.code = ?', [curriculum, code]).id;
 export const subjectId = (slug) => one('select id from subjects where slug = ?', [slug]).id;
@@ -129,4 +129,34 @@ export async function setPracticeFor({ tutor, learnerId, topic = 'Linear equatio
     assert.ok(one('select id from learning_assignments where assessment_id = ? and learner_id = ?', [assessmentId, learnerId]), 'assignment stored');
     await tctx.close();
     return { bankId, questionId: question.id, assessmentId, title, topic };
+}
+
+/** Uploads a PDF to the study library through the "Share material" panel (licence, ownership, rights). Returns the row. */
+export async function uploadToLibrary(page, { ownerId, title, description, language = 'en', type = 'summary', level = 'grade-11' }) {
+    await page.goto('/learning/library');
+    await page.getByText('Share material').first().click();
+    const f = page.locator('form[action$="/learning/library"][method=post], form[method=POST][action$="/learning/library"]').last();
+    await f.locator('input[name=title]').fill(title);
+    await f.locator('textarea[name=description]').fill(description);
+    await f.locator('select[name=type]').selectOption(type);
+    await f.locator('select[name=language]').selectOption(language);
+    await f.locator('select[name=subject_id]').selectOption(String(subjectId('mathematics')));
+    await f.locator('select[name=level_id]').selectOption(String(levelId(level)));
+    await f.locator('select[name=ownership]').selectOption('own_work');
+    await f.locator('select[name=licence]').selectOption('cc_by');
+    await f.locator('input[name=file]').setInputFiles(fixtureFile('pdf'));
+    await f.locator('#r-rights').check();
+    await Promise.all([page.waitForLoadState('load'), f.getByRole('button', { name: 'Upload' }).click()]);
+    return until(() => one('select * from learning_resources where owner_id = ? and title = ?', [ownerId, title]), { what: 'library resource' });
+}
+
+/** A content moderator reviews a pending library resource in /ops/moderation ("Reviewed, accurate"). */
+export async function approveResource(resourceId) {
+    const mod = makePerson('operator', 'ContentMod', { roles: ['content_moderator'] });
+    const mctx = await newContext({ user: mod, width: 1440 });
+    const mp = await mctx.newPage();
+    await mp.goto('/ops/moderation?tab=resources');
+    await Promise.all([mp.waitForLoadState('load'), mp.locator(`form[action*="/resources/${resourceId}/"] button[value=approved]`).first().click()]);
+    await mctx.close();
+    return one('select status, quality_tier from learning_resources where id = ?', [resourceId]);
 }

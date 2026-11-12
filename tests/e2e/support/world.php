@@ -10,6 +10,10 @@ use App\Domain\Academic\Contracts\LanguageProfile;
 use App\Domain\Academic\Models\AcademicLevel;
 use App\Domain\Academic\Models\Country;
 use App\Domain\Academic\Services\LearnerProfiles;
+use App\Domain\Learning\Models\Course;
+use App\Domain\Learning\Models\CourseSection;
+use App\Domain\Learning\Models\Lesson;
+use App\Domain\Learning\Services\CoursePublisher;
 use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Models\TutorTeachingScope;
 use App\Domain\Ops\Access\RoleAdministration;
@@ -21,6 +25,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 require __DIR__.'/../../../vendor/autoload.php';
 $app = require __DIR__.'/../../../bootstrap/app.php';
@@ -104,6 +109,26 @@ switch ($cmd) {
             $offerings[] = $offering->id;
         }
         $out = ['id' => $user->id, 'email' => $user->email, 'profile_id' => $profile->id, 'offerings' => $offerings, 'subject_id' => $subject->id];
+        break;
+
+    case 'published-course':
+        // A course the course creator journey (spec 03) builds in the browser, made here for specs that only need one
+        // to exist: a draft with one text lesson, published through learning's own CoursePublisher (all its checks).
+        $owner = User::query()->findOrFail($in['owner_id']);
+        $level = $levelByCode($in['level'] ?? 'grade-11');
+        $course = Course::query()->create([
+            'owner_id' => $owner->id, 'slug' => Str::slug($in['title']).'-'.Str::lower(Str::random(5)), 'title' => $in['title'],
+            'description' => $in['description'] ?? 'A short fixture course with one lesson about functions and their graphs.',
+            'subject_id' => Subject::query()->where('slug', $in['subject'] ?? 'mathematics')->value('id'), 'curriculum_id' => $level->curriculum_id, 'level_id' => $level->id,
+            'original_locale' => $in['locale'] ?? 'en', 'objectives' => ['Read a function from its graph'], 'prerequisites' => [], 'workload_minutes' => 60,
+            'pricing' => ($in['price_minor'] ?? 0) > 0 ? 'paid' : 'free', 'price_minor' => $in['price_minor'] ?? 0, 'currency' => 'ZAR',
+            'refund_policy' => 'Full refund within 7 days.', 'completion_rule' => 'all_lessons', 'status' => 'draft',
+        ]);
+        $section = CourseSection::query()->create(['course_id' => $course->id, 'title' => 'Start here', 'position' => 1]);
+        Lesson::query()->create(['course_id' => $course->id, 'section_id' => $section->id, 'title' => 'What a function is', 'type' => 'text',
+            'body' => 'A function gives exactly one output for each input.', 'is_preview' => true, 'position' => 1, 'duration_minutes' => 10]);
+        app(CoursePublisher::class)->publish($course, $owner);
+        $out = ['id' => $course->id, 'status' => $course->fresh()->status];
         break;
 
     case 'shift':
