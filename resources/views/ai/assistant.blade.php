@@ -9,7 +9,7 @@
         'explain_mistake' => 'Explain a mistake in a quiz I submitted',
     ];
 @endphp
-<x-layouts::learner title="Study assistant" :step="$band === 'child' ? 'young' : 'standard'">
+<x-student.shell title="Study assistant" :step="$band === 'child' ? 'young' : null">
     <x-td.page-head title="Study assistant" lede="Ask for an explanation, practice or a plan. It helps you understand; it does not do marked work for you." />
 
     @unless ($configured)
@@ -87,4 +87,4 @@
             </x-td.table>
         @endif
     </x-td.panel>
-</x-layouts::learner>
+</x-student.shell>

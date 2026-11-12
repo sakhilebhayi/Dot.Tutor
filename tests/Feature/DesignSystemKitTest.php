@@ -69,11 +69,14 @@ class DesignSystemKitTest extends TestCase
         $nav = app(ShellNavigation::class);
         $items = collect($nav->for('learner'))->flatMap(fn (array $section) => $section['items']);
 
-        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Guardian', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today (ops agent added guardian.home, D-1310)');
+        // R-47 student UI (D-1116) built the learner screens; the ops agent built the guardian home (D-1310).
+        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Lessons', 'Courses', 'Study library', 'Practice', 'Progress', 'Study assistant', 'Messages',
+            'Learning profile', 'Notifications', 'Guardian', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
-        $this->assertSame(route('dashboard'), $items->firstWhere('label', 'Home')['href'], 'falls back to the next candidate route');
-        $this->assertCount(3, $nav->bottomBar('learner'));
+        $this->assertSame(route('learn.home'), $items->firstWhere('label', 'Home')['href'], 'the first candidate route that exists');
+        $this->assertSame(route('marketplace.find'), $items->firstWhere('label', 'Find a tutor')['href'], 'falls back to the next candidate route');
+        $this->assertCount(4, $nav->bottomBar('learner'));
 
         $operations = collect($nav->for('operations', 'dense'))->flatMap(fn (array $section) => $section['items'])->pluck('href')->all();
         // The command centre (ops agent, D-1310) registered the preferred routes, so they win over the legacy pages.

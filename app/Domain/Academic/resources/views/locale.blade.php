@@ -1,5 +1,8 @@
-{{-- Wave-1 functional view; works signed in (app layout) and signed out (guest layout). --}}
-<x-dynamic-component :component="auth()->check() ? 'app-layout' : 'guest-layout'">
+{{-- Signed in: the student UI's page (D-1114). Signed out: this guest page. --}}
+@auth
+@include('student.locale')
+@else
+<x-guest-layout>
 <div class="t-page" style="max-width:40rem;margin:0 auto;padding:2rem 1rem;">
     <h1 class="t-h1">{{ __('academic.locale.title') }}</h1>
     <p class="t-lede">{{ __('academic.locale.lede') }}</p>
@@ -39,4 +42,5 @@
         <button type="submit" class="t-btn t-btn-primary">{{ __('academic.locale.apply') }}</button>
     </form>
 </div>
-</x-dynamic-component>
+</x-guest-layout>
+@endauth

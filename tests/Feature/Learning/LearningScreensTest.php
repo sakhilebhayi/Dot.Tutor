@@ -75,7 +75,7 @@ class LearningScreensTest extends TestCase
         $course = $this->publishedCourse($this->approvedTutor(), ['pricing' => 'paid', 'price_minor' => 24900, 'refund_policy' => 'Refunds within 7 days if under 20% complete.']);
         $this->actingAs($this->learner());
 
-        $this->get("/learning/courses/{$course->id}")->assertOk()->assertSee('ZAR 249.00')->assertSee('Refunds within 7 days if under 20% complete.')->assertSee('Buy course');
+        $this->get("/learning/courses/{$course->id}")->assertOk()->assertSee("R249.00") /* R-47 student UI (D-1118): money in the ds format */->assertSee('Refunds within 7 days if under 20% complete.')->assertSee('Buy course');
         $this->post("/learning/courses/{$course->id}/checkout", ['idempotency_key' => 'abc'])->assertRedirect()
             // Money says so itself now that checkout is bound to it (D-1400); no Paystack key in tests.
             ->assertSessionHasErrors(['checkout' => 'Online payment is not enabled on this environment. Paid items cannot be checked out.']);
