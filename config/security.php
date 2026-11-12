@@ -8,11 +8,10 @@ return [
     'hsts_seconds' => (int) env('SECURITY_HSTS_SECONDS', 15552000),   // 180 days
 
     /*
-    | The Content-Security-Policy is sent in REPORT-ONLY mode: the browser reports what the policy would have blocked (to /csp-report) and blocks
-    | nothing. Setting this to false would ENFORCE the same policy, which still allows 'unsafe-inline' and 'unsafe-eval'; only do that after the
-    | logged reports have been reviewed.
+    | The Content-Security-Policy is ENFORCED (R-47 security D-1514): nonce scripts, no third-party hosts. true sends the
+    | same policy report-only (an escape hatch while a broken page is fixed; reports go to /csp-report).
     */
-    'csp_report_only' => (bool) env('SECURITY_CSP_REPORT_ONLY', true),
+    'csp_report_only' => (bool) env('SECURITY_CSP_REPORT_ONLY', false),
 
     /*
     | Minutes a sign-in (or a password confirmation) counts as recent for sensitive changes such as payout bank details
