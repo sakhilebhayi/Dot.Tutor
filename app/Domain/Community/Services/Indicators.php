@@ -30,9 +30,12 @@ class Indicators
     /** @return array{questions_resolved: int, answers_accepted: int, resources_contributed: int, sessions_attended: int, groups_active: int, milestones: list<array{text: string, reached: bool}>} */
     public function forUser(User $user): array
     {
-        $answersAccepted = Post::query()->where('status', Post::VISIBLE)
-            ->whereIn('id', Post::query()->whereNotNull('accepted_answer_id')->where('status', Post::VISIBLE)->select('accepted_answer_id'))
-            ->where('author_id', $user->id)->count();
+        // From this person's answers to the questions that accepted them (author index, then the accepted-answer
+        // index), not a scan of every accepted answer in every room (R-47 D-1607).
+        $answersAccepted = Post::query()->where('status', Post::VISIBLE)->where('author_id', $user->id)
+            ->whereExists(fn ($q) => $q->selectRaw('1')->from('community_posts as questions')
+                ->whereColumn('questions.accepted_answer_id', 'community_posts.id')->where('questions.status', Post::VISIBLE))
+            ->count();
 
         $figures = [
             'questions_resolved' => Post::query()->where('author_id', $user->id)->where('kind', Post::QUESTION)

@@ -236,12 +236,15 @@ class RoomController extends Controller
     public function activity(Request $request, Room $room, Activity $activity): JsonResponse|Response
     {
         abort_unless($this->access->canRead($request->user(), $room), 404);
-        $summary = $activity->summary($room, $request->user());
-        $etag = '"'.$summary['version'].'"';
+        // The version first: an unchanged room is a 304 without counting its questions (R-47 D-1608).
+        $etag = '"'.$activity->version($room).'"';
 
         if (trim((string) $request->header('If-None-Match')) === $etag) {
             return response('', 304)->header('ETag', $etag)->header('Cache-Control', 'private, no-cache');
         }
+
+        $summary = $activity->summary($room, $request->user());
+        $etag = '"'.$summary['version'].'"';
 
         return response()->json($summary)->header('ETag', $etag)->header('Cache-Control', 'private, no-cache');
     }

@@ -54,6 +54,10 @@ DB::listen(function (QueryExecuted $q) use (&$stats): void {
     $shape = preg_replace(['/\s+/', '/\(\s*(\?\s*,\s*)+\?\s*\)/', '/\d+/'], [' ', '(?..)', 'N'], $q->sql);
     $stats['shapes'][$shape] = ($stats['shapes'][$shape] ?? 0) + 1;
     $stats['distinct'][$shape][md5(json_encode($q->bindings))] = true;
+    $stats['all'][] = mb_strimwidth(preg_replace('/\s+/', ' ', $q->sql), 0, 170);
+    if (! empty($GLOBALS['explainLog']) && preg_match('/^\s*select\b/i', $q->sql)) {
+        $GLOBALS['explainLog'][$shape] ??= [$q->sql, $q->bindings];
+    }
 });
 
 $http = app(HttpKernel::class);
@@ -62,14 +66,15 @@ $cookies = [];
 function sessionCookie(User $user): string
 {
     $id = Str::random(40);
+    $GLOBALS['tokens'][$user->id] = Str::random(40);
     DB::table('sessions')->insert(['id' => $id, 'user_id' => $user->id, 'ip_address' => '127.0.0.1', 'user_agent' => 'perf-pages', 'last_activity' => now()->getTimestamp(),
-        'payload' => base64_encode(json_encode(['_token' => Str::random(40), 'login_web_'.sha1(SessionGuard::class) => $user->id, '_flash' => ['old' => [], 'new' => []]]))]);
+        'payload' => base64_encode(json_encode(['_token' => $GLOBALS['tokens'][$user->id], 'login_web_'.sha1(SessionGuard::class) => $user->id, '_flash' => ['old' => [], 'new' => []]]))]);
     $name = config('session.cookie');
 
     return app('encrypter')->encrypt(CookieValuePrefix::create($name, app('encrypter')->getKey()).$id, false);
 }
 
-function hit(string $uri, ?User $as, array $headers = []): array
+function hit(string $uri, ?User $as, array $headers = [], string $method = 'GET', ?array $body = null): array
 {
     global $http, $cookies;
     $server = ['HTTP_ACCEPT' => $headers['Accept'] ?? 'text/html', 'REMOTE_ADDR' => '127.0.0.1', 'HTTP_USER_AGENT' => 'perf-pages'];
@@ -77,7 +82,10 @@ function hit(string $uri, ?User $as, array $headers = []): array
         $server['HTTP_'.strtoupper(str_replace('-', '_', $k))] = $v;
     }
     $cookie = $as ? [config('session.cookie') => $cookies[$as->id] ??= sessionCookie($as)] : [];
-    $request = Request::create($uri, 'GET', [], $cookie, [], $server);
+    if ($method !== 'GET') {
+        $server += ['CONTENT_TYPE' => 'application/json', 'HTTP_X_CSRF_TOKEN' => $GLOBALS['tokens'][$as?->id] ?? '', 'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'];
+    }
+    $request = Request::create($uri, $method, [], $cookie, [], $server, $body === null ? null : json_encode($body));
     Auth::forgetGuards();
     Auth::setDefaultDriver('web'); // auth:sanctum switches the default for the request; a fresh worker starts at web
     // A fresh worker has a fresh session store: Store::start() merges into attributes left by the previous request.
@@ -110,6 +118,10 @@ $busyTutor = TutorProfile::query()->where('status', 'approved')->orderByDesc('to
 $myLesson = TutorSession::query()->where('student_id', $matric->id)->orderByDesc('starts_at')->value('id');
 $order = DB::table('money_orders')->orderByDesc('id')->value('uuid');
 $child = $person('demo.ops.child@example.test');
+$classLearner = $person('demo.classroom.learner@example.test');
+$classTutor = $person('demo.classroom.tutor@example.test');
+$classLesson = TutorSession::query()->where('notes', 'Demo classroom lesson')->value('id');
+TutorSession::query()->whereKey($classLesson)->update(['starts_at' => now()->addMinutes(5)->startOfMinute(), 'status' => 'confirmed']);
 
 $pages = [
     ['learner', 'learner home', '/learn', $matric],
@@ -153,16 +165,31 @@ $pages = [
     ['guardian', 'guardian child', "/guardian/children/{$child->id}", $guardian],
     ['poll', 'room activity (ETag match)', "/rooms/{$room}/activity", $adult, ['Accept' => 'application/json']],
     ['poll', 'inbox summary', '/comms/inbox/summary', $matric, ['Accept' => 'application/json']],
+    ['poll', 'classroom poll (calm, nothing new)', "/lessons/{$classLesson}/classroom/api/poll", $classLearner, ['Accept' => 'application/json', 'X-Client-Id' => 'perf-'.$classLearner->id], 'POST',
+        ['since' => PHP_INT_MAX, 'chat_since' => PHP_INT_MAX, 'board_since' => PHP_INT_MAX, 'notes_version' => 0, 'files_since' => 0, 'mic' => true, 'cam' => true, 'sharing' => false],
+        function () use ($classLesson, $classLearner, $classTutor) {
+            foreach ([$classTutor, $classLearner] as $who) {
+                [$status, , $r] = hit("/lessons/{$classLesson}/classroom/api/join", $who, ['Accept' => 'application/json', 'X-Client-Id' => 'perf-'.$who->id], 'POST', ['client_id' => 'perf-'.$who->id]);
+                if ($status !== 200) {
+                    fwrite(STDERR, "classroom join {$status}: ".substr((string) $r->getContent(), 0, 200).PHP_EOL);
+                }
+            }
+        }],
 ];
 
 $results = [];
 foreach ($pages as $page) {
     [$group, $label, $uri, $as] = $page;
     $headers = $page[4] ?? [];
+    $method = $page[5] ?? 'GET';
+    $body = $page[6] ?? null;
     if ($filter && ! preg_match('/'.$filter.'/i', "{$group} {$label} {$uri}")) {
         continue;
     }
-    hit($uri, $as, $headers); // warm: opcache, first-touch caches
+    if (isset($page[7])) {
+        ($page[7])(); // set-up (joining the classroom before its polls are measured)
+    }
+    hit($uri, $as, $headers, $method, $body); // warm: opcache, first-touch caches
     if (str_contains($uri, '/activity')) {
         // The poll's steady state: the client sends the ETag it was given.
         [, , $first] = hit($uri, $as, $headers);
@@ -170,9 +197,9 @@ foreach ($pages as $page) {
     }
     $samples = [];
     for ($i = 0; $i < $runs; $i++) {
-        $stats = ['q' => 0, 'w' => 0, 'db' => 0.0, 'shapes' => [], 'distinct' => []];
+        $stats = ['q' => 0, 'w' => 0, 'db' => 0.0, 'shapes' => [], 'distinct' => [], 'all' => []];
         $t = hrtime(true);
-        [$status, $bytes, $response] = hit($uri, $as, $headers);
+        [$status, $bytes, $response] = hit($uri, $as, $headers, $method, $body);
         $location = $response->headers->get('Location');
         $ms = (hrtime(true) - $t) / 1e6;
         arsort($stats['shapes']);
@@ -188,6 +215,11 @@ foreach ($pages as $page) {
     }
     $results[] = $row;
     printf("%-9s %-38s %3d %8.1f ms %5d q %3d w %7.1f db %7.1f KB  repeat %4d\n", $group, mb_strimwidth($label, 0, 38), $row['status'], $row['ms'], $row['queries'], $row['writes'], $row['db_ms'], $row['kb'], $row['max_repeat']);
+    if (in_array('--sql', $argv, true)) {
+        foreach ($stats['all'] as $n => $sql) {
+            printf("            %2d %s\n", $n + 1, $sql);
+        }
+    }
     if (isset($row['location'])) {
         printf("            -> %s\n", $row['location']);
     }
@@ -198,6 +230,43 @@ foreach ($pages as $page) {
             }
         }
     }
+}
+
+// --explain: every distinct SELECT the pages ran, through the engine's planner; full scans of big tables are listed.
+if (in_array('--explain', $argv, true)) {
+    $big = [];
+    foreach (DB::connection()->getSchemaBuilder()->getTableListing() as $table) {
+        $table = str_contains($table, '.') ? substr($table, strrpos($table, '.') + 1) : $table;
+        $n = DB::table($table)->count();
+        if ($n >= 2000) {
+            $big[$table] = $n;
+        }
+    }
+    $GLOBALS['explainLog'] = ['__on' => null];
+    foreach ($pages as $page) {
+        [$group, $label, $uri, $as] = $page;
+        if ($filter && ! preg_match('/'.$filter.'/i', "{$group} {$label} {$uri}")) {
+            continue;
+        }
+        hit($uri, $as, $page[4] ?? []);
+    }
+    unset($GLOBALS['explainLog']['__on']);
+    $flagged = 0;
+    foreach ($GLOBALS['explainLog'] as $shape => [$sql, $bindings]) {
+        $plan = $connection === 'sqlite'
+            ? collect(DB::select('EXPLAIN QUERY PLAN '.$sql, $bindings))->pluck('detail')->implode(' | ')
+            : collect(DB::select('EXPLAIN '.$sql, $bindings))->map(fn ($r) => array_values((array) $r)[0])->implode(' | ');
+        foreach ($big as $table => $n) {
+            $scan = $connection === 'sqlite'
+                ? preg_match('/\bSCAN '.preg_quote($table).'\b(?! USING)/', $plan)
+                : preg_match('/Seq Scan on '.preg_quote($table).'\b/', $plan);
+            if ($scan) {
+                $flagged++;
+                printf("FULL SCAN %s (%d rows)\n    %s\n    plan: %s\n", $table, $n, mb_strimwidth($shape, 0, 260), mb_strimwidth($plan, 0, 300));
+            }
+        }
+    }
+    printf("%d distinct selects, %d full scans of tables with 2,000+ rows\n", count($GLOBALS['explainLog']), $flagged);
 }
 
 if ($out = $opt('json')) {
