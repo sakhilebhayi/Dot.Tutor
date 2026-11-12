@@ -17,6 +17,7 @@ use App\Domain\Learning\Services\CoursePublisher;
 use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Models\TutorTeachingScope;
 use App\Domain\Ops\Access\RoleAdministration;
+use App\Domain\Safety\Services\Guardians;
 use App\Models\Subject;
 use App\Models\TutorAvailabilityWindow;
 use App\Models\TutorProfile;
@@ -111,6 +112,18 @@ switch ($cmd) {
         $out = ['id' => $user->id, 'email' => $user->email, 'profile_id' => $profile->id, 'offerings' => $offerings, 'subject_id' => $subject->id];
         break;
 
+    case 'guardian-link':
+        // A parent already linked to a minor (the safety journey, spec 06, does this from the emailed invitation in the
+        // browser): safety's own invite + accept with the learner's birth date and consent.
+        $learner = User::query()->findOrFail($in['learner_id']);
+        $guardian = $makeUser($in);
+        $invite = app(Guardians::class)->invite($learner, $guardian->email, 'parent', $learner);
+        parse_str((string) parse_url($invite['url'], PHP_URL_QUERY), $query);
+        $born = app(LearnerProfiles::class)->birthDateFor($learner);
+        $link = app(Guardians::class)->accept($invite['invitation'], (string) ($query['token'] ?? ''), $guardian, $born->setDay(15));
+        $out = ['id' => $guardian->id, 'email' => $guardian->email, 'link_id' => $link->id];
+        break;
+
     case 'published-course':
         // A course the course creator journey (spec 03) builds in the browser, made here for specs that only need one
         // to exist: a draft with one text lesson, published through learning's own CoursePublisher (all its checks).
@@ -127,6 +140,8 @@ switch ($cmd) {
         $section = CourseSection::query()->create(['course_id' => $course->id, 'title' => 'Start here', 'position' => 1]);
         Lesson::query()->create(['course_id' => $course->id, 'section_id' => $section->id, 'title' => 'What a function is', 'type' => 'text',
             'body' => 'A function gives exactly one output for each input.', 'is_preview' => true, 'position' => 1, 'duration_minutes' => 10]);
+        Lesson::query()->create(['course_id' => $course->id, 'section_id' => $section->id, 'title' => 'Reading a graph', 'type' => 'text',
+            'body' => 'The turning point of a parabola is where the graph changes direction.', 'is_preview' => false, 'position' => 2, 'duration_minutes' => 15]);
         app(CoursePublisher::class)->publish($course, $owner);
         $out = ['id' => $course->id, 'status' => $course->fresh()->status];
         break;

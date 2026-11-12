@@ -140,6 +140,8 @@ export function startPaystackStub(state, tls) {
             const tx = ps.txs[body.transaction];
             const refund = { id, status: 'processed', amount: Number(body.amount ?? tx?.amount ?? 0), currency: body.currency || 'ZAR', transaction: { id: 1, reference: body.transaction, amount: tx?.amount ?? 0, currency: 'ZAR' } };
             ps.refunds[id] = refund;
+            // As Paystack does once the bank has the money back: a signed refund.processed webhook.
+            setTimeout(() => deliverWebhook(state, 'refund.processed', { ...refund, refund_reference: String(id) }), 500);
             return send(res, 200, { status: true, message: 'Refund has been queued for processing', data: { ...refund, status: 'pending', integration: 1, deducted_amount: 0, merchant_note: body.merchant_note ?? '', customer_note: '', refunded_by: 'ops@example.test', expected_at: new Date().toISOString(), domain: 'test', fully_deducted: false } });
         }
         if ((m = url.pathname.match(/^\/refund\/(\d+)$/))) {

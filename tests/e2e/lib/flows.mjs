@@ -101,7 +101,7 @@ export async function attendLesson({ lessonId, tutor = null, tutorContext = null
  * The tutor sets practice in /teach/materials: a question bank with one number question, an assessment with that
  * question, assigned to the learner. Returns the ids and the topic name.
  */
-export async function setPracticeFor({ tutor, learnerId, topic = 'Linear equations' }) {
+export async function setPracticeFor({ tutor, learnerId, topic = 'Linear equations', prompt = 'Solve 2x = 8. What is x?', answer = '4' }) {
     const tctx = await newContext({ width: 1440, height: 1000 });
     await signIn(tctx, tutor);
     const page = await tctx.newPage();
@@ -112,8 +112,8 @@ export async function setPracticeFor({ tutor, learnerId, topic = 'Linear equatio
     await Promise.all([page.waitForURL(/\/teach\/materials\/banks\/\d+/), page.getByRole('button', { name: 'Create bank' }).click()]);
     const bankId = Number(page.url().match(/banks\/(\d+)/)[1]);
     await page.selectOption('select[name=type]', 'numeric');
-    await page.fill('textarea[name=prompt]', 'Solve 2x = 8. What is x?');
-    await page.fill('input[name=numeric_value]', '4');
+    await page.fill('textarea[name=prompt]', prompt);
+    await page.fill('input[name=numeric_value]', answer);
     await Promise.all([page.waitForLoadState('load'), page.getByRole('button', { name: 'Add question' }).click()]);
     const question = one('select id from learning_questions where bank_id = ? order by id desc limit 1', [bankId]);
     assert.ok(question, 'question stored in the bank');
