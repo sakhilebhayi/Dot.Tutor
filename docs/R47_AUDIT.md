@@ -155,3 +155,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | JSON errors had four renderers with different codes | consistency | `access_denied_http_exception` vs `forbidden`, redirects for JSON calls outside `api/*` | One policy (D-1404) |
 | Academic ids without keys | data integrity | Orphans possible | Keys added (D-1406) |
 | Suite memory | CI | Fails at 128 MB on trunk | 512M (D-1405) |
+
+### Live classroom (classroom agent, 2026-11-10)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Live lessons | M | No classroom existed; `delivery = online` lessons had no place to meet and no attendance | `app/Domain/Classroom`: one classroom per booking, WebRTC mesh, signalling by polling (R47_CLASSROOM.md) |
+| `meet_live` gate and `live_lesson` approvals (safety) | P | Rules and data existed with no caller | Asked on every page and API call; approvals requested from the pre-join page; tested |
+| Recording consent (safety) | P | Stored, no recorder | Recording not built (no safe storage on the host); pages say so (D-805) |
+| `Permissions-Policy` | I | Denies camera and microphone app-wide, so a call could never start | The classroom page alone allows them for this origin; elsewhere unchanged (tested) |
+| `lesson_resources` | I | Upload limited to the lesson's two people by extension, no content sniffing; group learners could not see files | Classroom files sniff bytes, re-encode images, stream to everyone in the lesson (group seats and guardians included); the legacy controller is untouched |
+| Marketplace `start` and `complete` | F | Correct, but nothing in a lesson called them | Tutor joining starts the lesson; the after-lesson page completes it through `BookingFlow` |
+| Learning assignment | P | Only a controller (no service); "has taught" ignores group seats | Classroom seam mirrors the rules and counts a learner in the lesson as taught (D-810) |
+| Reminders | M | No lesson reminders | `LessonStartingSoon` event once per lesson for comms (D-812) |
+| External meeting links | M | No fallback when browsers cannot connect | Tutor's own https link per lesson, shown only inside that classroom |
