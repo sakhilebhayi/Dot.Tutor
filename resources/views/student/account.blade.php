@@ -90,7 +90,8 @@
                     <li class="st-row"><div><p class="st-row__title"><a href="{{ route('money.orders') }}">Purchases and receipts</a></p></div></li>
                     @if (Route::has('comms.preferences'))<li class="st-row"><div><p class="st-row__title"><a href="{{ route('comms.preferences') }}">Notification settings</a></p><p class="st-row__meta">Email and phone alerts for lessons and payments.</p></div></li>@endif
                     @if (Route::has('comms.inbox'))<li class="st-row"><div><p class="st-row__title"><a href="{{ route('comms.inbox') }}">Notifications</a></p></div></li>@endif
-                    <li class="st-row"><div><p class="st-row__title"><a href="{{ route('profile.show') }}">Sign-in and personal details</a></p><p class="st-row__meta">Your InfoDot account: name, email, password and deleting the account.</p></div></li>
+                    <li class="st-row"><div><p class="st-row__title"><a href="{{ route('profile.show') }}">Sign-in and personal details</a></p><p class="st-row__meta">Your InfoDot account: name, email and password.</p></div></li>
+                    @if (Route::has('security.privacy'))<li class="st-row"><div><p class="st-row__title"><a href="{{ route('security.privacy') }}">Your data and account</a></p><p class="st-row__meta">Download everything held about you, or close the account.</p></div></li>@endif
                 </ul>
             </x-td.panel>
         </div>

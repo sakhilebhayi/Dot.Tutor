@@ -9,6 +9,7 @@ use App\Domain\Marketplace\Models\TutorTeachingScope;
 use App\Domain\Money\Models\Earning;
 use App\Domain\Money\Models\Order;
 use App\Domain\Money\Models\OrderLine;
+use App\Domain\Safety\Models\AgeRecord;
 use App\Models\Subject;
 use App\Models\TutorAvailabilityWindow;
 use App\Models\TutorProfile;
@@ -53,6 +54,10 @@ class DemoTutorWorkspaceSeeder extends Seeder
             $person('demo.learner.three@example.test', 'Demo Learner Three'),
         ];
         $newcomer = $person('demo.new.tutor@example.test', 'Demo New Tutor');
+        // Adult learners with a recorded birth date: unknown ages are protected as children (R-47 security S-03).
+        foreach ($learners as $i => $learner) {
+            AgeRecord::query()->firstOrCreate(['user_id' => $learner->id], ['birth_date' => now()->subYears(19 + $i)->subMonths(2)->toDateString(), 'source' => 'operator_verified', 'recorded_by_id' => $learner->id]);
+        }
 
         $maths = Subject::query()->where('slug', 'mathematics')->first() ?? Subject::query()->firstOrCreate(['name' => 'Mathematics'], ['level' => 'high_school']);
         $profile = TutorProfile::query()->firstOrCreate(['user_id' => $tutor->id], [

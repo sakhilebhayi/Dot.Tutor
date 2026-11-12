@@ -248,3 +248,20 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Referral links, promotional page, share link | 6 | Missing | Attribution-only referral link, `/u/{handle}`, printable promotional page (D-1209) |
 | Upload progress for course files | 6 | Missing | XHR progress enhancement that keeps the server's messages (D-1212) |
 
+
+### Security (R-47 security agent, 2026-11-12)
+
+Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal information in `docs/R47_PRIVACY.md`.
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Email change kept verification; SSO matches by email | 5 (broken control) | Account takeover via InfoDot first sign-in (S-01) | Fixed, tested |
+| Unknown age treated as adult; self-declared age editable | 5 | Children's protections lifted by skipping or editing a birth year (S-03, S-04) | Default `ask`, older band refused, tested |
+| Guardian rules | 3 | Guardian exempt from screening around other children; second guardian re-ages a child; threads outlive their room or booking (S-05 to S-07) | Fixed, tested |
+| Contact redaction | 3 | Tutor bios, lesson notes, meeting links and look-alike characters carried contact details to minors (S-08, S-09, S-14, S-15) | Fixed, tested |
+| Money after refunds and disputes | 3 | Disputed earnings paid out; refunded packages and room places still usable; bank change without step-up (S-10 to S-13) | Fixed, tested |
+| Stored links, quiz keys | 3 | `javascript:` links; answer-key harvesting (S-17, S-18) | Fixed, tested |
+| CSP | 2 | Report-only with `unsafe-inline` | Enforced nonce policy, render sweep, browser pass with zero violations |
+| Authorisation | 2 | Policies per domain, no global check | Router-wide map test over every route; one gap fixed (S-16) |
+| Account deletion, data access | 6 | Deletion failed for anyone with money records; no data export | Closure and export, tested (S-20, S-21) |
+| Retention | 6 | No purge outside AI and comms | `tutor:privacy-purge` (S-22); money and safeguarding periods are owner items |

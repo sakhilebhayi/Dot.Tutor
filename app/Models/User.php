@@ -57,6 +57,21 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
+    /**
+     * Initials drawn locally (R-47 security S-30): Jetstream's default sent every viewer's browser, with the person's
+     * initials, to ui-avatars.com, a third party the enforced CSP now blocks anyway.
+     */
+    protected function defaultProfilePhotoUrl(): string
+    {
+        $initials = mb_strtoupper(collect(preg_split('/\s+/', trim((string) $this->name)) ?: [])
+            ->filter()->take(2)->map(fn (string $part) => mb_substr($part, 0, 1))->join(''));
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'
+            .'<rect width="64" height="64" fill="#e3ece7"/><text x="32" y="40" font-family="sans-serif" font-size="24"'
+            .' text-anchor="middle" fill="#1d3a2f">'.e($initials ?: '?').'</text></svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
     /** @return HasOne<TutorProfile, $this> */
     public function tutorProfile(): HasOne
     {

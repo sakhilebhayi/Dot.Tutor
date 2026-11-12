@@ -11,6 +11,7 @@ use App\Domain\Academic\Models\SubjectOffering;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Writes a learner profile from validated input. Minimisation: the birth date
@@ -29,13 +30,16 @@ class LearnerProfiles
         return DB::transaction(function () use ($user, $data): LearnerProfile {
             $level = AcademicLevel::query()->with(['stage', 'curriculum'])->findOrFail((int) $data['academic_level_id']);
 
-            $profile = LearnerProfile::query()->firstOrNew(['user_id' => $user->id]);
+            $profile = LearnerProfile::query()->lockForUpdate()->firstOrNew(['user_id' => $user->id]);
+            $birthMonth = CarbonImmutable::create((int) $data['birth_year'], (int) $data['birth_month'], 1);
+            $this->guardBirthMonthChange($profile, $birthMonth);
+
             $profile->fill([
                 'country_id' => (int) $data['country_id'],
                 'curriculum_id' => $level->curriculum_id,
                 'academic_level_id' => $level->id,
                 'institution_id' => $level->isTertiary() ? ($data['institution_id'] ?? null) : null,
-                'birth_month' => CarbonImmutable::create((int) $data['birth_year'], (int) $data['birth_month'], 1)->toDateString(),
+                'birth_month' => $birthMonth->toDateString(),
                 'bilingual_ok' => isset($data['bilingual_ok']) && $data['bilingual_ok'] !== '' ? $data['bilingual_ok'] === '1' : null,
             ]);
             $profile->onboarded_at ??= now();
@@ -53,6 +57,31 @@ class LearnerProfiles
 
             return $profile->refresh();
         });
+    }
+
+    /**
+     * A learner may correct their birth month, but not into an older age band than the one already declared
+     * (R-47 security S-04): otherwise a ten-year-old types 1990 and every safeguarding restriction lifts. Moving
+     * to a younger band stays open (a typo that made a child an adult). An older band needs a guardian or an
+     * operator, whose date of birth (safety's age records) outranks this one anyway.
+     */
+    private function guardBirthMonthChange(LearnerProfile $profile, CarbonImmutable $birthMonth): void
+    {
+        $current = $profile->exists ? $profile->ageBandBirthDate() : null;
+
+        if ($current === null || $current->isSameMonth($birthMonth)) {
+            return;
+        }
+
+        $rank = ['child' => 0, 'teen' => 1, 'adult' => 2];
+        $before = $this->ageBands->bandFor($current);
+        $after = $this->ageBands->bandFor($birthMonth->endOfMonth()->startOfDay());
+
+        if ($before !== null && $after !== null && ($rank[$after] ?? 0) > ($rank[$before] ?? 0)) {
+            throw ValidationException::withMessages([
+                'birth_year' => 'Your month and year of birth can only be moved to an older age group by a parent or guardian, or by support.',
+            ]);
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Domain\Marketplace\Enums\ReviewStatus;
 use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Models\TutorQualification;
 use App\Domain\Marketplace\Support\MinorUnits;
+use App\Domain\Safety\Services\ContactPrivacy;
 use App\Models\SessionRating;
 use App\Models\TutorProfile;
 
@@ -143,16 +144,20 @@ class TutorPresenter
         $profile->loadMissing(['user', 'subjects', 'teachingScopes.subject', 'qualificationRecords.evidence', 'offerings.subjects']);
         $academic = app(AcademicScopePort::class);
         $languages = app(LanguageProfilePort::class);
+        // Free text a tutor wrote is shown with contact details hidden whenever a learner under 18 (or of unknown
+        // age) is reading, through safety's view_contact rule (R-47 security S-08).
+        $text = fn (?string $value) => blank($value) || $profile->user === null ? $value
+            : app(ContactPrivacy::class)->profileText(auth()->user(), $profile->user, $value)['text'];
 
         return [
             'id' => $profile->id,
             'handle' => $profile->public_handle,
             'name' => $profile->displayName(),
-            'headline' => $profile->headline,
-            'introduction' => $profile->bio,
-            'teaching_approach' => $profile->teaching_approach,
+            'headline' => $text($profile->headline),
+            'introduction' => $text($profile->bio),
+            'teaching_approach' => $text($profile->teaching_approach),
             'experience' => [
-                'summary' => $profile->experience_summary,
+                'summary' => $text($profile->experience_summary),
                 'years' => $profile->years_experience,
                 'sessions_completed' => (int) $profile->total_sessions,
             ],
@@ -163,7 +168,7 @@ class TutorPresenter
                 ->map(fn (TutorQualification $q) => $this->qualification($q))
                 ->values()->all(),
             'self_declared_qualifications' => filled($profile->qualifications) ? [
-                'text' => $profile->qualifications,
+                'text' => $text($profile->qualifications),
                 'label' => QualificationStatus::Unverified->publicLabel(),
             ] : null,
             'teaching_scope' => $profile->teachingScopes->map(fn ($s) => [

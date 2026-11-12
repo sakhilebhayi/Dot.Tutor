@@ -151,7 +151,8 @@ class AttemptService
     public function result(Attempt $attempt): array
     {
         $assessment = $attempt->assessment;
-        $reveal = $assessment->reveal_answers === 'after_submit' && $attempt->status === 'submitted';
+        $reveal = $assessment->reveal_answers === 'after_submit' && $attempt->status === 'submitted'
+            && $this->mayRevealKey($attempt, $assessment);
         $answers = $attempt->answers()->with('question')->get()->keyBy('question_id');
 
         return [
@@ -187,5 +188,23 @@ class AttemptService
                 return $row;
             })->filter()->values()->all(),
         ];
+    }
+
+    /**
+     * Practice shows the key after every try. An assessed quiz (which counts towards completion and certificates)
+     * shows it once the learner has passed or has no attempts left; otherwise one empty attempt would hand over the
+     * key for a perfect next one (R-47 security S-18). Right or wrong per question is always shown.
+     */
+    private function mayRevealKey(Attempt $attempt, Assessment $assessment): bool
+    {
+        if ($assessment->kind === AssessmentKind::Practice || $attempt->passed) {
+            return true;
+        }
+
+        if ($assessment->max_attempts === null) {
+            return false;
+        }
+
+        return Attempt::query()->where('assessment_id', $assessment->id)->where('user_id', $attempt->user_id)->count() >= $assessment->max_attempts;
     }
 }

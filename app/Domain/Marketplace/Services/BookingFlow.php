@@ -510,6 +510,11 @@ class BookingFlow
     /** Accept every request in a weekly series at once. */
     public function acceptSeries(TutorBookingSeries $series, User $tutor): int
     {
+        // Another tutor's series is refused up front, not only lesson by lesson (R-47 security route sweep).
+        if (TutorProfile::query()->whereKey($series->tutor_profile_id)->value('user_id') !== $tutor->id) {
+            throw new MarketplaceException('forbidden', 'Only the tutor can do this.', 403);
+        }
+
         $accepted = 0;
         foreach ($series->sessions()->where('status', SessionStatus::Pending->value)->get() as $session) {
             $this->accept($session, $tutor);

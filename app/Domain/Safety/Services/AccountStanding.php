@@ -26,6 +26,12 @@ class AccountStanding
         return $this->ages->isMinor($user);
     }
 
+    /** No date of birth is known (the band then follows safety.unknown_age_policy). */
+    public function ageUnknown(User $user): bool
+    {
+        return $this->ages->knownBand($user) === null;
+    }
+
     public function hasGuardianConsent(User $learner): bool
     {
         return Consent::query()->inForce()

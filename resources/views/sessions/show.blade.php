@@ -121,7 +121,7 @@
         @endcan
 
         @if($session->isOpen())
-        <form method="POST" action="{{ route('sessions.cancel', $session) }}" onsubmit="return confirm('Cancel this session?');">
+        <form method="POST" action="{{ route('sessions.cancel', $session) }}" data-confirm="Cancel this session?">
             @csrf
             <button type="submit" class="cancel-btn">Cancel session</button>
         </form>
@@ -178,7 +178,7 @@
                 <div style="display:flex;gap:0.5rem;flex-shrink:0;">
                     <a href="{{ route('resources.download', $resource) }}" style="color:#a5b4fc;text-decoration:none;font-size:0.78rem;font-weight:700;">Download</a>
                     @if($resource->uploader_id === auth()->id())
-                    <form method="POST" action="{{ route('resources.destroy', $resource) }}" onsubmit="return confirm('Remove this resource?');">
+                    <form method="POST" action="{{ route('resources.destroy', $resource) }}" data-confirm="Remove this resource?">
                         @csrf
                         @method('DELETE')
                         <button type="submit" style="background:none;border:none;color:#f87171;font-size:0.78rem;font-weight:700;cursor:pointer;padding:0;">Remove</button>

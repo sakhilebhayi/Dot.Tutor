@@ -151,6 +151,16 @@ class ClassroomPageController extends Controller
                 $host = parse_url((string) $value, PHP_URL_HOST);
                 if ($value && (! $host || filter_var($host, FILTER_VALIDATE_IP) || ! str_contains($host, '.'))) {
                     $fail('Use the full https link of your meeting room (for example on Google Meet, Teams or Zoom).');
+
+                    return;
+                }
+
+                $host = strtolower((string) $host);
+                $allowed = collect((array) config('classroom.meeting_hosts'))
+                    ->contains(fn (string $h) => $host === strtolower($h) || str_ends_with($host, '.'.strtolower($h)));
+
+                if ($value && ! $allowed) {
+                    $fail('Use a meeting room link from '.implode(', ', (array) config('classroom.meeting_hosts')).'. Chat app and personal links are not allowed.');
                 }
             }],
         ], ['external_url.url' => 'The meeting link must start with https://.']);
