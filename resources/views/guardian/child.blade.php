@@ -8,11 +8,15 @@
     $orderText = ['paid' => 'Paid', 'partially_refunded' => 'Partly refunded', 'refunded' => 'Refunded', 'pending_payment' => 'Not paid yet', 'awaiting_guardian' => 'Waiting for you', 'cancelled' => 'Cancelled', 'expired' => 'Expired', 'guardian_refused' => 'You declined'];
 @endphp
 <x-layouts::learner :title="$c['name']">
-    <x-td.page-head :title="$c['name']" :lede="$c['age_band_label'].', your '.str_replace('_', ' ', $c['relationship']).'.'">
+    <x-td.page-head :title="$c['name']" :lede="$c['age_band_label'].' · you are their '.str_replace('_', ' ', $c['relationship'] ?: 'guardian')">
         <x-slot:actions><x-td.button :href="route('guardian.home')" icon="arrow-left" variant="quiet">All children</x-td.button></x-slot:actions>
     </x-td.page-head>
 
     <div class="grid gap-6">
+        @foreach ($c['urgent'] as $row)
+            @include('guardian.partials.urgent', ['row' => $row])
+        @endforeach
+
         @if ($c['account']['status'] === 'suspended')
             <x-td.notice tone="danger" title="{{ $c['name'] }}'s account is suspended">They cannot book, pay, message or join rooms{{ $c['account']['suspended_until'] ? ' until '.\Illuminate\Support\Carbon::parse($c['account']['suspended_until'])->timezone($tz)->format('j M Y') : '' }}. The reason is under Safety notices below; contact support if you have questions.</x-td.notice>
         @elseif ($c['account']['status'] === 'limited')
@@ -30,6 +34,19 @@
             @endforelse
         </x-td.panel>
 
+        <x-td.panel title="Reports and safety notices" flush>
+            @if ($c['safety'] === [])
+                <x-td.state kind="success" title="No reports and no warnings" />
+            @else
+                <ul class="gd-rows">
+                    @foreach (array_slice($c['safety'], 0, 3) as $row)
+                        @include('guardian.partials.safety-row', ['row' => $row])
+                    @endforeach
+                </ul>
+            @endif
+            <div class="px-5 py-4"><x-td.button :href="route('safety.guardian.dashboard')" variant="quiet" icon-end="arrow-right">{{ count($c['safety']) > 3 ? 'All '.count($c['safety']).' on the Safety page' : 'Open the Safety page' }}</x-td.button></div>
+        </x-td.panel>
+
         <x-td.panel title="Upcoming lessons" flush>
             @if ($c['upcoming_lessons'] === [])
                 <x-td.state kind="empty" title="No lessons booked">Lessons {{ $c['name'] }} books appear here once you approve them.</x-td.state>
@@ -41,7 +58,15 @@
                                 <p class="ops-work__title">{{ $lesson['subject'] ?? 'Lesson' }} with {{ $lesson['tutor'] ?? 'a tutor' }}</p>
                                 <p class="ops-work__meta">{{ \Illuminate\Support\Carbon::parse($lesson['starts_at'])->timezone($tz)->format('l j F, H:i') }} · {{ $lesson['duration_minutes'] }} minutes</p>
                             </div>
-                            @include('ops.partials.tag', ['text' => ucfirst(str_replace('_', ' ', $lesson['status'] === 'pending' ? 'requested' : $lesson['status'])), 'tone' => $lesson['status'] === 'confirmed' ? 'success' : 'neutral'])
+                            {{-- The same words the child sees on their lesson (student lesson-state partial). --}}
+                            @include('ops.partials.tag', match ($lesson['status']) {
+                                'pending' => ['text' => 'Waiting for the tutor', 'icon' => 'hourglass'],
+                                'awaiting_guardian' => ['text' => 'Waiting for you', 'tone' => 'warning', 'icon' => 'hourglass'],
+                                'awaiting_payment' => ['text' => 'Waiting for payment', 'tone' => 'warning'],
+                                'confirmed' => ['text' => 'Confirmed', 'tone' => 'success'],
+                                'in_progress' => ['text' => 'Happening now', 'tone' => 'success'],
+                                default => ['text' => ucfirst(str_replace('_', ' ', $lesson['status']))],
+                            })
                         </li>
                     @endforeach
                 </ul>
@@ -49,8 +74,9 @@
         </x-td.panel>
 
         <x-td.panel title="Purchases" flush>
-            @if ($c['orders'] === [] && $c['purchases'] === [])
-                <x-td.state kind="empty" title="No purchases">Anything {{ $c['name'] }} wants to buy asks you first.</x-td.state>
+            @if ($c['orders'] === [])
+                @php($askedToBuy = count(array_filter($c['purchases'], fn ($p) => $p['status'] === 'pending')))
+                <x-td.state kind="empty" title="No purchases">Anything {{ $c['name'] }} wants to buy asks you first.@if ($askedToBuy) {{ $askedToBuy === 1 ? 'One request is' : $askedToBuy.' requests are' }} waiting for you above.@endif</x-td.state>
             @else
                 <ul class="ops-work">
                     @foreach ($c['orders'] as $o)
@@ -66,31 +92,14 @@
             @endif
         </x-td.panel>
 
-        <div class="td-panels td-panels--2">
-            <x-td.panel title="Messages">
-                <p class="mt-0">{{ $c['messages']['conversations'] }} {{ $c['messages']['conversations'] === 1 ? 'conversation' : 'conversations' }}, {{ $c['messages']['unread_for_you'] }} unread by you.
-                    @if ($c['messages']['redacted_messages'] > 0) In {{ $c['messages']['redacted_messages'] }} {{ $c['messages']['redacted_messages'] === 1 ? 'message' : 'messages' }} contact details were hidden automatically.@endif</p>
-                <p class="ops-muted text-sm">You are in every conversation {{ $c['name'] }} has with a tutor, a room or support. You can read and reply, and report anything that worries you.</p>
-                @if ($c['messages']['conversations'] > 0)
-                    <x-td.button :href="route('safety.conversations.index')" icon="message-square">Read the messages</x-td.button>
-                @endif
-            </x-td.panel>
-
-            <x-td.panel title="Reports and safety notices">
-                @if ($c['reports'] === [] && $c['notices'] === [])
-                    <p class="m-0 ops-muted">No reports and no warnings.</p>
-                @else
-                    <ul class="m-0 p-0 grid gap-3" style="list-style:none">
-                        @foreach ($c['notices'] as $n)
-                            <li>@include('ops.partials.tag', ['text' => $n['kind'] === 'suspension' ? 'Suspension' : 'Warning', 'tone' => $n['kind'] === 'suspension' ? 'danger' : 'warning']) {{ $n['starts_at']?->timezone($tz)->format('j M Y') }}: {{ $n['reason'] }}</li>
-                        @endforeach
-                        @foreach ($c['reports'] as $r)
-                            <li>{{ $r['category_label'] }} · {{ $r['filed_by_child'] ? 'reported by '.$c['name'] : 'in '.$c['name'].'\'s conversations' }} · {{ \Illuminate\Support\Carbon::parse($r['created_at'])->timezone($tz)->format('j M Y') }} · {{ ['open' => 'being looked at', 'escalated' => 'being looked at urgently', 'actioned' => 'acted on', 'dismissed' => 'closed, no action needed'][$r['status']] ?? $r['status'] }}</li>
-                        @endforeach
-                    </ul>
-                @endif
-            </x-td.panel>
-        </div>
+        <x-td.panel title="Messages">
+            <p class="mt-0">{{ $c['messages']['conversations'] }} {{ $c['messages']['conversations'] === 1 ? 'conversation' : 'conversations' }}, {{ $c['messages']['unread_for_you'] }} unread by you.
+                @if ($c['messages']['redacted_messages'] > 0) In {{ $c['messages']['redacted_messages'] }} {{ $c['messages']['redacted_messages'] === 1 ? 'message' : 'messages' }} contact details were hidden automatically.@endif</p>
+            <p class="ops-muted text-sm">You are in every conversation {{ $c['name'] }} has with a tutor, a room or support. You can read and reply, and report anything that worries you.</p>
+            @if ($c['messages']['conversations'] > 0)
+                <x-td.button :href="route('safety.conversations.index')" icon="message-square">Read the messages</x-td.button>
+            @endif
+        </x-td.panel>
 
         <x-td.panel title="Settings">
             <div class="grid gap-6">
