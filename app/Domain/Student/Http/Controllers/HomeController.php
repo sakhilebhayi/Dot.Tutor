@@ -49,7 +49,7 @@ class HomeController extends Controller
             'toReview' => $toReview,
             'insights' => $agenda->insights($user),
             'questions' => $agenda->unansweredInMyRooms($user),
-            'aiConfigured' => app()->bound(AiGateway::class) ? app(AiGateway::class)->configured() : false,
+            'aiConfigured' => class_exists(AiGateway::class) && app(AiGateway::class)->configured(),
         ]);
     }
 
