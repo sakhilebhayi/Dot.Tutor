@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Domain\Classroom\Models\Classroom;
-use App\Models\Subject;
 use App\Domain\Safety\Models\AgeRecord;
+use App\Models\Subject;
 use App\Models\TutorProfile;
 use App\Models\TutorSession;
 use App\Models\User;
