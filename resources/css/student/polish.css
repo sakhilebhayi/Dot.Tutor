@@ -129,6 +129,17 @@
             text-decoration: underline 2px;
             text-underline-offset: 0.25em;
         }
+
+        /* Fix round D-2310: links in the policy text thicken on hover, so the change is not colour alone. */
+        .td-legal__body a {
+            text-decoration-thickness: 1px;
+            text-underline-offset: 0.2em;
+            transition: text-decoration-thickness var(--td-dur-micro) var(--td-ease-out);
+        }
+
+        .td-legal__body a:hover {
+            text-decoration-thickness: 3px;
+        }
     }
 
     .td-legal__body {

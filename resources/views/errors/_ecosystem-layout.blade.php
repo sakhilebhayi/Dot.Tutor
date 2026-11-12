@@ -48,20 +48,14 @@
                         <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                         <span>Dot.Tutor</span>
                     </a>
-                    {{-- The same destinations as every public page (R-47 polish D-2016), written out so this page needs
-                         no session or database. --}}
-                    <nav class="td-public-nav" aria-label="Dot.Tutor">
-                        <a href="{{ url('/#how') }}">How matching works</a>
-                        <a href="{{ url('/#rooms') }}">Rooms by level</a>
-                        <a href="{{ url('/#languages') }}">Languages</a>
-                        <a href="{{ url('/#teach') }}">Teach</a>
-                    </nav>
+                    @include('layouts.partials.public-nav')
                     <div class="td-public-top__actions">
                         @if ($signedIn && Route::has('dashboard'))
                             <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}"><span>Your desk</span></a>
                         @elseif (Route::has('login'))
                             <a class="td-btn td-btn--primary" href="{{ route('login') }}"><span>Sign in</span></a>
                         @endif
+                        @include('layouts.partials.public-menu-button')
                     </div>
                 </div>
             </header>

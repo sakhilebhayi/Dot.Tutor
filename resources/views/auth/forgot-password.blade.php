@@ -6,7 +6,7 @@
 
 
         <div class="mb-4 text-sm text-[var(--moss)]">
-            {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+            Enter the email address on your Dot.Tutor account and we will email you a link to choose a new password. If you sign in through InfoDot, reset your password on InfoDot instead.
         </div>
 
         @session('status')
@@ -27,7 +27,7 @@
 
             <div class="flex items-center justify-end mt-4">
                 <x-button>
-                    {{ __('Email Password Reset Link') }}
+                    Email me a reset link
                 </x-button>
             </div>
         </form>

@@ -5,6 +5,8 @@
         </x-slot>
 
 
+        @php $infodotLaunch = \App\Support\InfoDotSignIn::launchUrl(); @endphp
+
         <x-validation-errors class="mb-4" />
 
         @session('status')
@@ -12,6 +14,15 @@
                 {{ $value }}
             </div>
         @endsession
+
+        {{-- InfoDot is the sign-in for the Dot ecosystem (fix round D-2301). The button appears only when the launch page
+             and the service secret are configured, so it never leads nowhere. --}}
+        @if ($infodotLaunch)
+            <div class="td-auth__sso">
+                <x-td.button variant="primary" :href="$infodotLaunch" icon-end="arrow-right" block>Continue with InfoDot</x-td.button>
+                <p class="td-auth__or">Or sign in with a Dot.Tutor password</p>
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
@@ -45,5 +56,14 @@
                 </x-button>
             </div>
         </form>
+
+        <p class="td-auth__new">
+            <strong>New here?</strong>
+            @if ($infodotLaunch)
+                Your Dot.Tutor account is made from your InfoDot account the first time you continue with InfoDot.
+            @else
+                Dot.Tutor accounts come from InfoDot, the Dot ecosystem's sign-in; there is no separate sign-up on this page.
+            @endif
+        </p>
     </x-authentication-card>
 </x-guest-layout>

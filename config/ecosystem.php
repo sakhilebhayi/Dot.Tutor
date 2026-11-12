@@ -76,6 +76,9 @@ return [
         'secret' => env('INFODOT_SERVICE_SECRET'),
         'timeout' => (int) env('INFODOT_REDEEM_TIMEOUT', 5),
         'provision' => (bool) env('INFODOT_PROVISION_USERS', true),
+        // InfoDot's page that signs a person in and posts them here (InfoDot route /go/{platform}). The sign-in page
+        // shows "Continue with InfoDot" only when this and the service secret are set (fix round D-2301).
+        'launch_url' => env('INFODOT_LAUNCH_URL'),
     ],
 
 ];
