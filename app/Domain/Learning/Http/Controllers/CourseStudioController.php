@@ -2,6 +2,7 @@
 
 namespace App\Domain\Learning\Http\Controllers;
 
+use App\Domain\Community\Support\Names;
 use App\Domain\Learning\Contracts\Seams\AcademicScopeLookup;
 use App\Domain\Learning\Contracts\Seams\TutorStanding;
 use App\Domain\Learning\Enums\AssessmentKind;
@@ -279,7 +280,7 @@ class CourseStudioController extends LearningController
                 $summary = $progress->summary($enrolment);
 
                 return [
-                    'learner' => $enrolment->user?->name ?? 'Deleted account',
+                    'learner' => $enrolment->user ? Names::short($enrolment->user) : 'Deleted account',
                     'enrolled_at' => $enrolment->created_at->toIso8601String(),
                     'version' => $enrolment->version?->number,
                     'completed_lessons' => $summary['completed'],
