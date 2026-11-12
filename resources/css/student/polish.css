@@ -421,3 +421,55 @@
         background: var(--td-sunken);
     }
 }
+
+/* Fix round (fix-public, D-2304): booking opens on the learner's own window, and a day's times are grouped into
+   Morning, Afternoon and Evening, three to a row on a phone. */
+@layer components {
+    .st-window {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--td-space-2) var(--td-space-4);
+        margin: 0 0 var(--td-space-4);
+        padding: var(--td-space-3) var(--td-space-4);
+        background: var(--td-sunken);
+        border-radius: var(--td-radius);
+    }
+
+    .st-window__text {
+        display: flex;
+        gap: var(--td-space-2);
+        align-items: baseline;
+        margin: 0;
+    }
+
+    .st-window__text > .td-icon {
+        flex: none;
+        align-self: center;
+    }
+
+    .st-window__switch {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+        font-weight: 650;
+    }
+
+    .st-times-group + .st-times-group {
+        margin-top: var(--td-space-4);
+    }
+
+    .st-times-group__label {
+        margin: 0 0 var(--td-space-2);
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+    }
+
+    @media (max-width: 40rem) {
+        .st-times-group .st-times {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+}

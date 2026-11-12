@@ -2,6 +2,7 @@
 
 namespace App\Domain\Integration\Support;
 
+use App\Domain\Marketplace\Services\TutorPresenter;
 use App\Domain\Safety\Services\Screening;
 use App\Enums\TutorProfileStatus;
 use App\Models\TutorProfile;
@@ -38,8 +39,11 @@ class TutorStanding
 
         $level = $profile->verificationLevel();
         $reviewing = $level === null && $profile->qualificationRecords()->where('status', 'submitted')->exists();
+        $checked = $level === null && ! $reviewing && TutorPresenter::hasVerifiedRecord($profile);
         $qualification = match (true) {
             $level !== null => [true, 'Qualification verified', $level->label().', from a reviewed record.'],
+            // A verified record without a level (fix round D-2302): the same words as the public profile.
+            $checked => [null, TutorPresenter::CHECKED_LABEL, TutorPresenter::CHECKED_DETAIL],
             $reviewing => [null, 'Qualification in review', 'Evidence was sent and is waiting for a reviewer.'],
             default => [false, 'Qualification not verified', 'Anything the profile says about qualifications is self-declared.'],
         };

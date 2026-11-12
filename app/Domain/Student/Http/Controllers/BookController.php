@@ -15,6 +15,8 @@ use App\Domain\Marketplace\Services\PaymentService;
 use App\Domain\Marketplace\Services\TutorPresenter;
 use App\Domain\Marketplace\Support\CheckoutResult;
 use App\Domain\Student\Services\LearnerContext;
+use App\Domain\Student\Support\BookingWindow;
+use App\Domain\Student\Support\Times;
 use App\Enums\SessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\TutorSession;
@@ -60,20 +62,46 @@ class BookController extends Controller
         $days = $needsTime ? $slots->forTutor($profile, (int) $duration) : [];
 
         $decision = $gate->allows($user, 'book', $offering);
+        $ctx = $context->for($user);
+
+        // The learner's own window first (fix round D-2304): the search's days and hours, or after-school times for a
+        // young learner; "Show all times" (?all=1) lists every open time. A chosen time outside the window shows all.
+        $allDays = array_values(array_filter($days, fn ($d) => $d['slots'] !== []));
+        $window = BookingWindow::fromRequest($request, ($ctx['step'] ?? 'standard') === 'young');
+        $preselect = (string) $request->query('at', '');
+        $windowDays = $window === null ? $allDays : array_values(array_filter(array_map(
+            fn ($d) => ['slots' => array_values(array_filter($d['slots'], fn ($slot) => $window->contains(Times::local($slot))))] + $d,
+            $allDays,
+        ), fn ($d) => $d['slots'] !== []));
+        $chosen = (string) $request->old('starts_at', $preselect);
+        $chosenOutside = $chosen !== '' && ! collect($windowDays)->flatMap(fn ($d) => $d['slots'])
+            ->contains(fn ($slot) => $slot->utc()->toIso8601String() === $chosen);
+        $showAll = $window === null || $request->boolean('all') || $windowDays === [] || $chosenOutside;
+        $countSlots = fn (array $list) => array_sum(array_map(fn ($d) => count($d['slots']), $list));
 
         return view('student.book', [
-            'ctx' => $context->for($user),
+            'ctx' => $ctx,
             'offering' => $offering,
             'data' => $presenter->offering($offering),
             'tutor' => ['id' => $profile->id, 'name' => $profile->displayName(), 'verification' => $presenter->verification($profile), 'has_photo' => $profile->photo_path !== null],
             'type' => $type,
-            'days' => array_values(array_filter($days, fn ($d) => $d['slots'] !== [])),
+            'days' => $showAll ? $allDays : $windowDays,
+            'window' => $window === null ? null : [
+                'label' => $window->label(),
+                'source' => $window->source,
+                'applied' => ! $showAll,
+                'empty' => $windowDays === [],
+                'shown' => $countSlots($windowDays),
+                'all' => $countSlots($allDays),
+                'all_url' => route('learn.book', ['offering' => $offering->id] + $window->query() + ['all' => 1] + ($preselect !== '' ? ['at' => $preselect] : [])),
+                'window_url' => route('learn.book', ['offering' => $offering->id] + $window->query()),
+            ],
             'usablePackage' => $usable,
             'packages' => $packages,
             'groupSessions' => $groupSessions,
             'mySeats' => $mySeats,
             'blocked' => $decision->allowed ? null : $decision->reasons,
-            'preselect' => (string) $request->query('at', ''),
+            'preselect' => $preselect,
         ]);
     }
 

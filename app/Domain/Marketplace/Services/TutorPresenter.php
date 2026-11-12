@@ -26,17 +26,44 @@ use App\Models\TutorProfile;
  */
 class TutorPresenter
 {
-    /** @return array{level: ?string, label: string, description: string, assigned_at: ?string} */
+    /**
+     * One status for the whole profile (fix round D-2302): when a qualification record was verified but no level has
+     * been set yet, the profile says so instead of "Not yet verified" above a "Verified by Dot.Tutor" record.
+     *
+     * @return array{level: ?string, state: string, label: string, description: string, assigned_at: ?string}
+     */
     public function verification(TutorProfile $profile): array
     {
         $level = $profile->verificationLevel();
 
+        if ($level === null && self::hasVerifiedRecord($profile)) {
+            return [
+                'level' => null,
+                'state' => 'checked',
+                'label' => self::CHECKED_LABEL,
+                'description' => self::CHECKED_DETAIL,
+                'assigned_at' => null,
+            ];
+        }
+
         return [
             'level' => $level?->value,
+            'state' => $level ? 'verified' : 'unverified',
             'label' => $level?->label() ?? 'Not yet verified',
             'description' => $level?->description() ?? 'Dot.Tutor has not reviewed evidence for this tutor yet.',
             'assigned_at' => $level ? $profile->verification_level_set_at?->toIso8601String() : null,
         ];
+    }
+
+    public const CHECKED_LABEL = 'Qualification checked, level pending';
+
+    public const CHECKED_DETAIL = 'Dot.Tutor verified a qualification record; the tutor\'s verification level has not been set yet.';
+
+    public static function hasVerifiedRecord(TutorProfile $profile): bool
+    {
+        return $profile->relationLoaded('qualificationRecords')
+            ? $profile->qualificationRecords->contains(fn ($q) => $q->status === QualificationStatus::Verified->value)
+            : $profile->qualificationRecords()->where('status', QualificationStatus::Verified->value)->exists();
     }
 
     /** @return array<string, mixed> */

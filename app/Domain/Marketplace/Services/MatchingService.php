@@ -195,7 +195,11 @@ class MatchingService
 
         // verification level
         $level = $profile->verificationLevel();
-        $verNote = $level ? $level->label().': '.$level->description() : 'Not yet verified by Dot.Tutor.';
+        $verNote = match (true) {
+            $level !== null => $level->label().': '.$level->description(),
+            TutorPresenter::hasVerifiedRecord($profile) => TutorPresenter::CHECKED_LABEL.'.',
+            default => 'Not yet verified by Dot.Tutor.',
+        };
         $terms['verification'] = $this->term('verification', $weights, $level?->matchingWeight() ?? 0.0, $verNote);
         $reasons[] = $verNote;
 

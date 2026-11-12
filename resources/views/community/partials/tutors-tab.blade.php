@@ -25,7 +25,7 @@
                     <div class="grid gap-1">
                         @if ($tutor['url'])<a class="td-link" href="{{ $tutor['url'] }}">{{ $tutor['name'] }}</a>@else<span class="font-semibold">{{ $tutor['name'] }}</span>@endif
                         @if ($tutor['headline'])<p class="m-0 text-sm text-td-ink-2">{{ $tutor['headline'] }}</p>@endif
-                        <x-td.verify-badge :status="$tutor['verification']['level'] ? 'verified' : 'self'" :level="$tutor['verification']['level'] ?? ''" />
+                        @include('student.partials.verification', ['verification' => $tutor['verification']])
                     </div>
                 </div>
                 <x-td.match-reasons :reasons="$tutor['reasons']" label="Why this tutor is listed" />
