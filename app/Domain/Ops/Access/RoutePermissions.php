@@ -60,8 +60,10 @@ final class RoutePermissions
         'ops.payments' => [P::FINANCE_VIEW],
         'ops.payments.*' => [P::FINANCE_VIEW],
         'ops.payouts' => [P::FINANCE_VIEW],
+        'ops.payouts.batch' => [P::FINANCE_VIEW],
         'ops.payouts.*' => [P::FINANCE_PAYOUTS],
         'ops.support' => [P::SUPPORT_VIEW],
+        'ops.support.reply' => [P::SUPPORT_ACT],
         'ops.support.*' => [P::SUPPORT_VIEW],
 
         // Pre-R-47 operator desk (routes/web.php).
