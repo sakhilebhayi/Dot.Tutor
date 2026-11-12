@@ -2,16 +2,19 @@
 
 namespace App\Domain\Student\Services;
 
+use App\Domain\Community\Models\Post;
+use App\Domain\Community\Models\RoomMember;
 use App\Domain\Learning\Contracts\ProgressFeed;
 use App\Domain\Learning\Models\Assignment;
 use App\Domain\Learning\Models\Attempt;
 use App\Domain\Learning\Models\Enrolment;
 use App\Domain\Learning\Services\ProgressService;
+use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Domain\Marketplace\Services\ReviewService;
 use App\Enums\SessionStatus;
 use App\Models\TutorSession;
-use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -88,7 +91,7 @@ class LearnerAgenda
     /**
      * Work a tutor set that has not been handed in, earliest due first.
      *
-     * @return list<array{assignment: Assignment, title: string, due_at: ?\Carbon\CarbonInterface, overdue: bool}>
+     * @return list<array{assignment: Assignment, title: string, due_at: ?CarbonInterface, overdue: bool}>
      */
     public function workDue(User $user, int $limit = 5): array
     {
@@ -117,15 +120,15 @@ class LearnerAgenda
      * Questions in rooms this learner belongs to that nobody has answered yet (community domain), newest first.
      * Empty when the community domain is not installed.
      *
-     * @return Collection<int, \App\Domain\Community\Models\Post>
+     * @return Collection<int, Post>
      */
     public function unansweredInMyRooms(User $user, int $limit = 5): Collection
     {
-        if (! class_exists(\App\Domain\Community\Models\Post::class) || ! class_exists(\App\Domain\Community\Models\RoomMember::class)) {
+        if (! class_exists(Post::class) || ! class_exists(RoomMember::class)) {
             return collect();
         }
-        $post = \App\Domain\Community\Models\Post::class;
-        $roomIds = \App\Domain\Community\Models\RoomMember::query()->where('user_id', $user->id)->where('status', 'active')->pluck('room_id')->all();
+        $post = Post::class;
+        $roomIds = RoomMember::query()->where('user_id', $user->id)->where('status', 'active')->pluck('room_id')->all();
 
         return $post::query()->with('room')
             ->whereIn('room_id', $roomIds ?: [0])

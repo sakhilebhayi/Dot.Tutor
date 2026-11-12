@@ -4,18 +4,21 @@ namespace App\Domain\Student\Http\Controllers;
 
 use App\Domain\Marketplace\Contracts\SafeguardingPort;
 use App\Domain\Marketplace\Enums\OfferingType;
+use App\Domain\Marketplace\Models\TutorBookingSeries;
 use App\Domain\Marketplace\Models\TutorOffering;
 use App\Domain\Marketplace\Models\TutorPackagePurchase;
 use App\Domain\Marketplace\Models\TutorSessionParticipant;
 use App\Domain\Marketplace\Services\BookingFlow;
+use App\Domain\Marketplace\Services\BookingPresenter;
 use App\Domain\Marketplace\Services\Idempotency;
 use App\Domain\Marketplace\Services\PaymentService;
 use App\Domain\Marketplace\Services\TutorPresenter;
+use App\Domain\Marketplace\Support\CheckoutResult;
 use App\Domain\Student\Services\LearnerContext;
 use App\Enums\SessionStatus;
+use App\Http\Controllers\Controller;
 use App\Models\TutorSession;
 use App\Services\Scheduling\SlotFinder;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -124,7 +127,7 @@ class BookController extends Controller
         if ($type === OfferingType::RecurringWeekly) {
             $series = $idempotency->run($user, 'series:'.$offering->id, $key, $data,
                 fn () => $flow->bookSeries($user, $offering, $data)[0],
-                fn (int $id) => \App\Domain\Marketplace\Models\TutorBookingSeries::query()->find($id))[0];
+                fn (int $id) => TutorBookingSeries::query()->find($id))[0];
             $first = $series->sessions()->orderBy('starts_at')->first();
 
             return redirect()->to($first ? route('learn.lessons.show', $first) : route('marketplace.bookings'))
@@ -140,7 +143,7 @@ class BookController extends Controller
             }, fn (int $id) => TutorSession::query()->find($id));
 
         return redirect()->route('learn.lessons.show', $session)
-            ->with('flash.banner', $notice ?? 'Request sent. '.app(\App\Domain\Marketplace\Services\BookingPresenter::class)->nextStep($session));
+            ->with('flash.banner', $notice ?? 'Request sent. '.app(BookingPresenter::class)->nextStep($session));
     }
 
     private function bookable(int $id): TutorOffering
@@ -159,7 +162,7 @@ class BookController extends Controller
         return preg_match('/^[A-Za-z0-9._:\-]{8,120}$/', $key) ? $key : null;
     }
 
-    private function toPayment(\App\Domain\Marketplace\Support\CheckoutResult $result, string $back): RedirectResponse
+    private function toPayment(CheckoutResult $result, string $back): RedirectResponse
     {
         if ($result->status === 'pending' && $result->redirectUrl) {
             return redirect()->away($result->redirectUrl);

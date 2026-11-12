@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Student;
 
+use App\Domain\Academic\Contracts\LanguageProfile;
 use App\Domain\Academic\Models\Country;
 use App\Domain\Learning\Models\FlashcardSet;
 use App\Domain\Student\Models\StudentPreference;
@@ -87,7 +88,7 @@ class StudentScreensTest extends TestCase
 
         $this->actingAs($teen)->get(route('learn.onboarding', ['step' => 'guardian']))->assertOk()
             ->assertSee('One more step: a parent or guardian')->assertSee(route('safety.guardians.invite'), false);
-        $this->assertSame('af', app(\App\Domain\Academic\Contracts\LanguageProfile::class)->interfaceLocale($teen));
+        $this->assertSame('af', app(LanguageProfile::class)->interfaceLocale($teen));
 
         $adult = $this->person('Pieter Adult');
         $this->actingAs($adult)->post(route('learn.onboarding.store'), [
@@ -241,6 +242,14 @@ class StudentScreensTest extends TestCase
             ->assertSee('Language of this website')->assertSee('Partly translated')->assertSee('Not translated yet, shown in English')
             ->assertSee('Follow my grade')->assertSee('13 to 17');
         $this->actingAs($learner)->get(route('academic.profile.edit'))->assertOk()->assertSee('Your learning profile')->assertSee('td-app--learner', false);
+    }
+
+    public function test_the_language_page_is_the_learner_page_when_signed_in_and_the_guest_page_otherwise(): void
+    {
+        $this->actingAs($this->person('Locale Learner'))->get(route('academic.locale.index'))->assertOk()
+            ->assertSee('td-app--learner', false)->assertSee('Not translated yet, shown in English')->assertSee('isiZulu');
+        auth()->logout();
+        $this->get(route('academic.locale.index'))->assertOk()->assertDontSee('td-app--learner', false)->assertSee('isiZulu');
     }
 
     public function test_flashcards_are_created_reviewed_and_graded_through_the_learning_rules(): void

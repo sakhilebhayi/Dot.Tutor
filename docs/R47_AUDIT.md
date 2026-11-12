@@ -181,3 +181,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Room safety (brief 15) | Safety rules for rooms existed, `RoomDirectory` bound to a null | P | Room conversations answered 404 | Rooms are `AgeGatedSpace`s; `RoomDirectory` bound; age gates, pre-moderation, redaction, reports and holds enforced server side |
 | Engagement mechanics | None | F (correctly absent) | Brief: no likes or popularity | Indicators only: questions resolved, answers accepted, resources contributed, sessions attended, milestones |
 | Freshness | None | M | No way to see new activity | Versioned activity endpoint with ETag/304 and a polling notice |
+
+### Learner screens (student UI agent, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Learner home | Legacy dashboard (counts, subjects list); no "what is next" | P | Nothing told a learner what to do next | `/learn`: next step, need field, lessons, courses to resume, work due, unanswered room questions, insights |
+| Onboarding | Academic profile form (functional, app layout) | P | No first-run path, no interface language, no guardian step | `/learn/welcome` in under a minute, guardian step for minors |
+| Find and match | Minimal page, comma-coded language field, scores without explanation; list query values refused | B (lists) / P | Matches not explained in plain lines; `languages[]` failed validation | Plain-words need, explained fits and gaps, ranking table, language chips; controller fix (D-1117) |
+| Storefront and booking | Minimal storefront, free-text date booking, no slots | P | Learners could not see real open times or courses | Real slots, packages, group seats, weekly series, idempotent requests, safeguarding reasons shown first |
+| Lesson page | None (API only) | M | No status timeline, pay, cancel policy or review on the web | `/learn/lessons/{id}` |
+| Courses, library, quizzes | Functional wave-1 views on the legacy layout | P | Not in the learner shell; no level filter in the catalogue | Kit screens in the shell; level and curriculum filters (D-1118) |
+| Progress and flashcards | JSON only | M | No learner-facing progress or flashcard pages | Progress in words; flashcard create, review and grade |
+| Purchases and account | None | M | No list of orders; no place for languages, step and guardian status | `/learn/purchases`, `/learn/account` |
+| Young learners | Ds step existed, never switched on | P | A Grade 3 learner saw the full interface | Step decided by level and age band (D-1101), checked in the browser |
