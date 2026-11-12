@@ -69,15 +69,17 @@ class DesignSystemKitTest extends TestCase
         $nav = app(ShellNavigation::class);
         $items = collect($nav->for('learner'))->flatMap(fn (array $section) => $section['items']);
 
-        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
+        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Guardian', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today (ops agent added guardian.home, D-1310)');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
         $this->assertSame(route('dashboard'), $items->firstWhere('label', 'Home')['href'], 'falls back to the next candidate route');
         $this->assertCount(3, $nav->bottomBar('learner'));
 
         $operations = collect($nav->for('operations', 'dense'))->flatMap(fn (array $section) => $section['items'])->pluck('href')->all();
-        $this->assertContains(route('operator.tutor-profiles.index'), $operations);
-        $this->assertContains(route('operator.subjects.index'), $operations);
+        // The command centre (ops agent, D-1310) registered the preferred routes, so they win over the legacy pages.
+        $this->assertContains(route('ops.verification'), $operations);
+        $this->assertContains(route('ops.subjects'), $operations);
+        $this->assertNotContains(route('operator.tutor-profiles.index'), $operations);
     }
 
     public function test_the_landing_says_what_the_product_is_and_loads_nothing_from_other_hosts(): void
