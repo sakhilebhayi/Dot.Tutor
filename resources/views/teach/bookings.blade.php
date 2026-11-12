@@ -17,7 +17,7 @@
     ];
 @endphp
 <x-layouts::workspace title="Requests and bookings" step="dense">
-    <x-td.page-head title="Requests and bookings" :lede="'Times in '.$tz.'. Every action is checked again on the server against the booking\'s state and the offering\'s terms.'">
+    <x-td.page-head title="Requests and bookings" :lede="'Times in '.$tz.'. Accepting, declining and cancelling follow each offering\'s terms.'">
         <x-slot:actions>
             <x-td.button href="{{ route('teach.calendar') }}" icon="calendar">Calendar</x-td.button>
         </x-slot:actions>

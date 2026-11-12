@@ -142,7 +142,7 @@
                         </div>
                         <div class="flex justify-between gap-3 border-t border-td-line pt-2 text-lg font-bold"><dt>You keep</dt><dd class="m-0 tabular-nums" data-split="net">{{ $money($split['net_minor']) }}</dd></div>
                     </dl>
-                    <p class="m-0 text-sm text-td-ink-2" data-split="status">Worked out with the commission rule in force now{{ $split['rule_version'] ? ' (version '.$split['rule_version'].')' : '' }}. Each sale keeps the rule it was priced with.</p>
+                    <p class="m-0 text-sm text-td-ink-2" data-split="status">Today's commission rate. A sale keeps the rate it was made at.</p>
                     <p class="m-0 text-sm text-td-ink-2">Payment processing fees are {{ (float) config('money.charges.pass_gateway_fee_percent', 0) > 0 ? 'passed on, as shown' : 'paid by the platform' }}. A discount code you fund lowers the price commission is taken from. Earnings are pending until the lesson is delivered, plus {{ (int) config('money.earnings.hold_hours_after_lesson') }} hours for complaints, then available for payout.</p>
                     @if ($editing)
                         <input type="hidden" name="is_active" value="{{ $offering->is_active ? 1 : 0 }}">

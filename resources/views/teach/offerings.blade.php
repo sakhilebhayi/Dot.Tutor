@@ -3,7 +3,7 @@
     $formatLabel = ['online' => 'Online', 'in_person' => 'In person', 'either' => 'Online or in person'];
 @endphp
 <x-layouts::workspace title="Offerings and pricing" step="dense">
-    <x-td.page-head title="Offerings and pricing" :lede="$active->isEmpty() ? 'An offering is what learners book. Create one and see what you keep before you save it.' : $active->count().' bookable '.\Illuminate\Support\Str::plural('offering', $active->count()).'. What you keep is worked out with the commission rule in force now.'">
+    <x-td.page-head title="Offerings and pricing" :lede="$active->isEmpty() ? 'An offering is what learners book. Create one and see what you keep before you save it.' : $active->count().' bookable '.\Illuminate\Support\Str::plural('offering', $active->count()).'. What you keep uses today\'s commission rate; a sale keeps the rate it was made at.'">
         <x-slot:actions>
             <x-td.button href="{{ route('teach.offerings.create') }}" variant="primary" icon="plus">New offering</x-td.button>
         </x-slot:actions>

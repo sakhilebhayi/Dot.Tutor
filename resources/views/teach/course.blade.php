@@ -233,7 +233,7 @@
                         <div data-split="charges" class="grid gap-2">@foreach ($split['charges'] as $c)<div class="flex justify-between gap-3"><dt>{{ $c['label'] }}</dt><dd class="m-0 tabular-nums">−{{ $m($c['minor']) }}</dd></div>@endforeach</div>
                         <div class="flex justify-between gap-3 border-t border-td-line pt-2 text-lg font-bold"><dt>You keep</dt><dd class="m-0 tabular-nums" data-split="net">{{ $m($split['net_minor']) }}</dd></div>
                     </dl>
-                    <p class="mb-0 mt-3 text-sm text-td-ink-2" data-split="status">Worked out with the course commission rule in force now. Each sale keeps the rule it was priced with. Your discount codes also work on courses.</p>
+                    <p class="mb-0 mt-3 text-sm text-td-ink-2" data-split="status">Today's course commission rate. A sale keeps the rate it was made at. Your discount codes also work on courses.</p>
                 </x-td.panel>
             </form>
             @break
