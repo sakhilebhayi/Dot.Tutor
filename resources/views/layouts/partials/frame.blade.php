@@ -77,6 +77,7 @@
         <x-td.button variant="quiet" icon="menu" class="td-top__menu shell-menu-btn" data-shell-open aria-controls="app-sidebar" aria-expanded="false">Menu</x-td.button>
         <div class="td-top__title">{{ $topTitle ?? $title ?? 'Dot.Tutor' }}</div>
         <div class="td-top__actions">
+            @if (Route::has('comms.inbox'))<x-comms::bell />@endif
             <x-td.theme-switch />
             @auth
                 <x-td.button variant="quiet" icon="user" icon-only :href="route('profile.show')" aria-label="Your account">Your account</x-td.button>
