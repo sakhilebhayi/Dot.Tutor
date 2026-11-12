@@ -26,9 +26,9 @@ class ResponsiveShellTest extends TestCase
             [$student, route('tutors.browse')],
             [$student, route('tutors.show', $tutor)],
             [$student, route('sessions.show', $session)],
-            [$student, route('tutor.profile.edit')],
+            [$student, route('teach.profile')],
             [$student, route('profile.show')],
-            [$tutorUser, route('tutor.availability.index')],
+            [$tutorUser, route('teach.calendar')],
             [$this->makeOperator(), route('operator.tutor-profiles.index')],
             [$this->makeOperator(), route('operator.subjects.index')],
         ] as [$user, $url]) {
@@ -51,14 +51,13 @@ class ResponsiveShellTest extends TestCase
         $this->makeSession($tutor, $student, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(2)]);
 
         $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($student)->get(route('dashboard'))), 'Recent sessions');
-        $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($tutor->user)->get(route('tutor.availability.index'))), 'Weekly windows');
         $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($this->makeOperator())->get(route('operator.subjects.index'))), 'Subjects');
     }
 
     public function test_the_drawer_reaches_browse_teaching_and_operator_pages(): void
     {
         $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('dashboard')));
-        foreach (['dashboard', 'tutors.browse', 'tutor.profile.edit', 'profile.show'] as $name) {
+        foreach (['dashboard', 'tutors.browse', 'teach.profile', 'profile.show'] as $name) {
             $this->assertSame(1, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route($name).'"]')->length, $name);
         }
         $this->assertSame(0, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route('operator.subjects.index').'"]')->length);

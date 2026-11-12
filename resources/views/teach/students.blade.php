@@ -18,10 +18,10 @@
                 </x-td.state>
             </div>
         @else
-            <x-td.table caption="Your students" caption-hidden dense>
+            <x-td.table caption="Your students" caption-hidden dense stack>
                 <thead><tr>
                     <th scope="col">Student</th><th scope="col" class="is-num">Lessons done</th><th scope="col" class="is-num">Coming up</th>
-                    <th scope="col">Next lesson</th><th scope="col">Last lesson</th><th scope="col" class="is-num">Courses</th><th scope="col">Note</th>
+                    <th scope="col">Next lesson</th><th scope="col">Last lesson</th><th scope="col" class="is-num">Courses</th><th scope="col" data-stack="wide">Note</th>
                 </tr></thead>
                 <tbody>
                     @foreach ($rows as $r)

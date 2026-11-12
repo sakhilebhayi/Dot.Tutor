@@ -4,8 +4,8 @@
         <x-slot:actions><x-td.button href="{{ route('teach.payouts') }}" icon="arrow-left">Payouts</x-td.button></x-slot:actions>
     </x-td.page-head>
     <x-td.panel title="What this payout holds" flush>
-        <x-td.table caption="Earnings in this payout" caption-hidden dense>
-            <thead><tr><th scope="col">Item</th><th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num">You keep</th></tr></thead>
+        <x-td.table caption="Earnings in this payout" caption-hidden dense stack>
+            <thead><tr><th scope="col">Item</th><th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num" data-stack="key">You keep</th></tr></thead>
             <tbody>
                 @foreach ($statement['earnings'] as $e)
                     <tr><td>{{ $e['title'] ?? 'Sale' }}{{ $e['kind'] === 'reversal' ? ' (refund adjustment)' : '' }}</td><td class="is-num">{{ $m($e['gross']) }}</td><td class="is-num">{{ $m($e['commission']) }}</td><td class="is-num">{{ $m($e['other_charges']) }}</td><td class="is-num">{{ $m($e['net']) }}</td></tr>

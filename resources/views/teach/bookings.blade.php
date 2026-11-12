@@ -17,7 +17,7 @@
     ];
 @endphp
 <x-layouts::workspace title="Requests and bookings" step="dense">
-    <x-td.page-head title="Requests and bookings" :lede="'Times in '.$tz.'. Every action is checked again on the server against the booking\'s state and the offering\'s terms.'">
+    <x-td.page-head title="Requests and bookings" :lede="'Times in '.$tz.'. Accepting, declining and cancelling follow each offering\'s terms.'">
         <x-slot:actions>
             <x-td.button href="{{ route('teach.calendar') }}" icon="calendar">Calendar</x-td.button>
         </x-slot:actions>
@@ -32,8 +32,8 @@
                     <x-slot:actions><x-td.button href="{{ route('teach.offerings.create', ['type' => 'package']) }}" size="sm">Create a package</x-td.button></x-slot:actions>
                 </x-td.state></div>
             @else
-                <x-td.table caption="Packages sold" caption-hidden dense>
-                    <thead><tr><th scope="col">Learner</th><th scope="col">Package</th><th scope="col">State</th><th scope="col" class="is-num">Used</th><th scope="col" class="is-num">Left</th><th scope="col" class="is-num">Price</th><th scope="col">Expires</th></tr></thead>
+                <x-td.table caption="Packages sold" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Learner</th><th scope="col">Package</th><th scope="col">State</th><th scope="col" class="is-num">Used</th><th scope="col" class="is-num">Left</th><th scope="col" class="is-num" data-stack="key">Price</th><th scope="col">Expires</th></tr></thead>
                     <tbody>
                         @foreach ($packages as $p)
                             <tr>

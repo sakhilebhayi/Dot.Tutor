@@ -124,6 +124,11 @@ class CourseStudioAndMaterialsTest extends TestCase
         $this->setUpWorld();
         [$tutor] = $this->tutorReadyToTeach('Lerato Khumalo', 30000);
 
+        // The upload form starts on the most protective licence; open licences are an opt-in (D-2208).
+        $form = $this->actingAs($tutor)->get(route('teach.materials'))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<option value="all_rights_reserved"\s+selected/', $form);
+        $this->assertDoesNotMatchRegularExpression('/<option value="cc_by"\s+selected/', $form);
+
         $this->actingAs($tutor)->post(route('teach.materials.store'), [
             'title' => 'Functions summary', 'type' => 'summary', 'language' => 'en', 'ownership' => 'own_work', 'licence' => 'all_rights_reserved',
             'price' => '45', 'file' => $this->pdf(),

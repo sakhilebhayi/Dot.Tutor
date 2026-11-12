@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\TutorProfile;
-use App\Services\Scheduling\SlotFinder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
 /**
  * A tutor's weekly recurring hours and blocked dates. Times are wall-clock
@@ -16,28 +14,17 @@ use Illuminate\View\View;
  */
 class TutorAvailabilityController extends Controller
 {
-    public function index(Request $request, SlotFinder $slots): RedirectResponse|View
+    /**
+     * Weekly hours and days off are edited on the workspace calendar (/teach/calendar, R-47 D-2201): one editor.
+     * This address forwards there, keeping any flash message; the write endpoints below stay for the calendar.
+     */
+    public function index(Request $request): RedirectResponse
     {
-        $profile = $request->user()->tutorProfile()->first();
+        $request->session()->reflash();
 
-        if (! $profile) {
-            return redirect()->route('tutor.profile.edit')
-                ->with('status', 'Apply to teach first. You set your hours once you have a profile.');
-        }
-
-        $tz = $profile->scheduleTimezone();
-        $today = Carbon::now($tz)->toDateString();
-
-        $days = $slots->forTutor($profile, 60);
-
-        return view('tutor.availability.index', [
-            'profile' => $profile,
-            'windows' => $profile->availabilityWindows()->get()->groupBy('weekday'),
-            'blockedDates' => $profile->blockedDates()->where('date', '>=', $today)->get(),
-            'openDaysAhead' => collect($days)->filter(fn ($d) => count($d['slots']) > 0)->count(),
-            'timezone' => $tz,
-            'today' => $today,
-        ]);
+        return $request->user()->tutorProfile()->exists()
+            ? redirect()->route('teach.calendar')
+            : redirect()->route('teach.profile')->with('status', 'Set up your tutor profile first. You set your hours once you have a profile.');
     }
 
     public function storeWindow(Request $request): RedirectResponse

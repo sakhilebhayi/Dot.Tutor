@@ -41,6 +41,12 @@ class BookingService
             return $profile->withLock(function (TutorProfile $locked) use ($student, $data, $duration, $start) {
                 abort_unless($locked->isApproved(), 404);
 
+                // A tutor who set no profile-wide rate prices every lesson on an offering (D-2204): the legacy
+                // hourly form would otherwise book them at R0.00.
+                if ($locked->hourly_rate_minor === null) {
+                    throw ValidationException::withMessages(['subject_id' => 'This tutor prices lessons on their offerings. Book one of them from the tutor\'s page.']);
+                }
+
                 $subject = $locked->subjects()->where('subjects.id', $data['subject_id'])->first();
                 if (! $subject instanceof Subject) {
                     throw ValidationException::withMessages(['subject_id' => 'This tutor does not teach the selected subject.']);

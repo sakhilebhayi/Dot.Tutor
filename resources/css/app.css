@@ -12,6 +12,7 @@
 @import './ds/tokens.css';
 @import './ds/base.css';
 @import './ds/components.css';
+@import './ds/responsive.css';
 @import './ds/shells.css';
 @import './ds/landing.css';
 @import './ds/legacy.css';

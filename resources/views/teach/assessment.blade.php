@@ -54,8 +54,8 @@
         @if ($attempts->isEmpty())
             <div class="p-5"><p class="m-0 text-td-ink-2">No submitted attempts yet. Your own test attempts do not count.</p></div>
         @else
-            <x-td.table caption="Submitted attempts" caption-hidden dense>
-                <thead><tr><th scope="col">Learner</th><th scope="col">Submitted</th><th scope="col" class="is-num">Score</th><th scope="col">Result</th></tr></thead>
+            <x-td.table caption="Submitted attempts" caption-hidden dense stack>
+                <thead><tr><th scope="col">Learner</th><th scope="col">Submitted</th><th scope="col" class="is-num" data-stack="key">Score</th><th scope="col">Result</th></tr></thead>
                 <tbody>
                     @foreach ($attempts as $at)
                         <tr><th scope="row">{{ \App\Domain\Teach\Support\TutorContext::learnerName($at->user) }}</th><td class="tabular-nums">{{ $at->submitted_at->copy()->timezone($tz)->format('j M Y, H:i') }}</td><td class="is-num">{{ $at->score }} of {{ $at->max_score }} ({{ $at->percent }}%)</td><td>{{ $at->passed ? 'Passed' : 'Not passed' }}{{ $at->late ? ', late' : '' }}</td></tr>

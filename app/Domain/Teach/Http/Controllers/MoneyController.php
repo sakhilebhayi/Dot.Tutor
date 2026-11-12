@@ -7,6 +7,7 @@ use App\Domain\Money\Models\Payout;
 use App\Domain\Money\Models\PayoutAccount;
 use App\Domain\Money\Services\Earnings;
 use App\Domain\Money\Services\Payouts;
+use App\Domain\Teach\Services\EarningLabels;
 use App\Domain\Teach\Services\Insights;
 use App\Domain\Teach\Services\MoneyGlance;
 use App\Domain\Teach\Support\TutorContext;
@@ -25,12 +26,15 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class MoneyController extends Controller
 {
-    public function earnings(Request $request, Earnings $earnings, MoneyGlance $glance): View
+    public function earnings(Request $request, Earnings $earnings, MoneyGlance $glance, EarningLabels $labels): View
     {
         $profile = TutorContext::profile($request);
         $tz = TutorContext::tz($profile);
         [$from, $to] = $this->period($request, $tz);
         $user = $request->user();
+        $rows = Earning::query()->with('orderLine')->where('seller_id', $user->id)
+            ->whereBetween('created_at', [$from->utc(), $to->utc()])->orderByDesc('created_at')->orderByDesc('id')
+            ->paginate(50)->withQueryString();
 
         return view('teach.earnings', [
             'profile' => $profile,
@@ -39,28 +43,29 @@ class MoneyController extends Controller
             'to' => $to,
             'glance' => $glance->for($user, $tz),
             'statement' => $earnings->statement($user->id, $from->utc(), $to->utc()),
-            'rows' => Earning::query()->with('orderLine')->where('seller_id', $user->id)
-                ->whereBetween('created_at', [$from->utc(), $to->utc()])->orderByDesc('created_at')->orderByDesc('id')
-                ->paginate(50)->withQueryString(),
+            'rows' => $rows,
+            'labels' => $labels->for($rows->getCollection(), $tz),
         ]);
     }
 
     /** Income report as CSV for the period: one row per earning, totals at the end, formula-neutral cells. */
-    public function export(Request $request, Earnings $earnings): StreamedResponse
+    public function export(Request $request, Earnings $earnings, EarningLabels $labels): StreamedResponse
     {
         $profile = TutorContext::profile($request);
         $tz = TutorContext::tz($profile);
         [$from, $to] = $this->period($request, $tz);
         $statement = $earnings->statement($request->user()->id, $from->utc(), $to->utc());
+        $named = $labels->for(Earning::query()->whereIn('id', array_column($statement['earnings'], 'id'))->get(), $tz);
         $name = 'dot-tutor-income-'.$from->format('Y-m-d').'-to-'.$to->format('Y-m-d').'.csv';
 
-        return response()->streamDownload(function () use ($statement, $tz) {
+        return response()->streamDownload(function () use ($statement, $tz, $named) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Date', 'Item', 'Kind', 'Price', 'Commission', 'Other charges', 'Net', 'Currency', 'Status', 'Available from'], escape: '');
+            fputcsv($out, ['Date', 'Item', 'Learner', 'Kind', 'Price', 'Commission', 'Other charges', 'Net', 'Currency', 'Status', 'Available from'], escape: '');
             foreach ($statement['earnings'] as $e) {
                 fputcsv($out, [
                     CarbonImmutable::parse($e['created_at'])->timezone($tz)->format('Y-m-d H:i'),
-                    self::cell((string) ($e['title'] ?? '')),
+                    self::cell((string) ($named[$e['id']]['what'] ?? $e['title'] ?? '')),
+                    self::cell((string) ($named[$e['id']]['who'] ?? '')),
                     $e['kind'],
                     $e['gross']->toDecimalString(),
                     $e['commission']->toDecimalString(),
@@ -73,7 +78,7 @@ class MoneyController extends Controller
             }
             $t = $statement['totals'];
             fputcsv($out, [], escape: '');
-            fputcsv($out, ['Totals', '', '', $t['gross']->toDecimalString(), $t['commission']->toDecimalString(), $t['other_charges']->toDecimalString(), $t['net']->toDecimalString(), $t['net']->currency, 'Refunded: '.$t['refunded']->toDecimalString(), ''], escape: '');
+            fputcsv($out, ['Totals', '', '', '', $t['gross']->toDecimalString(), $t['commission']->toDecimalString(), $t['other_charges']->toDecimalString(), $t['net']->toDecimalString(), $t['net']->currency, 'Refunded: '.$t['refunded']->toDecimalString(), ''], escape: '');
             fclose($out);
         }, $name, ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }

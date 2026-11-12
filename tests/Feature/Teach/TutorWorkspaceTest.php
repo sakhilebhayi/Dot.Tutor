@@ -47,12 +47,12 @@ class TutorWorkspaceTest extends TestCase
         $this->actingAs($user)->post(route('teach.profile.start'), [
             'headline' => 'Grade 10 to 12 Maths, CAPS',
             'introduction' => 'Second-year engineering student who tutors high school Maths after lectures.',
-            'teaches_online' => '1', 'teaches_in_person' => '0', 'hourly_rate' => '180', 'timezone' => 'Africa/Johannesburg',
+            'teaches_online' => '1', 'teaches_in_person' => '0', 'timezone' => 'Africa/Johannesburg',
         ])->assertRedirect(route('teach.profile', ['step' => 'photo']));
 
         $profile = TutorProfile::query()->where('user_id', $user->id)->sole();
         $this->assertSame('draft', $profile->status);
-        $this->assertSame(18000, $profile->hourly_rate_minor);
+        $this->assertNull($profile->hourly_rate_minor, 'offerings own prices: no profile-wide rate (D-2204)');
         $this->actingAs($this->operator)->get(route('operator.tutor-profiles.index'))->assertOk()->assertDontSee('Thandi Mokoena');
 
         // Sending before the required steps is refused, with the missing steps named.
@@ -232,11 +232,13 @@ class TutorWorkspaceTest extends TestCase
 
         $earning = Earning::query()->where('seller_id', $tutor->id)->sole();
         $this->actingAs($tutor)->get(route('teach.earnings'))->assertOk()
-            ->assertSee('Mathematics lesson with Lerato Khumalo')->assertSee('Pending');
+            // The row names the learner and what was sold, never the tutor herself (D-2207).
+            ->assertSee('Anele Ngcobo')->assertDontSee('lesson with Lerato Khumalo')->assertSee('Pending');
         $this->actingAs($tutor)->get(route('teach.home'))->assertOk()->assertSee('Next payout run');
 
         $csv = $this->actingAs($tutor)->get(route('teach.earnings.export'))->assertOk()->streamedContent();
-        $this->assertStringContainsString('Mathematics lesson with Lerato Khumalo', $csv);
+        $this->assertStringContainsString('Anele Ngcobo', $csv);
+        $this->assertStringNotContainsString('lesson with Lerato Khumalo', $csv);
         $this->assertStringContainsString(number_format($earning->net_minor / 100, 2, '.', ''), $csv);
         $this->assertStringContainsString('Totals', $csv);
         $otherCsv = $this->actingAs($other)->get(route('teach.earnings.export'))->assertOk()->streamedContent();

@@ -18,8 +18,8 @@
                     How it works: on each payout run, available earnings of at least {{ strip_tags((string) $m($glance['minimum'])) }} are drafted into one payout to the bank account below. Finance then pays it{{ $transfers ? ' by Paystack transfer' : ' from the platform bank account' }} and marks it paid, and the statement lists every earning in it.
                 </x-td.state></div>
             @else
-                <x-td.table caption="Your payouts" caption-hidden dense>
-                    <thead><tr><th scope="col">Reference</th><th scope="col">Created</th><th scope="col" class="is-num">Amount</th><th scope="col">Status</th><th scope="col">Paid</th></tr></thead>
+                <x-td.table caption="Your payouts" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Reference</th><th scope="col">Created</th><th scope="col" class="is-num" data-stack="key">Amount</th><th scope="col">Status</th><th scope="col">Paid</th></tr></thead>
                     <tbody>
                         @foreach ($payouts as $p)
                             <tr>

@@ -6,7 +6,7 @@
         <p class="muted">Start a draft, add sections and lessons, set the price, then publish. Nothing is visible to learners until you publish.</p>
         @include('learning.partials.flash')
         @unless ($canPublish)
-            <div class="notice">You can build drafts now. Publishing needs an approved tutor profile: <a href="{{ route('tutor.profile.edit') }}">finish your tutor profile</a>.</div>
+            <div class="notice">You can build drafts now. Publishing needs an approved tutor profile: <a href="{{ route('teach.profile') }}">finish your tutor profile</a>.</div>
         @endunless
 
         <div class="grid two">

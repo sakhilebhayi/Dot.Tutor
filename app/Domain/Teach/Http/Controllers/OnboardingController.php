@@ -12,7 +12,6 @@ use App\Domain\Marketplace\Models\TutorQualification;
 use App\Domain\Marketplace\Services\QualificationService;
 use App\Domain\Marketplace\Services\TutorPresenter;
 use App\Domain\Marketplace\Services\TutorProfileService;
-use App\Domain\Money\Money;
 use App\Domain\Safety\Audit;
 use App\Domain\Safety\Services\Screening;
 use App\Domain\Teach\Models\Onboarding;
@@ -63,6 +62,7 @@ class OnboardingController extends Controller
             'missing' => $this->progress->missing($profile),
             'onboarding' => $onboarding,
             'subjects' => $options->subjects(),
+            'subjectChoices' => $options->subjectChoices(),
             'levels' => $options->levels(),
             'levelIndex' => $levelIndex,
             'allLanguages' => $options->languages(),
@@ -93,15 +93,21 @@ class OnboardingController extends Controller
 
         try {
             DB::transaction(function () use ($request, $data, $service) {
+                // Offerings own prices (D-2204): a new profile has no profile-wide rate. The legacy decimal column
+                // is NOT NULL, so it holds 0 while the minor-unit rate stays null ("not set"), written without the
+                // model's rate-sync hook, which would turn the 0 into a R0.00 rate.
                 $profile = TutorProfile::create([
                     'user_id' => $request->user()->id,
                     'headline' => $data['headline'],
                     'bio' => $data['introduction'],
-                    'hourly_rate_minor' => $data['hourly_rate_minor'],
+                    'hourly_rate' => 0,
                     'currency' => config('tutor.currency'),
                     'timezone' => $data['timezone'],
                     'status' => TutorProfileStatus::Draft->value,
                 ]);
+                DB::table('tutor_profiles')->where('id', $profile->id)->update(['hourly_rate_minor' => null]);
+                $profile->hourly_rate_minor = null;
+                $profile->syncOriginalAttribute('hourly_rate_minor');
                 $service->update($profile, $this->profileFields($data));
             });
         } catch (UniqueConstraintViolationException) {
@@ -122,7 +128,6 @@ class OnboardingController extends Controller
             ...$this->profileFields($data),
             'headline' => $data['headline'],
             'introduction' => $data['introduction'],
-            'hourly_rate_minor' => $data['hourly_rate_minor'],
         ]);
 
         return $this->next($request, 'about', 'About you saved.');
@@ -313,18 +318,11 @@ class OnboardingController extends Controller
             'teaches_online' => ['nullable', 'boolean'],
             'teaches_in_person' => ['nullable', 'boolean'],
             'in_person_area' => ['nullable', 'string', 'max:120'],
-            'hourly_rate' => ['required', 'string', 'regex:/^\d{1,6}([.,]\d{1,2})?$/'],
             'timezone' => ['required', 'timezone:all'],
         ], [
             'introduction.min' => 'Write at least a few sentences (40 characters) so learners know who you are.',
-            'hourly_rate.regex' => 'Write the rate as a number, for example 250 or 250.00.',
         ]);
 
-        $minor = Money::fromDecimal(str_replace(',', '.', $data['hourly_rate']))->minor;
-        if ($minor < 100) {
-            throw ValidationException::withMessages(['hourly_rate' => 'The hourly rate must be at least 1.00.']);
-        }
-        $data['hourly_rate_minor'] = $minor;
         $data['teaches_online'] = (bool) ($data['teaches_online'] ?? false);
         $data['teaches_in_person'] = (bool) ($data['teaches_in_person'] ?? false);
 

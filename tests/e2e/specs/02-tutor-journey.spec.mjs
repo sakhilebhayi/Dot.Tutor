@@ -33,22 +33,23 @@ test('tutor journey: register to payout', async () => {
         await page.fill('input[name=headline]', 'CAPS Mathematics, Grades 10 to 12, in isiZulu and English');
         await page.fill('textarea[name=introduction]', 'I help FET learners understand functions, algebra and calculus, step by step.');
         await page.fill('textarea[name=teaching_approach]', 'Short explanations, then worked examples, then practice.');
-        await page.fill('input[name=hourly_rate]', '300');
         await page.selectOption('select[name=timezone]', 'Africa/Johannesburg');
         await Promise.all([page.waitForURL('**step=photo**'), page.click('form[action$="/teach/profile/start"] button[type=submit]')]);
         const p = one('select * from tutor_profiles where user_id = ?', [userId]);
         assert.equal(p.status, 'draft');
-        assert.equal(p.hourly_rate_minor, 30000);
+        assert.equal(p.hourly_rate_minor, null, 'offerings own prices: no profile-wide rate (D-2204)');
         profileId = p.id;
         await page.setInputFiles('input[name=photo]', fixtureFile('png'));
         await Promise.all([page.waitForURL('**step=scope**', { timeout: 20000 }), page.getByRole('button', { name: 'Upload photo' }).click()]);
         assert.ok(one('select photo_path from tutor_profiles where id = ?', [profileId]).photo_path, 'photo stored (re-encoded, private disk)');
-        ev.add(2, 'Create a tutor profile', `tutor_profiles ${profileId}: draft, headline, introduction, approach, hourly_rate_minor 30000; photo uploaded and stored`);
+        ev.add(2, 'Create a tutor profile', `tutor_profiles ${profileId}: draft, headline, introduction, approach, no profile-wide rate (offerings own prices); photo uploaded and stored`);
     });
 
     // 3. Subjects and academic levels.
     await step(page, 'scope', async () => {
-        await page.selectOption('select[name="scopes[0][subject_id]"]', String(subjectId('mathematics')));
+        // The subject picker is a searchable list grouped by area (D-2205): type, then choose.
+        await page.fill('#scope-0-subject', 'maths');
+        await page.click(`#scope-0-subject-listbox [role=option][data-value="${subjectId('mathematics')}"]`);
         await page.selectOption('select[name="scopes[0][level_min_id]"]', String(levelId('grade-10')));
         await page.selectOption('select[name="scopes[0][level_max_id]"]', String(levelId('grade-12')));
         await Promise.all([page.waitForURL('**step=languages**'), page.getByRole('button', { name: 'Save and continue' }).click()]);
@@ -120,7 +121,8 @@ test('tutor journey: register to payout', async () => {
     await step(page, 'pricing', async () => {
         await page.goto('/teach/offerings/new?type=one_to_one');
         await page.fill('input[name=title]', 'Grade 11 Maths, one-to-one');
-        await page.selectOption('select[name="level_ids[]"]', [String(levelId('grade-11'))]);
+        // Levels are grouped checkboxes that work on touch (D-2206).
+        await page.check(`input[name="level_ids[]"][value="${levelId('grade-11')}"]`);
         await page.selectOption('select[name=duration_minutes]', '60');
         await page.selectOption('select[name=format]', 'online');
         await page.fill('input[name=price]', '300');

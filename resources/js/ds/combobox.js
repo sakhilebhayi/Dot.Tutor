@@ -27,6 +27,7 @@ export function initComboboxes(root = document) {
         hidden.disabled = false;
 
         const nodes = Array.from(list.querySelectorAll('[role="option"]'));
+        const groups = Array.from(list.querySelectorAll('[data-td-combobox-group]'));
         const options = nodes.map((node) => ({
             node,
             value: node.dataset.value,
@@ -60,6 +61,10 @@ export function initComboboxes(root = document) {
             visible = filterOptions(options, input.value);
             options.forEach((option) => {
                 option.node.hidden = !visible.includes(option);
+            });
+            // A group heading shows only while one of its options does.
+            groups.forEach((heading) => {
+                heading.hidden = !visible.some((option) => option.node.dataset.group === heading.dataset.tdComboboxGroup);
             });
             if (empty) {
                 empty.hidden = visible.length > 0;

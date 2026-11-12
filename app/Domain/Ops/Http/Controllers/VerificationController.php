@@ -11,6 +11,7 @@ use App\Domain\Marketplace\Models\TutorQualification;
 use App\Domain\Marketplace\Models\VerificationDecision;
 use App\Domain\Marketplace\Services\VerificationService;
 use App\Domain\Safety\Audit;
+use App\Domain\Safety\Models\AuditEntry;
 use App\Domain\Safety\Services\Screening;
 use App\Models\TutorProfile;
 use App\Services\TutorModeration;
@@ -54,7 +55,7 @@ class VerificationController extends OpsController
         return view('ops.verification.tutor', [
             'tutor' => $tutorProfile,
             'qualifications' => TutorQualification::query()->with('evidence')->where('tutor_profile_id', $tutorProfile->id)->orderByDesc('id')->get(),
-            'decisions' => VerificationDecision::query()->where('tutor_profile_id', $tutorProfile->id)->orderByDesc('id')->limit(50)->get(),
+            'decisions' => $this->decisions($tutorProfile),
             'languages' => UserLanguage::query()->with('language')->where('user_id', $tutorProfile->user_id)->where('role', LanguageRole::CanTeachIn->value)->get(),
             'levels' => VerificationLevel::cases(),
             'screened' => $tutorProfile->user ? $screening->isClearedForMinors($tutorProfile->user) : false,
@@ -102,6 +103,39 @@ class VerificationController extends OpsController
         return $this->done(isset($data['level']) ? 'Verification level set.' : 'Verification level removed.');
     }
 
+    /**
+     * Every decision about this tutor, newest first (D-2210): verification decisions (qualifications and levels,
+     * append-only in the marketplace) and the profile decisions (approve, reject, suspend, reinstate), which the
+     * audit log holds with the operator's reason.
+     *
+     * @return list<array{at: \Carbon\CarbonInterface|null, what: string, change: string, reason: string}>
+     */
+    private function decisions(TutorProfile $tutorProfile): array
+    {
+        $verification = VerificationDecision::query()->where('tutor_profile_id', $tutorProfile->id)->orderByDesc('id')->limit(50)->get()
+            ->map(fn (VerificationDecision $d) => [
+                'at' => $d->created_at,
+                'what' => $d->subject === 'level' ? 'Level' : 'Qualification',
+                'change' => str_replace('_', ' ', $d->from_value ?? 'none').' to '.str_replace('_', ' ', $d->to_value ?? 'none'),
+                'reason' => (string) $d->reason,
+            ]);
+
+        $words = ['approve' => 'approved', 'reject' => 'not approved', 'suspend' => 'suspended', 'reinstate' => 'reinstated'];
+        $profile = AuditEntry::query()
+            ->where('subject_id', $tutorProfile->id)
+            ->whereIn('subject_type', array_unique([$tutorProfile->getMorphClass(), TutorProfile::class]))
+            ->where('action', 'like', 'ops.tutor_profile.%')
+            ->orderByDesc('id')->limit(50)->get()
+            ->map(fn (AuditEntry $e) => [
+                'at' => $e->created_at,
+                'what' => 'Profile',
+                'change' => $words[substr($e->action, strlen('ops.tutor_profile.'))] ?? 'changed',
+                'reason' => (string) ($e->context['reason'] ?? ''),
+            ]);
+
+        return $verification->concat($profile)->sortByDesc(fn ($d) => $d['at']?->getTimestamp() ?? 0)->values()->all();
+    }
+
     /** Approve, reject, suspend or reinstate a tutor profile (the pre-R-47 application flow), audited here. */
     public function standing(Request $request, TutorProfile $tutorProfile, TutorModeration $moderation): RedirectResponse
     {
@@ -123,7 +157,10 @@ class VerificationController extends OpsController
             return $this->refused('That profile is no longer in a state this action applies to.');
         }
 
-        Audit::record($request->user(), 'ops.tutor_profile.'.$data['action'], $tutorProfile, ['user_id' => $tutorProfile->user_id]);
+        Audit::record($request->user(), 'ops.tutor_profile.'.$data['action'], $tutorProfile, array_filter([
+            'user_id' => $tutorProfile->user_id,
+            'reason' => isset($data['reason']) && $data['reason'] !== '' ? mb_substr($data['reason'], 0, 500) : null,
+        ], fn ($v) => $v !== null));
 
         return $this->done(match ($data['action']) {
             'approve' => 'Tutor approved. They can now be found and booked.',

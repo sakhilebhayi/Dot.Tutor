@@ -60,15 +60,32 @@
                         </div>
                     </fieldset>
                     @if ($levels !== [])
-                        <x-td.field label="Levels" for="level_ids" optional hint="Leave empty to cover your whole teaching scope. Hold Ctrl or Command to choose several.">
-                            <select name="level_ids[]" id="level_ids" multiple size="6" class="td-select" aria-describedby="level_ids-hint">
-                                @foreach (collect($levels)->groupBy('group') as $group => $items)
-                                    <optgroup label="{{ $group }}">
-                                        @foreach ($items as $l)<option value="{{ $l['value'] }}" @selected(in_array($l['value'], $selectedLevels, true))>{{ $l['label'] }}</option>@endforeach
-                                    </optgroup>
-                                @endforeach
-                            </select>
-                        </x-td.field>
+                        {{-- Grouped checkboxes (D-2206): a native multi-select needs Ctrl or Command, which a phone does not have.
+                             A curriculum opens when it holds a chosen level or one of the tutor's teaching scopes. --}}
+                        @php
+                            $levelGroups = collect($levels)->groupBy('group');
+                            $scopeLevelIds = $profile->teachingScopes()->get(['level_min_id', 'level_max_id'])->flatMap(fn ($sc) => [$sc->level_min_id, $sc->level_max_id])->filter()->map(fn ($v) => (int) $v)->all();
+                        @endphp
+                        <fieldset class="grid gap-2" aria-describedby="level_ids-hint">
+                            <legend class="td-label">Levels <span class="td-label__optional">(optional)</span></legend>
+                            <p class="td-hint" id="level_ids-hint">Leave all unticked to cover your whole teaching scope.</p>
+                            @error('level_ids')<p class="td-error" id="level_ids-error">{{ $message }}</p>@enderror
+                            @foreach ($levelGroups as $group => $items)
+                                @php
+                                    $ids = $items->pluck('value')->map(fn ($v) => (int) $v)->all();
+                                    $chosen = count(array_intersect($ids, $selectedLevels));
+                                    $open = $chosen > 0 || array_intersect($ids, $scopeLevelIds) !== [] || $levelGroups->count() === 1;
+                                @endphp
+                                <details class="group border-t border-td-line" @if ($open) open @endif>
+                                    <summary class="flex min-h-11 cursor-pointer list-none items-center gap-2 font-semibold">{{ $group }} <span class="text-td-ink-2">({{ $chosen }} chosen)</span><x-td.icon name="chevron-down" class="ms-auto transition-transform group-open:rotate-180" /></summary>
+                                    <div class="grid gap-x-4 gap-y-1 pt-2 grid-cols-2 sm:grid-cols-3">
+                                        @foreach ($items as $l)
+                                            <x-td.check name="level_ids[]" id="level-{{ $l['value'] }}" :value="$l['value']" :checked="in_array((int) $l['value'], $selectedLevels, true)">{{ \Illuminate\Support\Str::startsWith($l['label'], $group.' ') ? \Illuminate\Support\Str::after($l['label'], $group.' ') : $l['label'] }}<span class="td-sr">, {{ $group }}</span></x-td.check>
+                                        @endforeach
+                                    </div>
+                                </details>
+                            @endforeach
+                        </fieldset>
                     @endif
                     <div class="grid gap-5 sm:grid-cols-2">
                         <x-td.field label="Length of each lesson" for="duration_minutes">
@@ -97,13 +114,15 @@
                             <x-td.input name="recurring_weeks" type="number" min="2" max="{{ $limits['weeks'] }}" :value="$offering?->recurring_weeks ?? 8" required :hint="true" />
                         </x-td.field>
                     @endif
-                    <div class="grid gap-5 sm:grid-cols-2">
-                        <x-td.field label="Free cancellation until (hours before)" for="cancellation_notice_hours">
-                            <x-td.input name="cancellation_notice_hours" type="number" min="0" max="168" :value="$offering?->cancellation_notice_hours ?? 24" />
+                    {{-- One row, inputs on one baseline (D-2206): the shared note sits under both, not inside one field. --}}
+                    <div class="grid gap-x-5 gap-y-2 sm:grid-cols-2 sm:items-end">
+                        <x-td.field label="Free cancellation (hours before)" for="cancellation_notice_hours">
+                            <x-td.input name="cancellation_notice_hours" type="number" min="0" max="168" :value="$offering?->cancellation_notice_hours ?? 24" aria-describedby="cancellation-note" />
                         </x-td.field>
-                        <x-td.field label="Refund for a later cancellation (%)" for="late_cancellation_refund_percent" hint="When you cancel, the learner always gets 100%.">
-                            <x-td.input name="late_cancellation_refund_percent" type="number" min="0" max="100" :value="$offering?->late_cancellation_refund_percent ?? 50" :hint="true" />
+                        <x-td.field label="Refund after that (%)" for="late_cancellation_refund_percent">
+                            <x-td.input name="late_cancellation_refund_percent" type="number" min="0" max="100" :value="$offering?->late_cancellation_refund_percent ?? 50" aria-describedby="cancellation-note" />
                         </x-td.field>
+                        <p class="td-hint m-0 sm:col-span-2" id="cancellation-note">A learner who cancels in time gets everything back; later, they get this share. When you cancel, the learner always gets 100%.</p>
                     </div>
                 </div>
             </x-td.panel>
@@ -123,7 +142,7 @@
                         </div>
                         <div class="flex justify-between gap-3 border-t border-td-line pt-2 text-lg font-bold"><dt>You keep</dt><dd class="m-0 tabular-nums" data-split="net">{{ $money($split['net_minor']) }}</dd></div>
                     </dl>
-                    <p class="m-0 text-sm text-td-ink-2" data-split="status">Worked out with the commission rule in force now{{ $split['rule_version'] ? ' (version '.$split['rule_version'].')' : '' }}. Each sale keeps the rule it was priced with.</p>
+                    <p class="m-0 text-sm text-td-ink-2" data-split="status">Today's commission rate. A sale keeps the rate it was made at.</p>
                     <p class="m-0 text-sm text-td-ink-2">Payment processing fees are {{ (float) config('money.charges.pass_gateway_fee_percent', 0) > 0 ? 'passed on, as shown' : 'paid by the platform' }}. A discount code you fund lowers the price commission is taken from. Earnings are pending until the lesson is delivered, plus {{ (int) config('money.earnings.hold_hours_after_lesson') }} hours for complaints, then available for payout.</p>
                     @if ($editing)
                         <input type="hidden" name="is_active" value="{{ $offering->is_active ? 1 : 0 }}">

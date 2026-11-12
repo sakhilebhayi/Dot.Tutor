@@ -37,8 +37,8 @@
             @if ($events->isEmpty())
                 <x-td.state kind="empty" title="No events recorded">Lessons booked before R-47 have no timeline.</x-td.state>
             @else
-                <x-td.table caption="Booking timeline" caption-hidden dense>
-                    <thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Change</th><th scope="col">By</th><th scope="col">Reason</th></tr></thead>
+                <x-td.table caption="Booking timeline" caption-hidden dense stack>
+                    <thead><tr><th scope="col">When</th><th scope="col" data-stack="title">Event</th><th scope="col">Change</th><th scope="col">By</th><th scope="col">Reason</th></tr></thead>
                     <tbody>
                         @foreach ($events as $e)
                             <tr>

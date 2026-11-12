@@ -13,7 +13,7 @@
 
     <section aria-label="Week" class="grid gap-px border border-td-line bg-td-line md:grid-cols-7">
         @foreach ($days as $day)
-            <div @class(['grid content-start gap-2 p-3 min-h-40', 'bg-td-surface' => ! $day['blocked'], 'bg-td-sunken' => (bool) $day['blocked']]) @if ($day['today']) aria-current="date" @endif>
+            <div @class(['grid content-start gap-2 p-3 md:min-h-40', 'bg-td-surface' => ! $day['blocked'], 'bg-td-sunken' => (bool) $day['blocked']]) @if ($day['today']) aria-current="date" @endif>
                 <h2 class="m-0 text-sm font-bold">
                     <span @class(['text-td-primary' => $day['today']])>{{ $day['date']->format('D j M') }}</span>
                     @if ($day['today'])<span class="font-normal text-td-ink-2"> today</span>@endif

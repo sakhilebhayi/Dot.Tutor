@@ -67,8 +67,8 @@
             @if ($recent->isEmpty())
                 <x-td.state kind="empty" title="No screening decisions yet" />
             @else
-                <x-td.table caption="Recent screening decisions" caption-hidden dense>
-                    <thead><tr><th scope="col">Tutor</th><th scope="col">Check</th><th scope="col">Result</th><th scope="col"><span class="td-sr">Revoke</span></th></tr></thead>
+                <x-td.table caption="Recent screening decisions" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Tutor</th><th scope="col">Check</th><th scope="col">Result</th><th scope="col" data-stack="action"><span class="td-sr">Revoke</span></th></tr></thead>
                     <tbody>
                         @foreach ($recent as $check)
                             <tr>

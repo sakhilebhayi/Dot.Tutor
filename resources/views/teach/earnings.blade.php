@@ -40,10 +40,10 @@
                 </x-td.state>
             </div>
         @else
-            <x-td.table caption="Earnings in this period" caption-hidden dense>
+            <x-td.table caption="Earnings in this period" caption-hidden dense stack>
                 <thead><tr>
-                    <th scope="col">Date</th><th scope="col">Item</th>
-                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num">You keep</th>
+                    <th scope="col">Date</th><th scope="col" data-stack="title">Item</th>
+                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">Other charges</th><th scope="col" class="is-num" data-stack="key">You keep</th>
                     <th scope="col">Status</th>
                 </tr></thead>
                 <tbody>
@@ -51,7 +51,8 @@
                         @php $p = \App\Domain\Money\Services\Earnings::present($e); @endphp
                         <tr>
                             <td class="tabular-nums">{{ $e->created_at->copy()->timezone($tz)->format('j M Y') }}</td>
-                            <td>{{ $p['title'] ?? 'Sale' }}@if ($e->kind === 'reversal')<span class="block text-sm text-td-ink-2">Refund adjustment</span>@endif</td>
+                            @php $label = $labels[$e->id] ?? ['what' => $p['title'] ?? 'Sale', 'who' => null]; @endphp
+                            <td>{{ $label['what'] }}@if ($label['who'])<span class="block text-sm text-td-ink-2">{{ $label['who'] }}</span>@endif @if ($e->kind === 'reversal')<span class="block text-sm text-td-ink-2">Refund adjustment</span>@endif</td>
                             <td class="is-num">{{ $m($p['gross']) }}</td>
                             <td class="is-num">{{ $m($p['commission']) }}</td>
                             <td class="is-num">{{ $p['other_charges']->isZero() ? '—' : $m($p['other_charges']) }}</td>

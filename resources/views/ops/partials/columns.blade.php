@@ -5,8 +5,9 @@
 @php
     $w = 720; $h = 200; $left = 36; $bottom = 26; $top = 18;
     $max = max(1, (int) collect($points)->max('value'));
-    $step = $max <= 4 ? 1 : (int) ceil($max / 4);
-    $ceiling = $step * (int) ceil($max / $step);
+    // Round, integer ticks with the top above the largest value (D-2211).
+    $scale = \App\Support\ChartScale::nice($max);
+    $ceiling = $scale['top'];
     $n = max(1, count($points));
     $slot = ($w - $left) / $n;
     $bar = max(4, min(40, $slot * 0.62));
@@ -14,10 +15,10 @@
 @endphp
 <figure class="m-0 grid gap-3">
     <svg class="ops-columns" viewBox="0 0 {{ $w }} {{ $h }}" role="img" aria-label="{{ $caption }}" preserveAspectRatio="xMidYMid meet">
-        @for ($g = 0; $g <= $ceiling; $g += $step)
+        @foreach ($scale['ticks'] as $g)
             <line class="ops-columns__grid" x1="{{ $left }}" x2="{{ $w }}" y1="{{ $y($g) }}" y2="{{ $y($g) }}" />
-            <text class="ops-columns__axis" x="{{ $left - 8 }}" y="{{ $y($g) + 4 }}" text-anchor="end">{{ $g }}</text>
-        @endfor
+            <text class="ops-columns__axis td-chart__tick" x="{{ $left - 8 }}" y="{{ $y($g) + 4 }}" text-anchor="end">{{ $g }}</text>
+        @endforeach
         @foreach ($points as $i => $p)
             @php($x = $left + $slot * $i + ($slot - $bar) / 2)
             <g>
@@ -28,10 +29,10 @@
                         d="M{{ $x }},{{ $y(0) }} V{{ $y($p['value']) + 4 }} q0,-4 4,-4 h{{ $bar - 8 }} q4,0 4,4 V{{ $y(0) }} Z" />
                 @endif
                 @if (($p['current'] ?? false) || $p['value'] === $max)
-                    <text class="ops-columns__value" x="{{ $x + $bar / 2 }}" y="{{ $y($p['value']) - 6 }}" text-anchor="middle">{{ $p['value'] }}</text>
+                    <text class="ops-columns__value td-chart__value" x="{{ $x + $bar / 2 }}" y="{{ $y($p['value']) - 6 }}" text-anchor="middle">{{ $p['value'] }}</text>
                 @endif
                 @if ($i % 2 === ($n - 1) % 2)
-                    <text class="ops-columns__axis" x="{{ $x + $bar / 2 }}" y="{{ $h - 8 }}" text-anchor="middle">{{ $p['label'] }}</text>
+                    <text @class(['ops-columns__axis td-chart__label', 'td-chart__label--thin' => ($n - 1 - $i) % 4 !== 0]) x="{{ $x + $bar / 2 }}" y="{{ $h - 8 }}" text-anchor="middle">{{ $p['label'] }}</text>
                 @endif
             </g>
         @endforeach

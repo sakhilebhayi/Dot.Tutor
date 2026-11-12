@@ -25,8 +25,8 @@
             @if ($orders->isEmpty())
                 <x-td.state kind="empty" title="No orders{{ $status ? ' in this state' : ' yet' }}">Orders appear when a learner checks out a lesson, a course, a resource or a room place.</x-td.state>
             @else
-                <x-td.table caption="Orders, newest first" caption-hidden>
-                    <thead><tr><th scope="col">Order</th><th scope="col">Buyer</th><th scope="col">Items</th><th scope="col">State</th><th scope="col" class="is-num">Total</th><th scope="col" class="is-num">Refunded</th></tr></thead>
+                <x-td.table caption="Orders, newest first" caption-hidden stack>
+                    <thead><tr><th scope="col">Order</th><th scope="col">Buyer</th><th scope="col" data-stack="wide">Items</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Total</th><th scope="col" class="is-num">Refunded</th></tr></thead>
                     <tbody>
                         @foreach ($orders as $o)
                             <tr>
@@ -48,8 +48,8 @@
             @if ($refunds->isEmpty())
                 <x-td.state kind="empty" title="No refunds yet">Refunds are made from an order line by a finance operator.</x-td.state>
             @else
-                <x-td.table caption="Refunds, unfinished first" caption-hidden>
-                    <thead><tr><th scope="col">Requested</th><th scope="col">Order</th><th scope="col">Reason</th><th scope="col">State</th><th scope="col" class="is-num">Amount</th></tr></thead>
+                <x-td.table caption="Refunds, unfinished first" caption-hidden stack>
+                    <thead><tr><th scope="col">Requested</th><th scope="col" data-stack="title">Order</th><th scope="col">Reason</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Amount</th></tr></thead>
                     <tbody>
                         @foreach ($refunds as $r)
                             <tr>

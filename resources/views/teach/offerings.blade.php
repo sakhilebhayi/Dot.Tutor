@@ -3,7 +3,7 @@
     $formatLabel = ['online' => 'Online', 'in_person' => 'In person', 'either' => 'Online or in person'];
 @endphp
 <x-layouts::workspace title="Offerings and pricing" step="dense">
-    <x-td.page-head title="Offerings and pricing" :lede="$active->isEmpty() ? 'An offering is what learners book. Create one and see what you keep before you save it.' : $active->count().' bookable '.\Illuminate\Support\Str::plural('offering', $active->count()).'. What you keep is worked out with the commission rule in force now.'">
+    <x-td.page-head title="Offerings and pricing" :lede="$active->isEmpty() ? 'An offering is what learners book. Create one and see what you keep before you save it.' : $active->count().' bookable '.\Illuminate\Support\Str::plural('offering', $active->count()).'. What you keep uses today\'s commission rate; a sale keeps the rate it was made at.'">
         <x-slot:actions>
             <x-td.button href="{{ route('teach.offerings.create') }}" variant="primary" icon="plus">New offering</x-td.button>
         </x-slot:actions>
@@ -15,11 +15,11 @@
                 <x-slot:actions><x-td.button href="{{ route('teach.offerings.create', ['type' => 'one_to_one']) }}" variant="primary" size="sm">Create a one-to-one lesson</x-td.button></x-slot:actions>
             </x-td.state></div>
         @else
-            <x-td.table caption="Bookable offerings" caption-hidden dense>
+            <x-td.table caption="Bookable offerings" caption-hidden dense stack>
                 <thead><tr>
                     <th scope="col">Offering</th><th scope="col">Type</th><th scope="col">Length, where</th>
-                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num">You keep</th>
-                    <th scope="col" class="is-num">Delivered</th><th scope="col"><span class="td-sr">Actions</span></th>
+                    <th scope="col" class="is-num">Price</th><th scope="col" class="is-num">Commission</th><th scope="col" class="is-num" data-stack="key">You keep</th>
+                    <th scope="col" class="is-num">Delivered</th><th scope="col" data-stack="action"><span class="td-sr">Actions</span></th>
                 </tr></thead>
                 <tbody>
                     @foreach ($active as $o)
@@ -55,8 +55,8 @@
             @if ($coupons->isEmpty())
                 <p class="text-td-ink-2">No codes yet.</p>
             @else
-                <x-td.table caption="Your discount codes" caption-hidden dense>
-                    <thead><tr><th scope="col">Code</th><th scope="col">Discount</th><th scope="col" class="is-num">Used</th><th scope="col">Limits</th><th scope="col">State</th><th scope="col"><span class="td-sr">Actions</span></th></tr></thead>
+                <x-td.table caption="Your discount codes" caption-hidden dense stack>
+                    <thead><tr><th scope="col">Code</th><th scope="col">Discount</th><th scope="col" class="is-num">Used</th><th scope="col">Limits</th><th scope="col">State</th><th scope="col" data-stack="action"><span class="td-sr">Actions</span></th></tr></thead>
                     <tbody>
                         @foreach ($coupons as $c)
                             @php $api = $c->toApi(); @endphp

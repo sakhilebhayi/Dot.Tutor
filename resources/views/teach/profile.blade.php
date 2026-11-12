@@ -2,7 +2,6 @@
     $approved = $state['key'] === 'approved';
     $title = $approved ? 'Profile and verification' : 'Become a tutor';
     $current = collect($steps)->firstWhere('key', $step);
-    $rate = $profile?->hourly_rate_minor ? number_format($profile->hourly_rate_minor / 100, 2, '.', '') : '';
     $scopeRows = $scopes->map(fn ($s) => ['subject_id' => $s->subject_id, 'level_min_id' => $s->level_min_id, 'level_max_id' => $s->level_max_id, 'notes' => $s->notes])->all();
     $scopeRows = array_pad($scopeRows, max(3, count($scopeRows) + 2), ['subject_id' => null, 'level_min_id' => null, 'level_max_id' => null, 'notes' => null]);
     $langRows = collect($teaching)->map(fn ($l) => ['code' => $l->code, 'proficiency' => $l->proficiency->value, 'verified' => $l->verified])->all();
@@ -33,7 +32,7 @@
                     <x-td.notice tone="info" title="Sent, under review">An operator is reviewing your profile{{ $onboarding?->submitted_at ? ' (sent '.$onboarding->submitted_at->timezone($profile->scheduleTimezone())->format('j M Y, H:i').')' : '' }}. You can keep editing; changes are part of the review.</x-td.notice>
                     @break
                 @case('approved')
-                    <x-td.notice tone="success" title="Approved">Learners can find and book you. Verification levels are separate: they come only from reviewed evidence.</x-td.notice>
+                    <x-td.notice tone="success" title="Approved">Learners can find and book you. Approval is not a verification level: that comes only from reviewed evidence.</x-td.notice>
                     @break
                 @case('rejected')
                     <x-td.notice tone="danger" title="Not approved">
@@ -48,6 +47,7 @@
                     </x-td.notice>
                     @break
             @endswitch
+            <x-td.tutor-standing :profile="$profile" class="md:grid-cols-3" />
         </div>
     @endif
 
@@ -96,13 +96,11 @@
                                     <x-td.input name="in_person_area" :value="$profile?->in_person_area" maxlength="120" :hint="true" />
                                 </x-td.field>
                             </fieldset>
-                            <div class="grid gap-5 md:grid-cols-2">
-                                <x-td.field label="Usual hourly rate ({{ $currency }})" for="hourly_rate" hint="Your starting price. Each offering sets its own price later.">
-                                    <x-td.input name="hourly_rate" inputmode="decimal" :value="$rate" required :hint="true" />
-                                </x-td.field>
+                            <div class="grid gap-5 md:grid-cols-2 md:items-start">
                                 <x-td.field label="Your time zone" for="timezone">
                                     <x-td.select name="timezone" :options="array_combine($timezones, $timezones)" :value="$profile?->timezone ?: $defaultTimezone" />
                                 </x-td.field>
+                                <p class="m-0 text-sm text-td-ink-2 md:pt-7">Prices live on your offerings. Learners pay through Dot.Tutor checkout, and each offering shows the commission and what you keep before you save it.@if ($profile) <a class="td-link" href="{{ route('teach.offerings') }}">Your offerings</a>@endif</p>
                             </div>
                             <div><x-td.button type="submit" variant="primary">{{ $profile ? 'Save and continue' : 'Save draft and continue' }}</x-td.button></div>
                         </form>
@@ -137,7 +135,7 @@
                         @endif
                         <form method="POST" action="{{ route('teach.profile.scope') }}" class="grid gap-4">
                             @csrf @method('PUT')
-                            <p class="text-sm text-td-ink-2">One line per subject. Pick the lowest and highest level you teach; both come from the same curriculum (for example CAPS Grade 8 to CAPS Grade 12).</p>
+                            <p class="text-sm text-td-ink-2">One line per subject. Type to search: subjects are grouped by area, and other names work too (Maths, Wiskunde, isiZulu HL). Pick the lowest and highest level you teach; both come from the same curriculum (for example CAPS Grade 8 to CAPS Grade 12).</p>
                             @error('scopes')<x-td.notice tone="danger">{{ $message }}</x-td.notice>@enderror
                             @foreach ($errors->getMessages() as $key => $messages)
                                 @if (str_starts_with($key, 'scopes.'))<x-td.notice tone="danger">Line {{ ((int) explode('.', $key)[1]) + 1 }}: {{ $messages[0] }}</x-td.notice>@endif
@@ -146,7 +144,7 @@
                                 <fieldset class="grid gap-3 border-t border-td-line pt-4 md:grid-cols-3">
                                     <legend class="td-sr">Subject line {{ $i + 1 }}</legend>
                                     <x-td.field label="Subject" for="scope-{{ $i }}-subject" :optional="$i > 0">
-                                        <x-td.select name="scopes[{{ $i }}][subject_id]" id="scope-{{ $i }}-subject" :options="$subjects" :value="$row['subject_id']" placeholder="Choose a subject" />
+                                        <x-td.combobox name="scopes[{{ $i }}][subject_id]" id="scope-{{ $i }}-subject" :options="$subjectChoices" :value="$row['subject_id']" placeholder="Type a subject, e.g. Maths" empty-text="No subject matches. Try another name, e.g. Wiskunde or Physics." />
                                     </x-td.field>
                                     <x-td.field label="From level" for="scope-{{ $i }}-min" optional>
                                         <x-td.select name="scopes[{{ $i }}][level_min_id]" id="scope-{{ $i }}-min" :options="$levels" :value="$row['level_min_id']" placeholder="Any level" />
@@ -284,7 +282,7 @@
                     @case('availability')
                         @if ($windows->isEmpty())
                             <x-td.state kind="empty" title="No weekly hours yet">Learners can only request times inside your open hours.
-                                <x-slot:actions><x-td.button href="{{ route('tutor.availability.index') }}" variant="primary" icon="calendar">Set weekly hours</x-td.button></x-slot:actions>
+                                <x-slot:actions><x-td.button href="{{ route('teach.calendar') }}" variant="primary" icon="calendar">Set weekly hours</x-td.button></x-slot:actions>
                             </x-td.state>
                         @else
                             @php $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday']; @endphp
@@ -297,7 +295,7 @@
                                 </tbody>
                             </x-td.table>
                             <div class="mt-4 flex flex-wrap gap-3">
-                                <x-td.button href="{{ route('tutor.availability.index') }}" icon="calendar">Change hours and days off</x-td.button>
+                                <x-td.button href="{{ route('teach.calendar') }}" icon="calendar">Change hours and days off</x-td.button>
                                 <x-td.button href="{{ route('teach.profile', ['step' => 'offering']) }}" variant="primary">Continue</x-td.button>
                             </div>
                         @endif
@@ -354,7 +352,7 @@
             @if ($profile && in_array($step, ['qualifications', 'send'], true))
                 <x-td.panel title="Verification levels">
                     <p class="mb-4 text-td-ink-2">From peer tutor to professional: each level needs a reviewed record of its kind. Dot.Tutor never assigns a level from what a profile says.</p>
-                    <p class="mb-4">Your level now: @include('teach.partials.verify-level', ['level' => $verification['level'], 'reviewing' => $qualifications->contains('status', 'submitted')])</p>
+                    <p class="mb-4">Your level now: <strong>{{ $verification['label'] }}</strong>{{ $verification['level'] ? '' : ($qualifications->contains('status', 'submitted') ? ', evidence in review' : '') }}</p>
                     <x-td.table caption="Verification levels and the evidence each needs" caption-hidden>
                         <thead><tr><th scope="col">Level</th><th scope="col">What Dot.Tutor checks</th><th scope="col">Evidence that counts</th></tr></thead>
                         <tbody>

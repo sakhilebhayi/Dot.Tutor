@@ -43,6 +43,13 @@
     .ops-work__meta { margin: 0; color: var(--td-ink-2); font-size: var(--td-text-sm); }
     .ops-work__count { font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--td-text-lg); }
 
+    /* Team page (D-2212): one line per operator; the role form opens under the row behind "Change roles". */
+    .ops-team__change > summary { list-style: none; justify-self: end; }
+    .ops-team__change > summary::-webkit-details-marker { display: none; }
+    .ops-team__change[open] { grid-column: 1 / -1; }
+    .ops-team__sheet { margin-top: var(--td-space-3); padding: var(--td-space-4); background: var(--td-sunken); border-radius: var(--td-radius); }
+    .ops-team__matrix > summary { list-style-position: inside; }
+
     /* Inline action forms: a reason field and the buttons that use it, on one line where there is room. */
     .ops-act { display: flex; flex-wrap: wrap; gap: var(--td-space-2); align-items: flex-end; }
     .ops-act > .td-field { flex: 1 1 14rem; margin: 0; }

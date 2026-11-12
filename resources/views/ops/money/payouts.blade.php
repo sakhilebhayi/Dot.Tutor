@@ -24,14 +24,14 @@
             @if ($batches->isEmpty())
                 <x-td.state kind="empty" title="No payout batches yet">A batch is drafted automatically on {{ $payoutDay }} at 06:00, or now with the button above.</x-td.state>
             @else
-                <x-td.table caption="Payout batches, newest first" caption-hidden>
-                    <thead><tr><th scope="col">Batch</th><th scope="col">Up to</th><th scope="col">State</th><th scope="col" class="is-num">Payouts</th><th scope="col" class="is-num">Total</th></tr></thead>
+                <x-td.table caption="Payout batches, newest first" caption-hidden stack>
+                    <thead><tr><th scope="col">Batch</th><th scope="col">Up to</th><th scope="col">State</th><th scope="col" class="is-num">Payouts</th><th scope="col" class="is-num" data-stack="key">Total</th></tr></thead>
                     <tbody>
                         @foreach ($batches as $b)
                             <tr>
                                 <td><a href="{{ route('ops.payouts.batch', $b) }}">Batch {{ $b->id }}</a></td>
                                 <td class="ops-num text-sm">{{ $b->period_end?->timezone($tz)->format('j M Y') }}</td>
-                                <td>{{ ucfirst($b->status) }}{{ $b->exported_at ? ', exported' : '' }}</td>
+                                <td>{{ ucfirst($b->status) }}{{ $b->exported_at && $b->status !== 'exported' ? ', bank file exported' : '' }}</td>
                                 <td class="is-num">{{ $b->payout_count }}</td>
                                 <td class="is-num">{{ $m($b->total_minor, $b->currency) }}</td>
                             </tr>

@@ -36,7 +36,7 @@
         <x-td.stat-strip label="People, last {{ $d['window_days'] }} days" :items="[
             ['label' => 'Active learners', 'value' => $d['people']['learners_active'], 'hint' => 'with a lesson or a course enrolment'],
             ['label' => 'Active tutors', 'value' => $d['people']['tutors_active'], 'hint' => 'of '.$d['people']['tutors_approved'].' approved; '.$d['people']['tutors_pending'].' applications waiting'],
-            ['label' => 'Lessons held', 'value' => $d['lessons']['completed'], 'hint' => $d['lessons']['completion_rate'] === null ? 'no lesson has reached its start time yet' : $d['lessons']['completion_rate'].'% held; in the rest the learner did not come'],
+            ['label' => 'Lessons held', 'value' => $d['lessons']['completed'], 'hint' => $d['lessons']['completion_rate'] === null ? 'no lesson has reached its start time yet' : ($d['lessons']['no_show'] === 0 ? 'no learner missed a lesson' : $d['lessons']['no_show'].' '.\Illuminate\Support\Str::plural('no-show', $d['lessons']['no_show']).', '.$d['lessons']['completion_rate'].'% of started lessons held')],
             ['label' => 'Guardians linked', 'value' => $d['people']['guardians_linked'], 'hint' => 'with consent recorded'],
         ]" />
 
@@ -82,8 +82,14 @@
                     <p class="m-0 ops-muted">No learner has completed a learning profile yet, so country and curriculum are not known.</p>
                 @else
                     <div class="grid gap-5">
-                        @include('ops.partials.bars', ['rows' => $d['geography']['countries']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by country'])
-                        @include('ops.partials.bars', ['rows' => $d['geography']['curricula']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by curriculum'])
+                        <section aria-labelledby="geo-country" class="grid gap-2">
+                            <h3 id="geo-country" class="m-0 text-sm font-bold">Country</h3>
+                            @include('ops.partials.bars', ['rows' => $d['geography']['countries']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by country'])
+                        </section>
+                        <section aria-labelledby="geo-curriculum" class="grid gap-2">
+                            <h3 id="geo-curriculum" class="m-0 text-sm font-bold">Curriculum</h3>
+                            @include('ops.partials.bars', ['rows' => $d['geography']['curricula']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by curriculum'])
+                        </section>
                     </div>
                 @endif
             </x-td.panel>
@@ -136,7 +142,7 @@
             ['label' => 'Resources added', 'value' => $d['learning']['resources_added'], 'hint' => $d['learning']['resources_published'].' published in the library; downloads are not counted'],
             ['label' => 'Resource recommendations', 'value' => $d['learning']['recommendations'], 'hint' => 'by learners and tutors'],
             ['label' => 'Practice attempts', 'value' => $d['learning']['attempts'], 'hint' => 'submitted quizzes and assessments'],
-            ['label' => 'Room questions', 'value' => $d['learning']['room_questions'], 'hint' => $d['learning']['room_answers'].' answers posted'],
+            ['label' => 'Room questions', 'value' => $d['learning']['room_questions'], 'hint' => $d['learning']['room_answers'].' '.\Illuminate\Support\Str::plural('answer', $d['learning']['room_answers']).' posted'],
         ]" />
     </div>
 </x-layouts::operations>

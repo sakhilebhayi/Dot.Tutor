@@ -14,7 +14,7 @@
         @if ($rows->isEmpty())
             <x-td.state kind="empty" title="{{ $filters === [] ? 'Nobody has signed in yet' : 'Nobody matches these filters' }}">People appear after their first InfoDot sign-in.</x-td.state>
         @else
-            <x-td.table caption="People, newest first" caption-hidden>
+            <x-td.table caption="People, newest first" caption-hidden stack>
                 <thead><tr><th scope="col">Name</th><th scope="col">Roles</th><th scope="col">Age</th><th scope="col">Standing</th><th scope="col">Joined</th></tr></thead>
                 <tbody>
                     @foreach ($rows as $row)

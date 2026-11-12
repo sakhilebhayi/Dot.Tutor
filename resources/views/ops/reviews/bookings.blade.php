@@ -12,8 +12,8 @@
         @if ($bookings->isEmpty())
             <x-td.state kind="empty" title="No bookings{{ $status ? ' in this state' : ' yet' }}" />
         @else
-            <x-td.table caption="Bookings" caption-hidden>
-                <thead><tr><th scope="col">Starts</th><th scope="col">Subject</th><th scope="col">Tutor</th><th scope="col">Learner</th><th scope="col">State</th><th scope="col" class="is-num">Price</th></tr></thead>
+            <x-td.table caption="Bookings" caption-hidden stack>
+                <thead><tr><th scope="col">Starts</th><th scope="col" data-stack="title">Subject</th><th scope="col">Tutor</th><th scope="col">Learner</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Price</th></tr></thead>
                 <tbody>
                     @foreach ($bookings as $b)
                         <tr>

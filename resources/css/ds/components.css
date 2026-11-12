@@ -322,6 +322,16 @@
         color: var(--td-ink-2);
     }
 
+    .td-combobox__group {
+        position: sticky;
+        top: calc(var(--td-space-1) * -1);
+        padding: var(--td-space-2) var(--td-space-3) var(--td-space-1);
+        background: var(--td-raised);
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+    }
+
     .td-combobox__empty {
         padding: var(--td-space-2) var(--td-space-3);
         color: var(--td-ink-2);

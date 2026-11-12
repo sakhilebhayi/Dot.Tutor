@@ -79,7 +79,7 @@
                         </tr>
                     @empty
                         <tr><td colspan="{{ count($config['columns']) + 2 }}">
-                            <x-td.state kind="empty" title="Nothing here yet{{ request()->query() ? ' for this filter' : '' }}">Add the first row above, or run php artisan academic:sync for the reference data.</x-td.state>
+                            <x-td.state kind="empty" title="Nothing here yet{{ request()->query() ? ' for this filter' : '' }}">Add the first entry above. The reference curriculum list is loaded when the site is set up; ask the administrator if it is missing.</x-td.state>
                         </td></tr>
                     @endforelse
                 </tbody>

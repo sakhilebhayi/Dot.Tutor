@@ -8,7 +8,7 @@
             @if ($sessions->isEmpty())
                 <div class="p-5"><p class="m-0 text-td-ink-2">No one-to-one lessons yet. This student came through a group seat, a package or a course.</p></div>
             @else
-                <x-td.table caption="Lessons with this student" caption-hidden dense>
+                <x-td.table caption="Lessons with this student" caption-hidden dense stack>
                     <thead><tr><th scope="col">When</th><th scope="col">Subject</th><th scope="col">Offering</th><th scope="col">State</th></tr></thead>
                     <tbody>
                         @foreach ($sessions as $s)

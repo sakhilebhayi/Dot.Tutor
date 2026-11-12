@@ -51,8 +51,8 @@
                 @if ($order->payments->isEmpty())
                     <x-td.state kind="empty" title="No payment attempts" />
                 @else
-                    <x-td.table caption="Payment attempts" caption-hidden dense>
-                        <thead><tr><th scope="col">Reference</th><th scope="col">State</th><th scope="col" class="is-num">Amount</th><th scope="col" class="is-num">Paystack fee</th></tr></thead>
+                    <x-td.table caption="Payment attempts" caption-hidden dense stack>
+                        <thead><tr><th scope="col">Reference</th><th scope="col">State</th><th scope="col" class="is-num" data-stack="key">Amount</th><th scope="col" class="is-num">Paystack fee</th></tr></thead>
                         <tbody>@foreach ($order->payments as $p)<tr><td class="text-sm">{{ $p->reference }}</td><td>{{ $p->status }}{{ $p->channel ? ' · '.$p->channel : '' }}</td><td class="is-num">{{ $m($p->amount_minor) }}</td><td class="is-num">{{ $p->fees_minor !== null ? $m($p->fees_minor) : '—' }}</td></tr>@endforeach</tbody>
                     </x-td.table>
                 @endif

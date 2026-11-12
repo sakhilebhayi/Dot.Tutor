@@ -16,7 +16,7 @@
             @if ($rows->isEmpty())
                 <x-td.state kind="empty" title="No learner is known to be a minor">A learner becomes known as a minor from a verified or declared date of birth, or when a guardian links.</x-td.state>
             @else
-                <x-td.table caption="Learners under 18" caption-hidden>
+                <x-td.table caption="Learners under 18" caption-hidden stack>
                     <thead><tr><th scope="col">Learner</th><th scope="col">Age</th><th scope="col">Standing</th><th scope="col" class="is-num">Guardians</th><th scope="col" class="is-num">Waiting for a guardian</th></tr></thead>
                     <tbody>
                         @foreach ($rows as $row)
