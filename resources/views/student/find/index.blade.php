@@ -108,7 +108,17 @@
                                     <div class="st-match__who">
                                         <h3 class="st-record__name" id="tutor-{{ $tutor['id'] }}"><a href="{{ route('marketplace.tutors.show', $tutor['id']) }}">{{ $tutor['name'] }}</a></h3>
                                         @if ($tutor['headline'])<p class="st-muted st-match__headline">{{ $tutor['headline'] }}</p>@endif
-                                        <div class="st-inline">@include('student.partials.verification', ['verification' => $tutor['verification']])</div>
+                                        <div class="st-match__facts">
+                                            @include('student.partials.verification', ['verification' => $tutor['verification']])
+                                            @if ($row['teaching_languages'] !== [])
+                                                <div class="st-chipset" aria-label="Teaches in">
+                                                    @foreach ($row['teaching_languages'] as $lang)
+                                                        <x-td.language-chip :code="$lang['code']" :name="$lang['name']" :endonym="$lang['endonym']" role="teaches" :verified="$lang['verified']" :match="$lang['match']" />
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            @if ($row['formats'] !== [])<p class="st-small" style="margin:0">{{ implode(' · ', $row['formats']) }}</p>@endif
+                                        </div>
                                     </div>
                                     <div class="st-match__act">
                                         @if ($row['price'])
@@ -124,16 +134,6 @@
                                         @else
                                             <p class="st-small" style="margin:0">Fits on everything above.</p>
                                         @endif
-                                    </div>
-                                    <div class="st-match__facts">
-                                        @if ($row['teaching_languages'] !== [])
-                                            <div class="st-chipset" aria-label="Teaches in">
-                                                @foreach ($row['teaching_languages'] as $lang)
-                                                    <x-td.language-chip :code="$lang['code']" :name="$lang['name']" :endonym="$lang['endonym']" role="teaches" :verified="$lang['verified']" :match="$lang['match']" />
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                        @if ($row['formats'] !== [])<p class="st-small" style="margin:0">{{ implode(' · ', $row['formats']) }}</p>@endif
                                     </div>
                                     @if ($row['next_slots'] !== [])
                                         <div class="st-match__times">

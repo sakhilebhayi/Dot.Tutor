@@ -61,6 +61,10 @@ class TutorPresenter
 
     public static function hasVerifiedRecord(TutorProfile $profile): bool
     {
+        if (array_key_exists('has_verified_record', $profile->getAttributes())) {
+            return (bool) $profile->getAttribute('has_verified_record');
+        }
+
         return $profile->relationLoaded('qualificationRecords')
             ? $profile->qualificationRecords->contains(fn ($q) => $q->status === QualificationStatus::Verified->value)
             : $profile->qualificationRecords()->where('status', QualificationStatus::Verified->value)->exists();

@@ -46,9 +46,8 @@
                              competed). It submits the row's form, which marks it read and goes to the page. --}}
                         <h2 @class(['m-0 mt-1 text-base leading-snug text-td-ink text-pretty', 'font-bold' => ($item['unread_marker'] ?? null) === 'unread', 'font-semibold' => ($item['unread_marker'] ?? null) !== 'unread'])>
                             @if ($item['url'])
-                                @php $titleWords = explode(' ', trim($item['title'])); $titleLast = array_pop($titleWords); @endphp
-                                {{-- The arrow stays on the title's last line, joined to its last word (D-2306). --}}
-                                <button type="submit" form="comms-open-{{ $item['id'] }}" class="comms-item__open">{{ $titleWords === [] ? '' : implode(' ', $titleWords).' ' }}<span class="comms-item__tail">{{ $titleLast }}<x-td.icon name="arrow-right" /></span></button>
+                                {{-- A no-break space glues the arrow to the title's last word, so it never wraps onto a line of its own (D-2306). --}}
+                                <button type="submit" form="comms-open-{{ $item['id'] }}" class="comms-item__open">{{ $item['title'] }}&nbsp;<x-td.icon name="arrow-right" /></button>
                             @else
                                 {{ $item['title'] }}
                             @endif

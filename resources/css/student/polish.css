@@ -391,14 +391,9 @@
         cursor: pointer;
     }
 
-    .comms-item__tail {
-        white-space: nowrap;
-    }
-
     /* Preflight makes svg a block; inline keeps the arrow beside the last word (fix round D-2306). */
     .comms-item__open .td-icon {
         display: inline-block;
-        margin-left: 0.3em;
         transition: transform var(--td-dur-short) var(--td-ease-out);
     }
 
@@ -525,7 +520,13 @@
         align-items: start;
     }
 
-    .st-match__facts,
+    .st-match__facts {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--td-space-1) var(--td-space-3);
+    }
+
     .st-match__times {
         display: grid;
         gap: var(--td-space-2);
@@ -534,6 +535,8 @@
 
     .st-match .td-reasons {
         gap: var(--td-space-1);
+        font-size: var(--td-text-sm);
+        line-height: 1.45;
     }
 
     @media (min-width: 48rem) {
@@ -549,11 +552,12 @@
         }
     }
 
-    @media (min-width: 64rem) {
+    @media (min-width: 40rem) {
         .st-match__body {
-            grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 4fr);
+            grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
             column-gap: var(--td-space-5);
         }
+
     }
 
     .st-slotchips {

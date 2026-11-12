@@ -166,6 +166,6 @@ class FixPublicTest extends TestCase
         $html = $this->actingAs($user)->get('/comms/inbox')->assertOk()->getContent();
         $this->assertSame(2, substr_count($html, 'aria-hidden="true"></span>Unread'), 'two subjects, two markers');
         $this->assertSame(1, substr_count($html, 'Earlier update'));
-        $this->assertStringContainsString('<span class="comms-item__tail">Khumalo<svg', $html, 'the arrow is joined to the last word');
+        $this->assertStringContainsString('Lesson confirmed with Ms Khumalo&nbsp;<svg', $html, 'the arrow is glued to the last word');
     }
 }
