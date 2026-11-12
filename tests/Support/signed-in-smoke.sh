@@ -179,9 +179,12 @@ fi
 # ---- 3. tutor -------------------------------------------------------------------------------------------------------
 step "tutor"
 if sign_in tutor; then
-  for P in /tutor/profile /tutor/availability /my/bookings /money/earnings /learning/studio/courses /teach/rooms /classroom /ai/tutor /safety/me; do
+  for P in /teach /teach/profile /teach/calendar /my/bookings /money/earnings /learning/studio/courses /teach/rooms /classroom /ai/tutor /safety/me; do
     page "$P" "<html"
   done
+  # The legacy profile and hours pages forward to the workspace (R-47 D-2201).
+  redirects_to "/tutor/profile" "/teach/profile"
+  redirects_to "/tutor/availability" "/teach/calendar"
   json "/api/tutor/me/offerings" 'One Maths lesson'
   refused "/safety/operator/incidents"
 fi
