@@ -237,3 +237,14 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Money | Finance JSON API and a minimal page | P | Refunds, payouts and exceptions only through the API | Orders, refunds (finance only, idempotent forms), exceptions incl. unmatched payments, disputes, commission rules, payouts and batches |
 | Audit viewer | JSON endpoint | P | No screen for audit history | Filtered audit screen with the chain check |
 | Guardian experience | Minimal safety page, no money orders | P | Not phone-first, purchases said "not connected" | Guardian home and child pages in the learner shell, decisions with reasons, orders, notices, settings |
+### Tutor workspace (tutor UI agent, 2026-11-12)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Tutor application: one legacy form (headline, bio, free-text qualifications, decimal rate, subjects) that put the application in the operator queue at once | 2 | No guidance, no draft, no scope by level, languages or evidence; unfinished applications reached operators | Nine-step guided onboarding over profile v2, scope, languages, evidence and offerings; draft state until sent; required steps checked; re-send needs a note (D-1201, D-1202) |
+| Tutor workspace: wave-1 minimal pages (`/my/bookings`, `/money/earnings`, `/learning/studio`) in the old layout, no home | 3 | No business dashboard, students, calendar of lessons, storefront editor, insights or income report | 13 workspace screens in the ds shell (see R47_UI_TUTOR.md); the wave-1 pages still exist for their owners |
+| Commission and net visible only through the money JSON preview | 4 (for tutors) | A tutor could not see what they keep before saving a price | Live and server-rendered "you keep" on offerings and course price (D-1204) |
+| Requests from minors waiting for a guardian | 2 | The wave-1 booking list showed them with the learner's name | Number only until approved (D-1208), tested |
+| Referral links, promotional page, share link | 6 | Missing | Attribution-only referral link, `/u/{handle}`, printable promotional page (D-1209) |
+| Upload progress for course files | 6 | Missing | XHR progress enhancement that keeps the server's messages (D-1212) |
+
