@@ -31,4 +31,5 @@ After merging fix-ops: `TutorStanding` is fix-ops' version (`levelWaiting()`, th
 
 - PHP: 1,016 before (1,009 pass, 7 skipped) and 1,027 after (1,020 pass, 7 skipped), SQLite. New tests are in `tests/Feature/FixPublic/FixPublicTest.php` (9). Two tests were added to existing files: `MoneyPagesTest` (receipt) and `GuardianExperienceTest` (overdue wording and no duplicate). No existing test changed.
 - JS: `tests/js/fix-public.test.mjs` (5, the menu's focus trap).
+- After merging the trunk with fix-ops (7dcb377): PHP 1,034 (1,027 pass, 7 skipped) on SQLite and on PostgreSQL (`bin/test-pgsql.sh`); JS 26 pass; `npm run build`, `view:cache` and `route:cache` pass; `signed-in-smoke.sh` 101 checks passed; full E2E suite 01 to 09 passed (route sweep 648 s).
 - Browser (local server on 8760, Demo seeders, 390 and 1440): phone menu open/close and focus return, no overflow; sign-in (unconfigured state); guest and learner results; young find step and after-school booking on a phone; console clean after the cross-fade guard.
