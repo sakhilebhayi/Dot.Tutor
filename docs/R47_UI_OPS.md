@@ -177,3 +177,10 @@ Guardian screens use `<x-layouts::learner>` (standard step, phone first): one de
 - Grant the first administrator after deploy: `php artisan ops:grant owner@example.com` (the person must have signed in through InfoDot once), then give every other operator a role on the team page; until then existing operators keep full access.
 - Decide who holds finance and who holds safeguarding; with four eyes on, screening needs two safeguarding officers.
 - The academic reference names still need an academic editor's review (academic owner item).
+
+## 6. Checks run (2026-11-12, after merging feat/r47-tutor with student and deploy)
+
+- `php artisan test --compact`: 893 tests, 886 pass, 7 skipped, 0 fail (25 new in `tests/Feature/Ops`; `DesignSystemKitTest` updated, D-1310).
+- `route:cache` and `view:cache` pass; Pint clean; `npm run build` clean.
+- `impeccable detect`: 0 findings. Taste `lint --app` and `inspect --app`: see `docs/R47_SKILLS.md`.
+- Browser: see `docs/R47_SKILLS.md` and `docs/R47_screens/ops/`.
