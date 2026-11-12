@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Academic\Models\SubjectOffering;
 use App\Domain\Academic\Services\ReferenceDataSync;
 use App\Domain\Community\Models\Post;
 use App\Domain\Community\Models\Room;
@@ -13,6 +14,9 @@ use App\Domain\Safety\Contracts\GuardianApprovals;
 use App\Domain\Safety\Contracts\ReportSink;
 use App\Domain\Safety\Enums\ReportCategory;
 use App\Domain\Safety\Models\AgeRecord;
+use App\Domain\Safety\Models\Conversation;
+use App\Domain\Safety\Models\GuardianApproval;
+use App\Domain\Safety\Models\Report;
 use App\Domain\Safety\Services\Guardians;
 use App\Domain\Safety\Services\Messenger;
 use App\Models\SessionRating;
@@ -96,23 +100,23 @@ class DemoOpsSeeder extends Seeder
             parse_str((string) parse_url($invite['url'], PHP_URL_QUERY), $query);
             app(Guardians::class)->accept($invite['invitation'], $query['token'], $guardian, CarbonImmutable::now()->subYears(10)->subMonths(2));
         }
-        if (\App\Domain\Safety\Models\GuardianApproval::query()->where('learner_id', $child->id)->doesntExist()) {
+        if (GuardianApproval::query()->where('learner_id', $child->id)->doesntExist()) {
             app(GuardianApprovals::class)->request($child, 'purchase', $child, ['summary' => 'Demo: Grade 4 Fractions course by Demo Tutor Ayanda', 'amount_minor' => 34900, 'currency' => 'ZAR']);
         }
 
-        if (\App\Domain\Safety\Models\Report::query()->doesntExist()) {
+        if (Report::query()->doesntExist()) {
             app(ReportSink::class)->report($child, $tutors[2]->user, ReportCategory::InappropriateContactWithMinor, 'Demo: asked me for my WhatsApp number after the lesson.');
             app(ReportSink::class)->report($learners[2], $learners[3], ReportCategory::Spam, 'Demo: posting the same advert in every room.');
         }
 
-        $room = app(Rooms::class)->subjectRoom(\App\Domain\Academic\Models\SubjectOffering::query()
+        $room = app(Rooms::class)->subjectRoom(SubjectOffering::query()
             ->whereHas('level', fn ($q) => $q->where('code', 'grade-4'))->where('subject_id', $maths->id)->firstOrFail(), Room::UNDER_18);
         Post::query()->firstOrCreate(['room_id' => $room->id, 'author_id' => $child->id, 'title' => 'Demo: why is a half bigger than a third?'],
             ['kind' => 'question', 'body' => 'If 3 is bigger than 2, why is a third smaller?', 'status' => Post::HELD, 'held_reason' => 'pre_moderation']);
 
         app(FinanceIssues::class)->raise('unmatched_payment', 'demo:unmatched:1', 'Demo: Paystack charge DEMO-REF-1 matches no Dot.Tutor order', ['amount_minor' => 25000, 'currency' => 'ZAR', 'severity' => 'critical']);
 
-        if (\App\Domain\Safety\Models\Conversation::query()->where('context_type', 'support')->doesntExist()) {
+        if (Conversation::query()->where('context_type', 'support')->doesntExist()) {
             app(Messenger::class)->start($learners[4], 'support', null, [], 'Demo: I was charged but my lesson still says unpaid.', 'Demo: payment not showing');
         }
     }

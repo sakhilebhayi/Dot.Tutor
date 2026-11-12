@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ops\Http\Controllers;
 
+use App\Domain\Money\Contracts\MoneyAudit;
 use App\Domain\Money\Exceptions\CheckoutRefused;
 use App\Domain\Money\Models\CommissionRule;
 use App\Domain\Money\Models\Dispute;
@@ -11,13 +12,13 @@ use App\Domain\Money\Models\OrderLine;
 use App\Domain\Money\Models\Payout;
 use App\Domain\Money\Models\PayoutBatch;
 use App\Domain\Money\Models\Refund;
-use App\Domain\Money\Contracts\MoneyAudit;
 use App\Domain\Money\Services\Disputes;
 use App\Domain\Money\Services\Earnings;
 use App\Domain\Money\Services\FinanceIssues;
 use App\Domain\Money\Services\Payouts;
 use App\Domain\Money\Services\Refunds;
 use App\Domain\Ops\Access\OpsPermission as P;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -140,7 +141,7 @@ class MoneyController extends OpsController
             'available' => (int) DB::table('money_earnings')->where('status', 'available')->whereNull('payout_id')->sum('net_minor'),
             'pending' => (int) DB::table('money_earnings')->where('status', 'pending')->sum('net_minor'),
             'minimum' => (int) config('money.payouts.minimum_minor', 10000),
-            'payoutDay' => \Carbon\Carbon::create(2024, 1, 1)->addDays(((int) config('money.payouts.schedule_day', 1) + 6) % 7)->format('l'),
+            'payoutDay' => Carbon::create(2024, 1, 1)->addDays(((int) config('money.payouts.schedule_day', 1) + 6) % 7)->format('l'),
             'transfers' => $payouts->transfersEnabled(),
             'canPayout' => $this->can(P::FINANCE_PAYOUTS),
         ]);

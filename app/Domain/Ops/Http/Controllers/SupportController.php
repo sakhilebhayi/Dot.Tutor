@@ -2,6 +2,7 @@
 
 namespace App\Domain\Ops\Http\Controllers;
 
+use App\Domain\Ops\Access\OpsPermission;
 use App\Domain\Safety\Audit;
 use App\Domain\Safety\Models\Conversation;
 use App\Domain\Safety\Models\ConversationParticipant;
@@ -43,14 +44,14 @@ class SupportController extends OpsController
         return view('ops.support.show', [
             'conversation' => $conversation,
             'messages' => $conversation->messages()->with('sender:id,name,is_platform_operator')->orderBy('id')->get(),
-            'canReply' => $this->can(\App\Domain\Ops\Access\OpsPermission::SUPPORT_ACT),
+            'canReply' => $this->can(OpsPermission::SUPPORT_ACT),
         ]);
     }
 
     public function reply(Request $request, Conversation $conversation, Messenger $messenger): RedirectResponse
     {
         abort_unless($conversation->context_type === Conversation::SUPPORT, 404);
-        abort_unless($this->can(\App\Domain\Ops\Access\OpsPermission::SUPPORT_ACT), 403, 'Your operator role does not include this.');
+        abort_unless($this->can(OpsPermission::SUPPORT_ACT), 403, 'Your operator role does not include this.');
         $data = $request->validate(['body' => ['required', 'string', 'max:'.config('safety.messaging.max_length')]]);
 
         $messenger->send($conversation, $request->user(), $data['body']);

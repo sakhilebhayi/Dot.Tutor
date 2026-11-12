@@ -3,6 +3,7 @@
 namespace App\Domain\Ops\Insights;
 
 use App\Domain\Money\Models\Order;
+use App\Domain\Money\Money;
 use App\Enums\SessionStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -227,7 +228,7 @@ class Overview
             ->sum(DB::raw('credit_minor - debit_minor'));
 
         return [
-            'currency' => \App\Domain\Money\Money::defaultCurrency(),
+            'currency' => Money::defaultCurrency(),
             'paid_orders' => (int) DB::table('money_orders')->whereNotNull('paid_at')->where('paid_at', '>=', $since)->count(),
             'cash_minor' => (int) (clone $paidLines)->sum('money_order_lines.cash_minor'),
             'course_sales' => (int) (clone $paidLines)->whereIn('money_order_lines.purchasable_type', ['course', 'course_bundle'])->count(),
