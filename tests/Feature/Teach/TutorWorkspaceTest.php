@@ -47,12 +47,12 @@ class TutorWorkspaceTest extends TestCase
         $this->actingAs($user)->post(route('teach.profile.start'), [
             'headline' => 'Grade 10 to 12 Maths, CAPS',
             'introduction' => 'Second-year engineering student who tutors high school Maths after lectures.',
-            'teaches_online' => '1', 'teaches_in_person' => '0', 'hourly_rate' => '180', 'timezone' => 'Africa/Johannesburg',
+            'teaches_online' => '1', 'teaches_in_person' => '0', 'timezone' => 'Africa/Johannesburg',
         ])->assertRedirect(route('teach.profile', ['step' => 'photo']));
 
         $profile = TutorProfile::query()->where('user_id', $user->id)->sole();
         $this->assertSame('draft', $profile->status);
-        $this->assertSame(18000, $profile->hourly_rate_minor);
+        $this->assertNull($profile->hourly_rate_minor, 'offerings own prices: no profile-wide rate (D-2204)');
         $this->actingAs($this->operator)->get(route('operator.tutor-profiles.index'))->assertOk()->assertDontSee('Thandi Mokoena');
 
         // Sending before the required steps is refused, with the missing steps named.

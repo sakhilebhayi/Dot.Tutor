@@ -50,7 +50,7 @@ final class AccountNotifications
             }
 
             $this->m->send(new CommsMessage($tutor, 'tutor_verification_decided', 'verification:'.$decision->id, $heading, $body,
-                route('tutor.profile.edit', absolute: false), 'verification-'.$decision->tutor_profile_id, $decision->operator_id,
+                route('teach.profile', absolute: false), 'verification-'.$decision->tutor_profile_id, $decision->operator_id,
                 data: ['tutor_profile_id' => $decision->tutor_profile_id]));
         } catch (Throwable $e) {
             Log::warning('Comms could not notify a verification decision.', ['decision_id' => $decision->id, 'error' => class_basename($e)]);

@@ -2,7 +2,6 @@
     $approved = $state['key'] === 'approved';
     $title = $approved ? 'Profile and verification' : 'Become a tutor';
     $current = collect($steps)->firstWhere('key', $step);
-    $rate = $profile?->hourly_rate_minor ? number_format($profile->hourly_rate_minor / 100, 2, '.', '') : '';
     $scopeRows = $scopes->map(fn ($s) => ['subject_id' => $s->subject_id, 'level_min_id' => $s->level_min_id, 'level_max_id' => $s->level_max_id, 'notes' => $s->notes])->all();
     $scopeRows = array_pad($scopeRows, max(3, count($scopeRows) + 2), ['subject_id' => null, 'level_min_id' => null, 'level_max_id' => null, 'notes' => null]);
     $langRows = collect($teaching)->map(fn ($l) => ['code' => $l->code, 'proficiency' => $l->proficiency->value, 'verified' => $l->verified])->all();
@@ -96,13 +95,11 @@
                                     <x-td.input name="in_person_area" :value="$profile?->in_person_area" maxlength="120" :hint="true" />
                                 </x-td.field>
                             </fieldset>
-                            <div class="grid gap-5 md:grid-cols-2">
-                                <x-td.field label="Usual hourly rate ({{ $currency }})" for="hourly_rate" hint="Your starting price. Each offering sets its own price later.">
-                                    <x-td.input name="hourly_rate" inputmode="decimal" :value="$rate" required :hint="true" />
-                                </x-td.field>
+                            <div class="grid gap-5 md:grid-cols-2 md:items-start">
                                 <x-td.field label="Your time zone" for="timezone">
                                     <x-td.select name="timezone" :options="array_combine($timezones, $timezones)" :value="$profile?->timezone ?: $defaultTimezone" />
                                 </x-td.field>
+                                <p class="m-0 text-sm text-td-ink-2 md:pt-7">Prices live on your offerings. Learners pay through Dot.Tutor checkout, and each offering shows the commission and what you keep before you save it.@if ($profile) <a class="td-link" href="{{ route('teach.offerings') }}">Your offerings</a>@endif</p>
                             </div>
                             <div><x-td.button type="submit" variant="primary">{{ $profile ? 'Save and continue' : 'Save draft and continue' }}</x-td.button></div>
                         </form>
@@ -284,7 +281,7 @@
                     @case('availability')
                         @if ($windows->isEmpty())
                             <x-td.state kind="empty" title="No weekly hours yet">Learners can only request times inside your open hours.
-                                <x-slot:actions><x-td.button href="{{ route('tutor.availability.index') }}" variant="primary" icon="calendar">Set weekly hours</x-td.button></x-slot:actions>
+                                <x-slot:actions><x-td.button href="{{ route('teach.calendar') }}" variant="primary" icon="calendar">Set weekly hours</x-td.button></x-slot:actions>
                             </x-td.state>
                         @else
                             @php $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday']; @endphp
@@ -297,7 +294,7 @@
                                 </tbody>
                             </x-td.table>
                             <div class="mt-4 flex flex-wrap gap-3">
-                                <x-td.button href="{{ route('tutor.availability.index') }}" icon="calendar">Change hours and days off</x-td.button>
+                                <x-td.button href="{{ route('teach.calendar') }}" icon="calendar">Change hours and days off</x-td.button>
                                 <x-td.button href="{{ route('teach.profile', ['step' => 'offering']) }}" variant="primary">Continue</x-td.button>
                             </div>
                         @endif

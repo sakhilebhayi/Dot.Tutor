@@ -33,17 +33,16 @@ test('tutor journey: register to payout', async () => {
         await page.fill('input[name=headline]', 'CAPS Mathematics, Grades 10 to 12, in isiZulu and English');
         await page.fill('textarea[name=introduction]', 'I help FET learners understand functions, algebra and calculus, step by step.');
         await page.fill('textarea[name=teaching_approach]', 'Short explanations, then worked examples, then practice.');
-        await page.fill('input[name=hourly_rate]', '300');
         await page.selectOption('select[name=timezone]', 'Africa/Johannesburg');
         await Promise.all([page.waitForURL('**step=photo**'), page.click('form[action$="/teach/profile/start"] button[type=submit]')]);
         const p = one('select * from tutor_profiles where user_id = ?', [userId]);
         assert.equal(p.status, 'draft');
-        assert.equal(p.hourly_rate_minor, 30000);
+        assert.equal(p.hourly_rate_minor, null, 'offerings own prices: no profile-wide rate (D-2204)');
         profileId = p.id;
         await page.setInputFiles('input[name=photo]', fixtureFile('png'));
         await Promise.all([page.waitForURL('**step=scope**', { timeout: 20000 }), page.getByRole('button', { name: 'Upload photo' }).click()]);
         assert.ok(one('select photo_path from tutor_profiles where id = ?', [profileId]).photo_path, 'photo stored (re-encoded, private disk)');
-        ev.add(2, 'Create a tutor profile', `tutor_profiles ${profileId}: draft, headline, introduction, approach, hourly_rate_minor 30000; photo uploaded and stored`);
+        ev.add(2, 'Create a tutor profile', `tutor_profiles ${profileId}: draft, headline, introduction, approach, no profile-wide rate (offerings own prices); photo uploaded and stored`);
     });
 
     // 3. Subjects and academic levels.

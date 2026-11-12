@@ -11,7 +11,7 @@
         }
     }
     if ($tutorProfile && $tutorProfile->status !== 'approved') {
-        $needs[] = ['text' => 'Your tutor profile is '.$tutorProfile->status, 'url' => route('tutor.profile.edit')];
+        $needs[] = ['text' => 'Your tutor profile is '.$tutorProfile->status, 'url' => route('teach.profile')];
     }
     if ($tutorProfile && $tutorProfile->isApproved()) {
         $waiting = $upcomingSessionsList->filter(fn ($s) => $s->status === 'pending' && $s->tutorProfile->user_id === $user->id)->count();
@@ -68,7 +68,7 @@
         </div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
             @unless($tutorProfile)
-                <a href="{{ route('tutor.profile.edit') }}" class="t-btn t-btn-quiet">Apply to teach</a>
+                <a href="{{ route('teach.profile') }}" class="t-btn t-btn-quiet">Apply to teach</a>
             @endunless
             <a href="{{ route('tutors.browse') }}" class="t-btn t-btn-primary">Find a tutor</a>
         </div>

@@ -19,10 +19,9 @@
     if ($user) {
         $nav[] = ['label' => 'Teaching', 'items' => $user->tutorProfile
             ? [
-                $link('My tutor profile', 'tutor.profile.edit', 'badge-check', 'tutor.profile.*'),
-                $link('My hours', 'tutor.availability.index', 'calendar', 'tutor.availability.*'),
+                $link('Tutor workspace', 'teach.home', 'badge-check', 'teach.*'),
             ]
-            : [$link('Become a tutor', 'tutor.profile.edit', 'graduation-cap', 'tutor.profile.*')]];
+            : [$link('Become a tutor', 'teach.profile', 'graduation-cap', 'teach.profile')]];
 
         if ($user->is_platform_operator) {
             $nav[] = ['label' => 'Operator', 'items' => [

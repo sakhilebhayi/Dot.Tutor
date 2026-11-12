@@ -5,14 +5,12 @@ namespace App\Http\Controllers;
 use App\Enums\TutorProfileStatus;
 use App\Models\Subject;
 use App\Models\TutorProfile;
-use DateTimeZone;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
 /**
  * A user's own tutor application / profile: apply once, edit while pending or
@@ -20,20 +18,15 @@ use Illuminate\View\View;
  */
 class TutorProfileController extends Controller
 {
-    public function edit(Request $request): View
+    /**
+     * The tutor's profile lives in the workspace onboarding (/teach/profile, R-47 D-2201): one shell, one form.
+     * This address and the notifications that link to it forward there, keeping any flash message.
+     */
+    public function edit(Request $request): RedirectResponse
     {
-        $profile = $request->user()->tutorProfile()->first();
+        $request->session()->reflash();
 
-        return view('tutor.profile.edit', [
-            'profile' => $profile,
-            'subjects' => Subject::active()->orderBy('name')->get(),
-            'selectedSubjectIds' => $profile
-                ? $profile->subjects()->pluck('subjects.id')->all()
-                : [],
-            'currency' => $profile?->currency ?: config('tutor.currency'),
-            'timezones' => DateTimeZone::listIdentifiers(),
-            'defaultTimezone' => config('tutor.timezone'),
-        ]);
+        return redirect()->route('teach.profile');
     }
 
     public function store(Request $request): RedirectResponse

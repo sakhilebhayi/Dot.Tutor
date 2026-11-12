@@ -15,7 +15,7 @@ class TutorAvailabilityTest extends TestCase
 
     public function test_a_user_without_a_tutor_profile_is_sent_to_apply(): void
     {
-        $this->actingAs($this->makeUser())->get('/tutor/availability')->assertRedirect(route('tutor.profile.edit'));
+        $this->actingAs($this->makeUser())->get('/tutor/availability')->assertRedirect(route('teach.profile'));
     }
 
     public function test_a_tutor_can_add_a_weekly_window(): void
@@ -32,7 +32,9 @@ class TutorAvailabilityTest extends TestCase
         $this->assertSame('09:00', $window->start_time);
         $this->assertSame('13:00', $window->end_time);
 
-        $this->actingAs($profile->user)->get('/tutor/availability')
+        // One weekly-hours editor (D-2201): the old address opens the workspace calendar.
+        $this->actingAs($profile->user)->get('/tutor/availability')->assertRedirect(route('teach.calendar'));
+        $this->actingAs($profile->user)->followingRedirects()->get('/tutor/availability')
             ->assertOk()
             ->assertSee('Africa/Johannesburg')
             ->assertSee('09:00');

@@ -15,7 +15,7 @@
         <x-td.notice tone="info" title="The AI assistant is not configured yet">The platform has not switched on an AI service, so nothing is sent anywhere. The student summary below is computed without AI and works now.</x-td.notice>
     @endunless
     @unless ($is_tutor)
-        <x-td.notice tone="warning">The teaching assistant is for people with a tutor profile. <a href="{{ route('tutor.profile.edit') }}">Create your tutor profile</a>.</x-td.notice>
+        <x-td.notice tone="warning">The teaching assistant is for people with a tutor profile. <a href="{{ route('teach.profile') }}">Create your tutor profile</a>.</x-td.notice>
     @endunless
 
     <div class="td-panels td-panels--2">
