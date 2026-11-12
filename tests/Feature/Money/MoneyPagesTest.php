@@ -25,7 +25,7 @@ class MoneyPagesTest extends TestCase
         $uuid = $this->placeOrder($learner, [$this->bookingItem($session)])->json('order.id');
 
         $this->actingAs($learner)->get("/money/checkout/{$uuid}")->assertOk()
-            ->assertSee('Check your order')->assertSee("R\u{202F}300.00", false)->assertSee('Test mode')->assertSee('Pay R');
+            ->assertSee('Check your order')->assertSee("R300.00", false)->assertSee('Test mode')->assertSee('Pay R');
 
         $this->actingAs($learner)->post("/money/checkout/{$uuid}/pay")->assertRedirect('https://checkout.paystack.com/'.$this->paystack->lastReference());
         $this->actingAs($this->makeUser('Other'))->get("/money/checkout/{$uuid}")->assertNotFound();
@@ -65,7 +65,7 @@ class MoneyPagesTest extends TestCase
         $this->paidLessonOrder($s2, $l2);
         $second = Receipt::where('id', '!=', $receipt->id)->firstOrFail();
         $this->assertSame('TUT-00000002', $second->number);
-        $this->actingAs($l2)->get("/money/receipts/{$second->id}")->assertOk()->assertSee('VAT number 4123456789')->assertSee('Includes VAT at 15%')->assertSee("R\u{202F}39.13", false);
+        $this->actingAs($l2)->get("/money/receipts/{$second->id}")->assertOk()->assertSee('VAT number 4123456789')->assertSee('Includes VAT at 15%')->assertSee("R39.13", false);
     }
 
     public function test_tutor_earnings_page_and_finance_page_access(): void
@@ -73,7 +73,7 @@ class MoneyPagesTest extends TestCase
         [$session, $learner, $tutor] = $this->lesson();
         $this->paidLessonOrder($session, $learner);
 
-        $this->actingAs($tutor)->get('/money/earnings')->assertOk()->assertSee('Pending')->assertSee("R\u{202F}255.00", false);
+        $this->actingAs($tutor)->get('/money/earnings')->assertOk()->assertSee('Pending')->assertSee("R255.00", false);
         $this->actingAs($tutor)->get('/money/ops')->assertForbidden();
         $this->actingAs($this->financeOperator())->get('/money/ops')->assertOk()->assertSee('Finance operations');
     }

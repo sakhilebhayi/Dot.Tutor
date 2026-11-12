@@ -69,7 +69,9 @@
 
     /* Type. */
     --td-font-display: 'TD Display', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
-    --td-font-text: 'TD Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* TD Figures comes first and covers the digits only (fonts.css): every figure in running text, money, times and
+       tables is Archivo's plain-zero lining figure, so R250.00 never reads as "R25Ø.ØØ" (D-2103). */
+    --td-font-text: 'TD Figures', 'TD Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --td-display-stretch: 75%;
     --td-text-xs: 0.8125rem;   /* 13px: meta lines, never running text */
     --td-text-sm: 0.875rem;    /* 14px: labels, table cells in the dense step */

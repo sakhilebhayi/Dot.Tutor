@@ -307,3 +307,17 @@ Full findings, exploits and tests in `docs/R47_SECURITY.md`; personal informatio
 | No description, canonical, OG, sitemap | I | public meta missing | added (D-2014) |
 | Legal text contradicts the product | C | "session marketplace", "We do not vet" | rewritten to the product; lawyer review owed (D-2015) |
 | Booking page 13,113 px on a phone | U | every slot of 14 days | day strip, 2,249 px (D-2017) |
+### Polish wave: guardian, money figures, classroom (polish-guardian, 2026-11-12)
+
+| As found | Class | Finding | After |
+|---|---|---|---|
+| Guardian pages in the learner navigation; no guardian tab on the phone | I | `layouts/learner` always used the learner nav | Guardian navigation and phone bar (D-2100) |
+| `/safety/guardian` rendered the guardian home again | B | the override `@include`d `guardian.home` | Safety page with one row per report, case or notice (D-2101) |
+| Urgent child-safety report in a side card; child badge "Active" | B | badge read only account standing | Danger band first; "1 urgent report" (D-2101) |
+| Declined requests vanished | I | home listed pending approvals only | Recent decisions on home and Approvals (D-2102) |
+| Child page "Purchases" panel empty when a purchase request existed | B | condition counted requests, list showed orders only | Empty state names the waiting request |
+| "R25Ø.ØØ" everywhere | I | Atkinson Hyperlegible Next's zero is slashed, no alternate | Digits from Archivo via `TD Figures` (D-2103) |
+| "R 150.00", "ZAR 250.00", "R250.00" side by side | I | four money formatters | One path, `Money::format()` (D-2104) |
+| Classroom "Not joined" beside "The tutor ended this lesson" | B | chip hard-coded | Chip from the admission (D-2106) |
+| Learners told "No relay server is set up" | I | one text for all roles | Plain words for learners (D-2108) |
+| Join ~1,200 px down on a phone | I | Join at the end of the checks | Join under the preview (D-2107) |

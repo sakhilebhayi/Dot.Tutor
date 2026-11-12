@@ -1,1 +1,1 @@
-{{ $currency ?? 'ZAR' }} {{ number_format(($minor ?? 0) / 100, 2, '.', ' ') }}
+{{ \App\Domain\Money\Money::of((int) ($minor ?? 0), $currency ?? null)->format() }}
