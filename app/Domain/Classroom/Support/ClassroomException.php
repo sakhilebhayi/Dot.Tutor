@@ -22,6 +22,15 @@ class ClassroomException extends RuntimeException
         return new self($admission->code ?? 'not_allowed', $admission->message, $admission->status(), ['admission' => $admission->jsonSerialize()]);
     }
 
+    /**
+     * A refusal is the classroom's answer, not a fault: it is not written to the error log (the poll after the tutor
+     * ends a lesson answered 409 and logged an ERROR with a stack trace for every learner still in the room).
+     */
+    public function report(): bool
+    {
+        return true;
+    }
+
     public function render(Request $request): Response
     {
         if ($request->expectsJson()) {

@@ -66,7 +66,7 @@ Unchanged owner bindings: academic `AcademicScope`, `LanguageProfile`; safety `S
 - A 100% coupon cannot be redeemed through the learning/marketplace hand-offs on an environment without Paystack, because no order is created there (D-1403).
 - Course reports: learning only forwards library reports; courses have no report endpoint yet.
 - Learning `TutorStanding::hasTaught` is not in `TutorDirectory`; learning's own query is kept.
-- `TutorDirectory::approved(['level_id'])` (marketplace) matches only scope range ends, not levels inside a range: marketplace owner item, noted for the next pass.
+- `TutorDirectory::approved(['level_id'])` (marketplace) matched only scope range ends, not levels inside a range: fixed by QA (D-1809, `TutorDirectoryLevelTest`).
 - Tutor teaching languages had no endpoint: `GET|PUT /api/tutor/me/teaching-languages` (integration route) edits the academic language profile; verification remains the academic operator screen.
 
 ## 5. JSON errors (D-1404)
