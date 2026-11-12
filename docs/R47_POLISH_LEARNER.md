@@ -40,7 +40,7 @@ Branch `feat/r47-polish-learner`, decisions D-2000 to D-2025, port 8740. Source:
 - **Young booking limited to after-school slots** (A 3, young): not added; the day strip already shows one day. Filtering by the learner's saved window would hide times a child may want at weekends without a product decision.
 - **Status words shared with the guardian** ("Requested" vs "Waiting for the tutor", A 16): guardian screens are polish-guardian's.
 - **Slashed-zero numerals and one currency format** (A 12, B 8): polish-guardian (global money font).
-- **Account page "How screens look" icon and status text** (A 17) and **progress "Other" heading** (A 26): not reached.
+- **Account page "How screens look"** (A 17): done (D-2027). **Progress "Other" heading** (A 26): not reached.
 - **Guest reports**: a guest is asked to sign in to report a public storefront; anonymous reports would need a safety decision on abuse handling.
 - **Legal review**: the terms, privacy policy and cookie policy now describe the product as it is, but **a lawyer must review them** before they are relied on, including the operator's name (BluePin Inc in the policies, "an InfoDot ecosystem platform" in the footer; the owner's records also spell the holding company "BluPin"). Nothing new was promised; the information officer, processors and retention periods remain owner items (`docs/R47_PRIVACY.md` section 6).
 - **Deploy**: `public/robots.txt` and `public/images/og-card.png` reach the docroot through the deploy's public-file copy; `sitemap.xml` is a route (no static file of that name exists, so nothing shadows it).
