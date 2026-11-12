@@ -4,6 +4,10 @@
  * one hue (primary) on the data, recessive axes, a table view beside every chart, values never in colour.
  */
 @layer components {
+    /* A visually hidden label inside a scrolling table (an "Actions" header) is absolutely positioned; without a
+       positioned scroll region it escapes to the page and widens a phone's layout viewport. Contract note for ds. */
+    .table-scroll { position: relative; }
+
     /* Status tags: a glyph and words, a soft ground; colour is never the only signal. */
     .ops-tag {
         display: inline-flex;
@@ -38,7 +42,6 @@
     .ops-work__title { margin: 0; font-weight: 650; }
     .ops-work__meta { margin: 0; color: var(--td-ink-2); font-size: var(--td-text-sm); }
     .ops-work__count { font-variant-numeric: tabular-nums; font-weight: 700; font-size: var(--td-text-lg); }
-    @media (max-width: 40rem) { .ops-work > li { grid-template-columns: 1fr; } }
 
     /* Inline action forms: a reason field and the buttons that use it, on one line where there is room. */
     .ops-act { display: flex; flex-wrap: wrap; gap: var(--td-space-2); align-items: flex-end; }
@@ -72,10 +75,11 @@
     /* Retention heatmap: one hue, light to dark by share; the figure is always printed. */
     .ops-heat td.ops-heat__cell { text-align: center; font-variant-numeric: tabular-nums; font-weight: 650; min-width: 4.5rem; }
     .ops-heat__cell[data-step='0'] { background: var(--td-surface); }
-    .ops-heat__cell[data-step='1'] { background: color-mix(in oklch, var(--td-primary) 12%, var(--td-surface)); }
-    .ops-heat__cell[data-step='2'] { background: color-mix(in oklch, var(--td-primary) 26%, var(--td-surface)); }
-    .ops-heat__cell[data-step='3'] { background: color-mix(in oklch, var(--td-primary) 42%, var(--td-surface)); }
-    .ops-heat__cell[data-step='4'] { background: var(--td-primary); color: var(--td-primary-ink); }
+    /* Steps stop at 46% of the hue so the ink figure keeps its contrast in both themes. */
+    .ops-heat__cell[data-step='1'] { background: color-mix(in oklch, var(--td-primary) 10%, var(--td-surface)); }
+    .ops-heat__cell[data-step='2'] { background: color-mix(in oklch, var(--td-primary) 22%, var(--td-surface)); }
+    .ops-heat__cell[data-step='3'] { background: color-mix(in oklch, var(--td-primary) 34%, var(--td-surface)); }
+    .ops-heat__cell[data-step='4'] { background: color-mix(in oklch, var(--td-primary) 46%, var(--td-surface)); }
     .ops-heat__cell--none { color: var(--td-ink-2); font-weight: 400; }
 
     /* Message thread (support, report evidence). */
@@ -90,6 +94,15 @@
     .ops-decision:last-child { border-bottom: 0; }
     .ops-decision__what { margin: 0; font-weight: 650; font-size: var(--td-text-lg); }
     .ops-decision__buttons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--td-space-2); }
+
+    /* Panel groups beyond the ds 2:1 split: three equal columns, or two equal ones, on desk widths. */
+    @media (min-width: 64rem) {
+        .td-panels.ops-panels-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .td-panels.ops-panels-even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .ops-work--grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ops-work--grid > li { border-right: 1px solid var(--td-line); }
+        .ops-work--grid > li:last-child { border-bottom: 1px solid var(--td-line); }
+    }
 
     .ops-muted { color: var(--td-ink-2); }
     .ops-num { font-variant-numeric: tabular-nums; }

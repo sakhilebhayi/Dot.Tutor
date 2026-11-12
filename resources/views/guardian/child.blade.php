@@ -85,7 +85,7 @@
                             <li>@include('ops.partials.tag', ['text' => $n['kind'] === 'suspension' ? 'Suspension' : 'Warning', 'tone' => $n['kind'] === 'suspension' ? 'danger' : 'warning']) {{ $n['starts_at']?->timezone($tz)->format('j M Y') }}: {{ $n['reason'] }}</li>
                         @endforeach
                         @foreach ($c['reports'] as $r)
-                            <li>{{ $r['category_label'] }} · {{ $r['filed_by_child'] ? 'reported by '.$c['name'] : 'in '.$c['name'].'\'s conversations' }} · {{ \Illuminate\Support\Carbon::parse($r['created_at'])->timezone($tz)->format('j M Y') }} · {{ $r['status'] === 'open' ? 'being looked at' : $r['status'] }}</li>
+                            <li>{{ $r['category_label'] }} · {{ $r['filed_by_child'] ? 'reported by '.$c['name'] : 'in '.$c['name'].'\'s conversations' }} · {{ \Illuminate\Support\Carbon::parse($r['created_at'])->timezone($tz)->format('j M Y') }} · {{ ['open' => 'being looked at', 'escalated' => 'being looked at urgently', 'actioned' => 'acted on', 'dismissed' => 'closed, no action needed'][$r['status']] ?? $r['status'] }}</li>
                         @endforeach
                     </ul>
                 @endif

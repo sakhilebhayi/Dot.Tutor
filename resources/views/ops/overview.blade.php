@@ -15,13 +15,15 @@
                     {{ count($queues) === 0 ? 'Your role has no work queues on this screen.' : 'Every queue your role covers is empty right now.' }}
                 </x-td.state>
             @else
-                <ul class="ops-work">
+                <ul class="ops-work ops-work--grid">
                     @foreach ($waiting as $q)
                         <li>
                             <div>
                                 <p class="ops-work__title"><a href="{{ route($q['route']) }}">{{ $q['title'] }}</a></p>
                                 @if ($q['urgent'] > 0)
                                     <p class="ops-work__meta">@include('ops.partials.tag', ['text' => $q['urgent'].' '.$q['urgent_label'], 'tone' => $q['tone'] === 'neutral' ? 'warning' : $q['tone']])</p>
+                                @elseif ($q['key'] === 'child_safety')
+                                    <p class="ops-work__meta">@include('ops.partials.tag', ['text' => 'Respond within an hour', 'tone' => 'danger'])</p>
                                 @endif
                             </div>
                             <span class="ops-work__count">{{ $q['count'] }}</span>
@@ -34,7 +36,7 @@
         <x-td.stat-strip label="People, last {{ $d['window_days'] }} days" :items="[
             ['label' => 'Active learners', 'value' => $d['people']['learners_active'], 'hint' => 'with a lesson or a course enrolment'],
             ['label' => 'Active tutors', 'value' => $d['people']['tutors_active'], 'hint' => 'of '.$d['people']['tutors_approved'].' approved; '.$d['people']['tutors_pending'].' applications waiting'],
-            ['label' => 'Lessons held', 'value' => $d['lessons']['completed'], 'hint' => $d['lessons']['completion_rate'] === null ? 'no lessons reached their start time yet' : $d['lessons']['completion_rate'].'% of lessons held or missed took place'],
+            ['label' => 'Lessons held', 'value' => $d['lessons']['completed'], 'hint' => $d['lessons']['completion_rate'] === null ? 'no lesson has reached its start time yet' : $d['lessons']['completion_rate'].'% held; in the rest the learner did not come'],
             ['label' => 'Guardians linked', 'value' => $d['people']['guardians_linked'], 'hint' => 'with consent recorded'],
         ]" />
 
@@ -68,7 +70,7 @@
             ]" />
         @endif
 
-        <div class="td-panels">
+        <div class="td-panels ops-panels-3">
             <x-td.panel title="Teaching languages of approved tutors">
                 @include('ops.partials.bars', ['rows' => $d['languages']['teaching']->map(fn ($l) => ['label' => $l->native_name && $l->native_name !== $l->name ? $l->native_name.' ('.$l->name.')' : $l->name, 'value' => (int) $l->n, 'lang' => $l->code])->all(), 'label' => 'Tutors per teaching language', 'empty' => 'No approved tutor has listed a teaching language yet.'])
             </x-td.panel>

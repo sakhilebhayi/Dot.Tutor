@@ -10,7 +10,7 @@
     @if ($approval['amount_minor'] !== null)
         <p class="m-0">Cost: <strong>{{ \App\Domain\Money\Money::of((int) $approval['amount_minor'], $approval['currency'] ?: 'ZAR')->format() }}</strong>. Nothing is charged until you approve and someone pays.</p>
     @endif
-    <x-td.field label="Your reason (optional; {{ $childName }} sees it if you decline)" for="note-{{ $approval['id'] }}" optional><x-td.input name="note" id="note-{{ $approval['id'] }}" maxlength="500" /></x-td.field>
+    <x-td.field label="A reason for {{ $childName }}" hint="{{ $childName }} is told your decision and this reason." for="note-{{ $approval['id'] }}" optional><x-td.input name="note" id="note-{{ $approval['id'] }}" maxlength="500" hint /></x-td.field>
     <div class="ops-decision__buttons">
         <x-td.button type="submit" name="decision" value="approve" variant="primary" size="lg" block>Approve</x-td.button>
         <x-td.button type="submit" name="decision" value="decline" size="lg" block>Decline</x-td.button>
