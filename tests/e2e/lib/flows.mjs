@@ -160,3 +160,36 @@ export async function approveResource(resourceId) {
     await mctx.close();
     return one('select status, quality_tier from learning_resources where id = ?', [resourceId]);
 }
+
+/**
+ * Off-platform screening recorded as the safeguarding screens do it: one safeguarding officer records both required
+ * register checks with evidence for the tutor in /ops/safeguarding/screening, a second officer clears them (four eyes).
+ */
+export async function screenTutor(tutorUserId) {
+    const today = new Date().toISOString().slice(0, 10);
+    const a = makePerson('operator', 'OfficerA', { roles: ['safeguarding_officer'] });
+    const b = makePerson('operator', 'OfficerB', { roles: ['safeguarding_officer'] });
+    const actx = await newContext({ user: a, width: 1440 });
+    const ap = await actx.newPage();
+    for (const kind of ['child_protection_register', 'sex_offenders_register']) {
+        await ap.goto('/ops/safeguarding/screening');
+        const form = ap.locator(`form:has(#kind-${tutorUserId})`);
+        if (!(await form.locator(`#kind-${tutorUserId}`).isVisible())) await ap.locator(`details:has(#kind-${tutorUserId}) > summary`).click();
+        await form.locator(`#kind-${tutorUserId}`).selectOption(kind);
+        await form.locator(`#checked-${tutorUserId}`).fill(today);
+        await form.locator(`#ref-${tutorUserId}`).fill(`E2E-${kind.slice(0, 3).toUpperCase()}-${tutorUserId}`);
+        await form.locator(`#evidence-${tutorUserId}`).setInputFiles(fixtureFile('pdf'));
+        await Promise.all([ap.waitForLoadState('load'), form.locator('button[type=submit]').click()]);
+    }
+    await actx.close();
+    const pending = sql("select id from safety_screening_checks where user_id = ? and status = 'pending_review'", [tutorUserId]);
+    assert.equal(pending.length, 2, 'two checks recorded, waiting for a second officer');
+    const bctx = await newContext({ user: b, width: 1440 });
+    const bp = await bctx.newPage();
+    for (const c of pending) {
+        await bp.goto('/ops/safeguarding/screening');
+        await Promise.all([bp.waitForLoadState('load'), bp.locator(`form[action$="/screening/checks/${c.id}/review"] button[value=cleared]`).click()]);
+    }
+    await bctx.close();
+    return sql('select kind, status from safety_screening_checks where user_id = ?', [tutorUserId]);
+}
