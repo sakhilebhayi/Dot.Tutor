@@ -51,14 +51,17 @@ class PollCostTest extends TestCase
     {
         [, $lesson, $session] = $this->learnerInLesson();
         $this->poll($session, $lesson)->assertOk(); // warm: the admission check is cached for 30 s after this
+        // The browser polls every 2 s. Without moving the clock, the attendee's last_seen_at sometimes lands in the
+        // same second as the warm poll and Eloquent skips that update, so the write count flickered between 2 and 3.
+        $this->travel(2)->seconds();
 
         [$response, $statements, $writes] = $this->measure(fn () => $this->poll($session, $lesson));
 
         $response->assertOk();
-        // session 1, user 1, lesson 1, interface language 1, classroom 1, attendee 2, admission cache 1, attendance
-        // touch 1, roster sweep 1, signal purge 1, roster 2, signals 1, chat 1, board 1, files 1 = about 18.
+        // session 1, user 1, lesson 1, interface language 1, classroom 1, attendee 2, admission cache 1, attendee
+        // touch 1, attendance touch 1, roster sweep 1, signal purge 1, roster 2, signals 1, chat 1, board 1, files 1.
         $this->assertLessThanOrEqual(20, $statements, 'statements in a calm classroom poll');
-        $this->assertLessThanOrEqual(2, $writes, 'attendance touch and the expired-signal purge; the session row is not rewritten');
+        $this->assertLessThanOrEqual(3, $writes, 'attendee touch, attendance touch and the expired-signal purge; the session row is not rewritten');
     }
 
     public function test_polls_rewrite_the_session_row_at_most_once_a_minute(): void
