@@ -123,5 +123,6 @@ require __DIR__.'/tutor/classroom.php';
 require __DIR__.'/tutor/comms.php';
 require __DIR__.'/tutor/community.php';
 require __DIR__.'/tutor/student.php';
+require __DIR__.'/tutor/security.php';
 require __DIR__.'/tutor/ops.php';
 require __DIR__.'/tutor/teach.php';

@@ -4,12 +4,17 @@ namespace App\Domain\Security;
 
 use App\Domain\Safety\Services\AccountStanding;
 use App\Domain\Safety\Services\ContactRedactor;
+use App\Domain\Security\Console\PrivacyPurge;
 use App\Domain\Security\Http\Middleware\RequireRecentSignIn;
 use App\Models\TutorSession;
 use App\Models\User;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -20,7 +25,19 @@ class TutorSecurityServiceProvider extends ServiceProvider
 {
     public function boot(Router $router): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([PrivacyPurge::class]);
+        }
+
+        // The retention schedule (docs/R47_PRIVACY.md section 5); the host's cron runs schedule:run.
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule->command('tutor:privacy-purge')->dailyAt('03:50')->timezone('UTC')->withoutOverlapping()->onOneServer();
+        });
+
         $router->aliasMiddleware('tutor.recent-auth', RequireRecentSignIn::class);
+
+        // Personal-data export: a heavy read, a few times an hour.
+        RateLimiter::for('tutor-data-export', fn (Request $request) => Limit::perHour(5)->by('data-export:'.$request->user()?->id));
 
         // Free text on a lesson (what the learner wants help with, where to meet) reaches the tutor before a guardian
         // has approved anything and a group lesson's note reaches every seat holder: contact details are hidden when
