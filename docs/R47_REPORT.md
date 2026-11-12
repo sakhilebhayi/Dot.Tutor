@@ -1,6 +1,6 @@
 # R-47 Dot.Tutor: final implementation report
 
-For the owner. Written 2026-11-12 from the trunk `feat/r47-tutor`; final numbers are from `2b3e2d8`, the merge of the last polish branch. It follows section 27 of the brief (`docs/R47_BRIEF.md`) item by item, in order, and then adds the definition of done, external services, the jury, owner steps and the deployment record.
+For the owner. Written 2026-11-12 from the trunk `feat/r47-tutor`; final numbers are from `e4d7d64`, after the polish wave and the fix round. It follows section 27 of the brief (`docs/R47_BRIEF.md`) item by item, in order, and then adds the definition of done, external services, the jury, owner steps and the deployment record.
 
 Every claim points at its evidence: a test file, a domain document section, or a browser end-to-end spec in `tests/e2e/specs`. Where the evidence is weaker than a test or a browser check, the item is marked Partial at most. Nothing here is a legal compliance claim.
 
@@ -14,7 +14,7 @@ Every claim points at its evidence: a test file, a domain document section, or a
 
 ## At a glance
 
-- The app was a booking tool with 293 tests and no rooms, courses, payments, languages, child safety or matching. It is now one platform with 15 domains under `app/Domain`, 26 new migrations (all additive), 396 recorded decisions and 1,016 PHP tests (1,009 pass, 7 skipped, 0 fail on both SQLite and PostgreSQL).
+- The app was a booking tool with 293 tests and no rooms, courses, payments, languages, child safety or matching. It is now one platform with 15 domains under `app/Domain`, 26 new migrations (all additive), 418 recorded decisions and 1,034 PHP tests (1,027 pass, 7 skipped, 0 fail on both SQLite and PostgreSQL).
 - All six brief journeys (student, tutor, course creator, learning community, multilingual, safety) pass in a real Chrome against stubs of Paystack, InfoDot, Anthropic and SMTP, with the internet refused. Nine failure scenarios pass too.
 - Nothing has been run against a live Paystack account, a real Anthropic key, a real mail server, a TURN relay, a real phone, Safari or Firefox, or a screen reader.
 - The site is safe to deploy in its honest "off" state: free lessons, courses, library, rooms and the classroom work at once. Paid lessons need Paystack keys, mail and tutor offerings first (owner steps, section 29).
@@ -371,19 +371,19 @@ Estimated host capacity: about 30 one-to-one lessons at once per CPU core (secti
 
 ## 18. Test results
 
-Final run by the coordinator on the integrated trunk `2b3e2d8` (all waves and all three polish branches merged), 2026-11-12.
+Final run by the coordinator on the integrated trunk `e4d7d64` (all waves, the polish wave and the fix round merged), 2026-11-13.
 
 | Suite | Result | Where recorded |
 |---|---|---|
-| PHP, SQLite in memory | **1,016 tests, 1,009 pass, 7 skipped, 0 fail** (baseline 293 / 286 / 7). The 7 skips are Jetstream features turned off (registration, email verification, team invitations, 2FA settings) | coordinator run on `2b3e2d8` |
-| PHP, PostgreSQL 16 (`bin/test-pgsql.sh`, throwaway database) | **1,016 tests, 1,009 pass, 7 skipped, 0 fail** | coordinator run on `2b3e2d8` |
-| JavaScript (`node --test tests/js/*.test.mjs`, 7 files) | **18 pass, 0 fail** | coordinator run on `2b3e2d8` |
-| Build and caches | `npm run build`, `php artisan view:cache` and `route:cache` pass | coordinator run on `2b3e2d8` |
-| Browser end to end (`node tests/e2e/run.mjs`) | **All 9 spec files pass**: 6 journeys with 53 evidenced steps, 9 failure scenarios, the two-browser classroom (16 checks), the route sweep (266 GET routes, 249 swept, 13 roles at 390 and 1440 px, 6,474 page loads, 0 problems; 17 skipped for want of a parameter value). No outbound internet attempt | coordinator run on `2b3e2d8`; method in `docs/R47_QA.md` |
+| PHP, SQLite in memory | **1,034 tests, 1,027 pass, 7 skipped, 0 fail** (baseline 293 / 286 / 7). The 7 skips are Jetstream features turned off (registration, email verification, team invitations, 2FA settings) | coordinator run on `e4d7d64` |
+| PHP, PostgreSQL 16 (`bin/test-pgsql.sh`, throwaway database) | **1,034 tests, 1,027 pass, 7 skipped, 0 fail** | coordinator run on `e4d7d64` |
+| JavaScript (`node --test tests/js/*.test.mjs`) | **26 pass, 0 fail** | coordinator run on `e4d7d64` |
+| Build and caches | `npm run build`, `php artisan view:cache` and `route:cache` pass | coordinator run on `e4d7d64` |
+| Browser end to end (`node tests/e2e/run.mjs`) | **All 9 spec files pass**: 6 journeys with 53 evidenced steps, 9 failure scenarios, the two-browser classroom (16 checks), the route sweep (266 GET routes, 249 swept, 13 roles at 390 and 1440 px, 6,474 page loads, 0 problems; 17 skipped for want of a parameter value). No outbound internet attempt | coordinator run on `e4d7d64`; method in `docs/R47_QA.md` |
 | Two-browser WebRTC | Peer connections "connected", video and audio both ways, chat, whiteboard, notes, attendance | E2E 08 |
 | Accessibility (axe, real Chrome) | 910 page states, **0 serious or critical** (was 81 states, 1,746 nodes); keyboard 185 checks at 390 and 161 at 1440, 0 failed; reduced motion 22 checks, 0 failed; young step at AAA contrast, 0 violations | `docs/R47_A11Y.md` section 2 |
 | Upgrade rehearsal on a populated pre-R-47 database | PASS on SQLite and PostgreSQL, 60+ checks each: no row lost, cents exact, subject ids kept | `docs/R47_OPERATIONS.md` section 8 |
-| Signed-in production-like smoke | PASS, 96 checks | same |
+| Signed-in production-like smoke (`tests/Support/signed-in-smoke.sh`) | PASS, 101 checks (coordinator run on `e4d7d64`) | `docs/R47_OPERATIONS.md` section 8 |
 | Backup and restore drill | PASS on a fake host, both engines; fails when a lesson file is missing, as it should | same |
 | Concurrency (forked processes) | Same slot, triple tap, last seat, enrolment, order key, four simultaneous webhooks: one winner each, both engines | `ConcurrencyInvariantsTest` |
 | CI workflow | `actionlint` clean; each job run locally. **Not yet run on GitHub** | `docs/R47_OPERATIONS.md` section 8 |
@@ -538,7 +538,7 @@ In order of value to learners and tutors:
 
 - 113 commits on the trunk between 2026-11-10 and 2026-11-12; 1,294 files changed against the last `main` (`2aa8daf`).
 - Waves: 1 (design system, academic, marketplace, safety, money, learning), 2 (community, classroom, ai, comms, student UI, tutor UI, ops and guardian UI, integration), 3 (deploy, security, QA, perf and accessibility), then polish.
-- 396 decisions recorded in `docs/R47_DECISIONS.md`.
+- 418 decisions recorded in `docs/R47_DECISIONS.md`.
 - Owner runbook: `docs/R47_OPERATIONS.md`. Personal information record: `docs/R47_PRIVACY.md`.
 
 ## 26. Jury
@@ -579,7 +579,32 @@ Left open from the critics' lists (each recorded in the polish docs):
 - Order lines saved before the time-zone fix still show the UTC time; correcting old rows is an owner decision.
 - Legal text needs a lawyer's review before launch.
 
-**Round 2 jury:** run after the release on a fresh capture of the final trunk with new critics that never saw round 1. Scores are recorded in the deployment follow-up below.
+**Round 2 jury.** A fresh capture of the polished trunk (75 screens at 1440 and 390 px, made from the E2E journeys' own data) went to two new critics who never saw round 1. Cards: session scratchpad `tutor-jury-r2/critic-A.md` and `critic-B.md`.
+
+| Critic | Scope | Round 1 | Round 2 | Biggest moves |
+|---|---|---|---|---|
+| A | Public, learner, young learner, guardian | 5.95 | **6.39** | Guardian usability 4 to 7, SEO 5 to 8, Markup 4 to 8, Accessibility 7 to 8 |
+| B | Public, tutor workspace, classroom, operations | 6.1 | **6.1** | Tutor usability 6 to 7, SEO 5 to 8, Markup 4 to 8, Accessibility 6.5 to 8, Responsive 5 to 7 |
+
+The public-page audit went from 7 FAIL and 44 WARN to 0 and 0.
+
+**Fix round after round 2.** Both critics independently found a few real defects, which two agents fixed before release (`docs/R47_FIXES.md`, D-2300 to D-2312; `docs/R47_POLISH_TEACH.md`, D-2400 to D-2408):
+- Public pages had no menu on phones: there is now an accessible Menu button.
+- The sign-in page offered only email and password: "Continue with InfoDot" now links to InfoDot's real `/go/tutor` launcher. It shows only once `INFODOT_LAUNCH_URL` and the service secret are set (owner step 8).
+- A storefront said "Not yet verified" above "Verified by Dot.Tutor": one truthful state everywhere, including "Qualification checked, level pending", and operators are prompted to set the level.
+- The old finance desk showed UTC as local time (21:33 against 23:33): `/money/ops` now forwards to the operations payments screens, and every operations time uses the reader's zone.
+- Booking ignored the hours the learner asked for: the search window carries into booking, times are grouped Morning / Afternoon / Evening, and young learners default to after school.
+- Other fixes:
+  - Notifications marked every row unread.
+  - Receipts cut off the paid column on phones.
+  - Guardian deadlines still read as promises after they had passed.
+  - The incident page lacked the Hide and Suspend actions its queue told officers to take.
+  - Tutor workspace pages rendered at two sizes.
+  - The operations rail was clipped at 900 px.
+  - Classroom opening times had no date.
+  - The audit history showed raw IDs.
+
+These fixes have not been scored by a third jury.
 
 ## 28. Deployment
 
@@ -601,7 +626,7 @@ Do them in this order. Each `.env` change is followed by `php artisan config:cac
 
 6. **Read the deploy log** for `== Database restore point`, the `academic:sync` lines, `Preflight OK` and `== Smoke check passed.` Then run `php artisan tutor:preflight` and read every WARN.
 7. **Become the operator.** Sign in once through InfoDot, then run `php artisan ops:grant <your email> --role=admin`. Give every other operator the narrowest role on the team page. Name at least two safeguarding officers (screening needs four eyes), or set `SAFETY_SCREENING_FOUR_EYES=false` and record why.
-8. **InfoDot SSO secrets.** `INFODOT_SERVICE_SECRET` in this app must equal `ECOSYSTEM_SECRET_TUTOR` in InfoDot's `.env`, and `tutor` must be marked live in InfoDot's registry. Until then nobody can sign in.
+8. **InfoDot SSO secrets.** `INFODOT_SERVICE_SECRET` in this app must equal `ECOSYSTEM_SECRET_TUTOR` in InfoDot's `.env`, and `tutor` must be marked live in InfoDot's registry. Until then nobody can sign in. Also set `INFODOT_LAUNCH_URL=https://infodot.co.za/go/tutor` so the sign-in page shows "Continue with InfoDot" (hidden until it is set).
 9. **Mail (SMTP).** `MAIL_MAILER=smtp`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS=no-reply@infodot.co.za`. Test by inviting yourself as a guardian from a test learner account.
 10. **Paystack, test mode.** Set the webhook URL `https://tutor.infodot.co.za/api/tutor/money/webhooks/paystack` in the Paystack dashboard. Put `PAYSTACK_SECRET_KEY=sk_test_...` and `PAYSTACK_PUBLIC_KEY=pk_test_...` in the host `.env`. Run one whole paid journey with test cards, and one for a minor (it waits for the guardian, then the payment waits for the guardian).
 11. **Money settings, then live.** Decide `MONEY_COMMISSION_PERCENT` (15 is a placeholder), refund windows, the lesson hold, payout day and minimum, and whether tutors carry Paystack's fee. Fill in `MONEY_OPERATOR_LEGAL_NAME`, `MONEY_OPERATOR_REGISTRATION`, `MONEY_OPERATOR_ADDRESS`, `MONEY_SUPPORT_EMAIL`, and VAT only if registered. Then set the live keys **and** `PAYSTACK_ALLOW_LIVE=true`. Leave `MONEY_PAYSTACK_TRANSFERS=false` unless you have a Registered Business with transfers enabled.
@@ -615,7 +640,7 @@ Do them in this order. Each `.env` change is followed by `php artisan config:cac
 
 ### Reviews by people (before you promote the platform)
 
-19. **Legal review** of the terms of service and privacy notice (the current terms describe "a tutoring session marketplace", say tutors are not vetted, and name the operator differently from the footer), the guardian consent text, the recording consent, the academic integrity policy, the CPA and ECT cooling-off position for lesson packages, and the twelve questions in `docs/R47_RESEARCH.md`.
+19. **Legal review** of the terms of service, privacy notice and cookie notice (rewritten in the polish wave to describe only what the product does, but not reviewed by a lawyer; confirm the operator's legal name), the guardian consent text, the recording consent, the academic integrity policy, the CPA and ECT cooling-off position for lesson packages, and the twelve questions in `docs/R47_RESEARCH.md`.
 20. **Native-speaker review** of the Afrikaans strings (AI-drafted), and commission isiZulu, isiXhosa, Sepedi, Setswana and Sesotho interface translations first. Record each review in `lang/locales.php`.
 21. **POPIA items** from `docs/R47_PRIVACY.md` section 6: name an information officer and write the PAIA manual; publish a privacy notice that matches the personal-information record (including that backups keep erased data for 14 days); sign or record processor agreements with Paystack, Anthropic, InfoDot hosting and the Google STUN choice; decide the POPIA basis for sending minors' questions to a US processor before switching AI on; set retention periods for money records (SARS, 5 years after the tax year) and safeguarding records; decide the route and response time for safeguarding-record access requests; decide on guardian identity verification; write a breach-notification procedure (s22).
 22. **Academic editor review** of the seeded curricula, levels, 71 subjects, about 880 offerings, topics and the IEB "Advanced Programme Mathematics" name in `/ops/academic`. Switch off what you do not serve; add Grade R or other electives if needed.
