@@ -41,6 +41,9 @@
                     </form>
                 </details>
             @endif
+            @if (in_array($status, [\App\Enums\SessionStatus::Confirmed, \App\Enums\SessionStatus::InProgress], true) && \Illuminate\Support\Facades\Route::has('classroom.show'))
+                <x-td.button href="{{ route('classroom.show', $s) }}" size="sm" icon="video">Classroom<span class="td-sr"> for {{ $who }} {{ $start->format('j M H:i') }}</span></x-td.button>
+            @endif
             @if ($canStart)
                 <form method="POST" action="{{ route('teach.bookings.act', [$s, 'start']) }}">@csrf<x-td.button type="submit" variant="primary" size="sm" icon="arrow-right">Start lesson</x-td.button></form>
             @endif
