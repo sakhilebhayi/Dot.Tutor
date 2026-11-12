@@ -101,7 +101,10 @@ function value(uri, name) {
 const fill = (uri) => {
     let miss = false;
     const url = '/' + uri.replace(/\{(\w+)(\?)?\}/g, (_, k, optional) => { const v = value(uri, k); if (v == null) { if (optional) return ''; miss = true; return 'x'; } return String(v); });
-    return miss ? null : url.replace(/\/$/, '') || '/';
+    if (miss) return null;
+    const clean = url.replace(/\/$/, '') || '/';
+    // The academic side-by-side translation is a JSON read that requires the language asked for.
+    return uri.startsWith('translations/') ? `${clean}?locale=en` : clean;
 };
 
 async function contextFor(role, width) {
