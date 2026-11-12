@@ -100,7 +100,9 @@ rules above.
   `learning_assignments` with learning's rules (the tutor's own tutor assessments with questions, learners they teach,
   learning's `SafeguardingCheck` with `assign_work`). Learning has no assignment service, only a controller, so the rules are
   mirrored (D-810). A learner in this lesson counts as taught (learning's own "has taught" read misses group seats).
-- **Reminders and notifications:** the classroom sends none. It emits events for the comms domain (D-812):
+- **Reminders and notifications:** the classroom sends none. The comms domain already sends lesson reminders 24 h and 1 h
+  before each confirmed lesson from the bookings themselves. The classroom emits events that comms does not listen to yet
+  (an integration item: "the classroom is open", "your tutor published a summary", "new follow-up work") (D-812):
   `LessonStartingSoon` (once per lesson, from `classroom:sweep`, 15 minutes ahead, with the classroom URL),
   `ClassroomOpened` (first join), `ClassroomEnded` (`tutor_ended` or `closed`), `LessonSummaryPublished` (learner ids),
   `FollowUpAssigned`.
@@ -144,7 +146,7 @@ retention policy), a retention period, and a lawyer's review of recording minors
 
 ## 8. Verification
 
-- `php artisan test --compact`: 745 tests, 738 pass, 7 skipped (trunk at branch point 715 / 708 / 7; +30 classroom tests).
+- `php artisan test --compact`: before the final trunk merge 745 tests, 738 pass, 7 skipped (branch point 715 / 708 / 7; +30 classroom tests); after merging trunk with comms and community, 840 tests, 833 pass, 7 skipped, 0 fail.
 - `node --test tests/js/classroom-board.test.mjs`: 3 pass.
 - Two-browser Chrome check (`tests/e2e/classroom/run.mjs`, Google Chrome via playwright-core 1.49.1, fake camera and
   microphone, tutor at 1440 x 1000, learner at 390 x 844), 19 of 19 on 2026-11-10 against the local server on port 8707:
