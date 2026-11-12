@@ -194,11 +194,24 @@ if ($command === 'setup') {
     $matric = User::query()->where('email', 'demo.matric@example.test')->firstOrFail();
     $firstSession = maxId('tutor_sessions');
     $sessions = [];
+    // One lesson per tutor per hour (the demo seeders' lessons included): the world never double-books a tutor, so
+    // the invariants check (TutorInvariants) can judge what the load run did.
+    $taken = [];
+    foreach (DB::table('tutor_sessions')->get(['tutor_profile_id', 'starts_at', 'duration_minutes']) as $existing) {
+        $from = (int) floor(strtotime($existing->starts_at.' UTC') / 3600);
+        for ($h = $from; $h < $from + (int) ceil($existing->duration_minutes / 60) + 1; $h++) {
+            $taken[$existing->tutor_profile_id.':'.$h] = true;
+        }
+    }
     for ($i = 0; $i < 24000; $i++) {
         $isWorkspace = $i % 10 === 0;
         $tid = $isWorkspace ? $workspace->id : $tutorIds[$i % count($tutorIds)];
         $learner = $i % 97 === 0 ? $matric->id : $learnerIds[($i * 7) % count($learnerIds)];
         $start = $now->copy()->subDays(180)->addMinutes(($i * 617) % (201 * 24 * 60))->startOfHour();
+        while (isset($taken[$tid.':'.intdiv($start->getTimestamp(), 3600)]) || isset($taken[$tid.':'.(intdiv($start->getTimestamp(), 3600) - 1)])) {
+            $start = $start->addHours(2);
+        }
+        $taken[$tid.':'.intdiv($start->getTimestamp(), 3600)] = true;
         $past = $start->isPast();
         $status = $past ? (['completed', 'completed', 'completed', 'completed', 'cancelled', 'no_show'][$i % 6]) : (['confirmed', 'confirmed', 'pending', 'awaiting_payment'][$i % 4]);
         $sessions[] = ['tutor_profile_id' => $tid, 'student_id' => $learner, 'subject_id' => $maths, 'status' => $status, 'delivery' => 'online', 'starts_at' => $start->toDateTimeString(),
