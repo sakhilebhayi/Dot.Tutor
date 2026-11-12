@@ -473,3 +473,129 @@
         }
     }
 }
+
+/* Fix round (fix-public, D-2309): a match card in two rows of about 200 px. Row one: who, verification, price and
+   the action; row two: what sets this tutor apart, the languages they teach in, and the next open times as links into
+   booking. The young step's extra filters wait behind "More choices" (D-2305). */
+@layer components {
+    .st-match {
+        gap: var(--td-space-3);
+        padding: var(--td-space-4) var(--td-space-5);
+    }
+
+    .st-match__head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--td-space-3);
+        align-items: start;
+    }
+
+    .st-match__who {
+        display: grid;
+        gap: var(--td-space-1);
+        min-width: 0;
+    }
+
+    .st-match__headline {
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .st-match__act {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--td-space-2) var(--td-space-4);
+    }
+
+    .st-match__body {
+        display: grid;
+        gap: var(--td-space-3);
+        align-items: start;
+    }
+
+    .st-match__facts,
+    .st-match__times {
+        display: grid;
+        gap: var(--td-space-2);
+        align-content: start;
+    }
+
+    .st-match .td-reasons {
+        gap: var(--td-space-1);
+    }
+
+    @media (min-width: 48rem) {
+        .st-match__head {
+            grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+
+        .st-match__act {
+            grid-column: auto;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: start;
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .st-match__body {
+            grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 4fr);
+            column-gap: var(--td-space-5);
+        }
+    }
+
+    .st-slotchips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .st-slotchip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.25rem;
+        padding: 0 var(--td-space-3);
+        border: 1px solid var(--td-edge);
+        border-radius: var(--td-radius);
+        background: var(--td-surface);
+        color: var(--td-ink);
+        font-size: var(--td-text-sm);
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: border-color var(--td-dur-micro) var(--td-ease-out), transform var(--td-dur-micro) var(--td-ease-out);
+    }
+
+    a.st-slotchip:hover {
+        border-color: var(--td-primary);
+        transform: translateY(-1px);
+    }
+
+    a.st-slotchip:focus-visible {
+        outline: 2.5px solid var(--td-focus);
+        outline-offset: 2px;
+    }
+
+    .st-slotchip--plain {
+        border-style: dashed;
+        font-weight: 400;
+    }
+
+    .st-more {
+        margin-top: var(--td-space-1);
+    }
+
+    .st-more__body {
+        margin-top: var(--td-space-3);
+    }
+}

@@ -31,7 +31,7 @@
         @csrf
         <label class="st-slip__label" id="find-need-label" for="need">{{ $young ? 'What do you need help with?' : 'In your own words' }}</label>
         <div class="st-slip__row">
-            <x-td.input name="need" :value="$form['need']" maxlength="500" autocomplete="off" placeholder="Grade 11 Maths in isiZulu, after school, under R250" />
+            <x-td.input name="need" :value="$form['need']" maxlength="500" autocomplete="off" :placeholder="$young ? 'Maths, '.($learnerLevelName ?? 'my grade') : 'Grade 11 Maths in isiZulu, after school, under R250'" />
             <x-td.button type="submit" variant="primary" icon="search">Read it</x-td.button>
         </div>
         @error('need')<p class="td-error"><x-td.icon name="circle-alert" />{{ $message }}</p>@enderror
@@ -89,27 +89,43 @@
                     @endif
                     <div class="td-panels">
                         @foreach ($rows as $row)
-                            @php $tutor = $row['tutor']; @endphp
-                            <article class="st-record" aria-labelledby="tutor-{{ $tutor['id'] }}">
-                                <div class="st-record__head">
+                            @php
+                                $tutor = $row['tutor'];
+                                // "Next open times" open the booking page with that time chosen and the learner's window
+                                // kept (fix round D-2309). The times were found at the search's lesson length, so they
+                                // go to the tutor's first lesson-type offering; a guest signs in on the way.
+                                $bookOffering = collect($row['offerings'] ?? [])->first(fn ($o) => in_array($o['type'], ['one_to_one', 'consultation', 'homework_help', 'exam_prep', 'revision'], true));
+                                $windowQuery = array_filter([
+                                    'weekdays' => $form['weekdays'] === [] ? null : implode(',', $form['weekdays']),
+                                    'from_time' => $form['from_time'] !== '' ? $form['from_time'] : null,
+                                    'to_time' => $form['to_time'] !== '' ? $form['to_time'] : null,
+                                ]);
+                                $own = array_values(array_filter($row['lines'], fn ($l) => ! in_array($l['text'], $sharedTexts, true)));
+                            @endphp
+                            <article class="st-record st-match" aria-labelledby="tutor-{{ $tutor['id'] }}">
+                                <div class="st-match__head">
                                     <x-td.avatar :name="$tutor['name']" :src="$tutor['has_photo'] ? route('marketplace.tutors.photo', $tutor['id']) : null" decorative />
-                                    <div class="st-stack st-stack--tight">
+                                    <div class="st-match__who">
                                         <h3 class="st-record__name" id="tutor-{{ $tutor['id'] }}"><a href="{{ route('marketplace.tutors.show', $tutor['id']) }}">{{ $tutor['name'] }}</a></h3>
-                                        @if ($tutor['headline'])<p class="st-muted" style="margin:0">{{ $tutor['headline'] }}</p>@endif
+                                        @if ($tutor['headline'])<p class="st-muted st-match__headline">{{ $tutor['headline'] }}</p>@endif
                                         <div class="st-inline">@include('student.partials.verification', ['verification' => $tutor['verification']])</div>
                                     </div>
-                                    @if ($row['price'])
-                                        <p class="st-record__price" style="margin:0"><x-td.money :minor="$row['price']['per_hour_minor']" :currency="$row['price']['currency']" per="hour" /></p>
-                                    @endif
+                                    <div class="st-match__act">
+                                        @if ($row['price'])
+                                            <p class="st-record__price" style="margin:0"><x-td.money :minor="$row['price']['per_hour_minor']" :currency="$row['price']['currency']" per="hour" /></p>
+                                        @endif
+                                        <x-td.button variant="primary" size="sm" :href="route('marketplace.tutors.show', $tutor['id'])" icon-end="arrow-right">{{ $guest ? 'See profile and prices' : 'See profile and book' }}</x-td.button>
+                                    </div>
                                 </div>
-                                <div class="st-record__body">
-                                    @php $own = array_values(array_filter($row['lines'], fn ($l) => ! in_array($l['text'], $sharedTexts, true))); @endphp
-                                    @if ($own !== [])
-                                        <x-td.match-reasons :reasons="$own" label="Why {{ $tutor['name'] }} fits" />
-                                    @else
-                                        <p class="st-small" style="margin:0">Fits on everything above.</p>
-                                    @endif
-                                    <div class="st-stack">
+                                <div class="st-match__body">
+                                    <div class="st-match__why">
+                                        @if ($own !== [])
+                                            <x-td.match-reasons :reasons="$own" label="Why {{ $tutor['name'] }} fits" />
+                                        @else
+                                            <p class="st-small" style="margin:0">Fits on everything above.</p>
+                                        @endif
+                                    </div>
+                                    <div class="st-match__facts">
                                         @if ($row['teaching_languages'] !== [])
                                             <div class="st-chipset" aria-label="Teaches in">
                                                 @foreach ($row['teaching_languages'] as $lang)
@@ -118,20 +134,23 @@
                                             </div>
                                         @endif
                                         @if ($row['formats'] !== [])<p class="st-small" style="margin:0">{{ implode(' · ', $row['formats']) }}</p>@endif
-                                        @if ($row['next_slots'] !== [])
-                                            <div>
-                                                <p class="st-small" style="margin:0 0 var(--td-space-1)">Next open {{ \Illuminate\Support\Str::plural('time', count($row['next_slots'])) }}</p>
-                                                <ul class="st-stack st-stack--tight" style="margin:0;padding:0;list-style:none">
-                                                    @foreach ($row['next_slots'] as $slot)
-                                                        <li><time datetime="{{ $slot }}">{{ Times::when($slot) }}</time></li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-                                        <div class="st-inline">
-                                            <x-td.button variant="primary" :href="route('marketplace.tutors.show', $tutor['id'])" icon-end="arrow-right">{{ $guest ? 'See profile and prices' : 'See profile and book' }}</x-td.button>
-                                        </div>
                                     </div>
+                                    @if ($row['next_slots'] !== [])
+                                        <div class="st-match__times">
+                                            <p class="st-small" style="margin:0" id="next-{{ $tutor['id'] }}">Next open {{ \Illuminate\Support\Str::plural('time', count($row['next_slots'])) }}</p>
+                                            <ul class="st-slotchips" aria-labelledby="next-{{ $tutor['id'] }}">
+                                                @foreach ($row['next_slots'] as $slot)
+                                                    <li>
+                                                        @if ($bookOffering)
+                                                            <a class="st-slotchip" href="{{ route('learn.book', ['offering' => $bookOffering['id'], 'at' => $slot] + $windowQuery) }}" aria-label="{{ $guest ? 'Sign in to book' : 'Book' }} {{ Times::when($slot) }} with {{ $tutor['name'] }}"><time datetime="{{ $slot }}">{{ Times::when($slot) }}</time></a>
+                                                        @else
+                                                            <time class="st-slotchip st-slotchip--plain" datetime="{{ $slot }}">{{ Times::when($slot) }}</time>
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
                                 <details class="st-young-hide st-disclosure">
                                     <summary class="td-link"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span>How this was ranked</span></summary>
@@ -162,7 +181,7 @@
 
         <aside aria-labelledby="filters-title">
             <details class="td-panel st-disclosure" @if (! $result || $count === 0) open @endif style="padding:0">
-                <summary class="td-panel__head"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span class="st-disclosure__label"><h2 class="td-panel__title" id="filters-title">{{ $result ? 'Change what you asked for' : 'What you need' }}</h2><span class="st-disclosure__hint">Subject, level, teaching language, budget, days and times</span></span></summary>
+                <summary class="td-panel__head"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span class="st-disclosure__label"><h2 class="td-panel__title" id="filters-title">{{ $result ? 'Change what you asked for' : 'What you need' }}</h2><span class="st-disclosure__hint">{{ $young ? 'Subject, grade and language' : 'Subject, level, teaching language, budget, days and times' }}</span></span></summary>
                 <form method="GET" action="{{ route('match.search') }}" class="st-form td-panel__body">
                     <x-td.field label="Subject" for="subject_id">
                         <x-td.select name="subject_id" required :value="$form['subject_id']" placeholder="Choose a subject"
@@ -171,15 +190,38 @@
                     <x-td.field label="Grade or level" for="level_id" optional>
                         <x-td.select name="level_id" :value="$form['level_id']" placeholder="Any level" :options="$levelOptions" />
                     </x-td.field>
+                    @php
+                        // The young step (fix round D-2305): subject, grade and the child's own languages up front; every
+                        // other filter waits behind "More choices" (still sent with the form, so nothing is lost).
+                        $mainLanguages = $young && $form['languages'] !== []
+                            ? $languageOptions->filter(fn ($l) => in_array($l->code, $form['languages'], true))
+                            : $languageOptions;
+                        $moreLanguages = $languageOptions->diffKeys($mainLanguages);
+                    @endphp
                     <fieldset>
-                        <legend>Taught in <span class="td-label__optional">(most preferred first)</span></legend>
+                        <legend>{{ $young ? 'Help in' : 'Taught in' }} <span class="td-label__optional">{{ $young ? '(your languages)' : '(most preferred first)' }}</span></legend>
                         <div class="st-chipset">
-                            @foreach ($languageOptions as $language)
+                            @foreach ($mainLanguages as $language)
                                 <label><input type="checkbox" name="languages[]" value="{{ $language->code }}" @checked(in_array($language->code, $form['languages'], true))> <span lang="{{ $language->code }}">{{ $language->name_native }}</span></label>
                             @endforeach
                         </div>
-                        <p class="td-hint" style="margin:var(--td-space-2) 0 0">Tutors are matched on the languages they teach in, not on the language of this website.</p>
+                        @unless ($young)<p class="td-hint" style="margin:var(--td-space-2) 0 0">Tutors are matched on the languages they teach in, not on the language of this website.</p>@endunless
                     </fieldset>
+                    @if ($young)
+                    <details class="st-disclosure st-more">
+                        <summary class="td-link"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><span>More choices</span></summary>
+                        <div class="st-form st-more__body">
+                    @endif
+                    @if ($moreLanguages->isNotEmpty())
+                        <fieldset>
+                            <legend>Other languages</legend>
+                            <div class="st-chipset">
+                                @foreach ($moreLanguages as $language)
+                                    <label><input type="checkbox" name="languages[]" value="{{ $language->code }}" @checked(in_array($language->code, $form['languages'], true))> <span lang="{{ $language->code }}">{{ $language->name_native }}</span></label>
+                                @endforeach
+                            </div>
+                        </fieldset>
+                    @endif
                     <x-td.check name="bilingual_ok" value="1" :checked="$form['bilingual_ok']">Bilingual lessons are fine (for example, isiZulu with English terms)</x-td.check>
                     <x-td.field label="Kind of help" for="help_type">
                         <x-td.select name="help_type" :value="$form['help_type']" placeholder="Any" :options="collect($helpTypes)->mapWithKeys(fn ($t) => [$t->value => $t->label()])->all()" />
@@ -207,6 +249,10 @@
                         <x-td.field label="From" for="from_time" optional><x-td.input type="time" name="from_time" :value="$form['from_time']" /></x-td.field>
                         <x-td.field label="Until" for="to_time" optional><x-td.input type="time" name="to_time" :value="$form['to_time']" /></x-td.field>
                     </div>
+                    @if ($young)
+                        </div>
+                    </details>
+                    @endif
                     <input type="hidden" name="need" value="{{ $form['need'] }}">
                     <div class="st-form__actions"><x-td.button type="submit" variant="primary" icon="search">Show tutors</x-td.button></div>
                 </form>

@@ -65,6 +65,8 @@ class FindComposer
             'needNotes' => session('student.need_notes', []),
             'foundSubject' => session('student.found_subject'),
             'rows' => $result ? $this->rows($result, $form['languages']) : [],
+            // The young step's hint names the child's own grade (fix round D-2305), as the home screen does.
+            'learnerLevelName' => $profile?->level?->name,
         ]);
     }
 

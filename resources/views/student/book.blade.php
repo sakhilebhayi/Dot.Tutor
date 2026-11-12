@@ -197,7 +197,8 @@
         </div>
 
         <aside class="st-stack st-sticky" aria-label="Price and terms">
-            <x-td.panel title="What you pay">
+            {{-- A guardian approves and pays for a minor's booking (fix round D-2305). --}}
+            <x-td.panel :title="$ctx['minor'] ? 'What your parent or guardian pays' : 'What you pay'">
                 <div class="st-stack">
                     @if ($usablePackage)
                         <p style="margin:0">Uses one lesson from your package. {{ $usablePackage->creditsLeft() }} {{ \Illuminate\Support\Str::plural('lesson', $usablePackage->creditsLeft()) }} left.</p>
@@ -211,7 +212,7 @@
                                 <p class="st-small" style="margin:0">This is the whole price. Nothing is paid until your parent or guardian says yes and the tutor says yes.</p>
                             @else
                                 <p class="st-small" style="margin:0">This is the whole price. Dot.Tutor's commission comes out of the tutor's share; nothing is added to what you pay.</p>
-                                <p class="st-small" style="margin:0">You pay only after the tutor accepts{{ $ctx['minor'] ? ' and your parent or guardian approves' : '' }}. Payment is by Paystack.</p>
+                                <p class="st-small" style="margin:0">{{ $ctx['minor'] ? 'Your parent or guardian pays only after they approve and the tutor accepts.' : 'You pay only after the tutor accepts.' }} Payment is by Paystack.</p>
                             @endif
                         @endunless
                     @endif

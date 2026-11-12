@@ -17,10 +17,12 @@
         'scheduled' => 'Scheduled by the tutor', 'seat_requested' => 'You asked for a seat', 'seat_paid' => 'Seat paid',
         'seat_cancelled' => 'Seat cancelled', 'seat_expired' => 'Seat hold lapsed', 'seat_refunded' => 'Seat refunded',
     ];
+    // Who pays, in the child's words (fix round D-2305): a guardian approves and pays for a minor's lesson.
+    $payStep = ($ctx['minor'] ?? false) ? 'Your parent or guardian pays' : 'You pay';
     $events = collect($data['events'] ?? [])->filter(fn ($e) => ! $group || $e['participant_id'] === null || $e['participant_id'] === ($mine['id'] ?? -1));
     $upcoming = match ($payState) {
-        'awaiting_guardian' => array_values(array_filter(['Your parent or guardian approves', $group ? null : 'The tutor accepts', $priceMinor > 0 ? 'You pay' : null, 'The lesson'])),
-        'pending', 'requested' => array_values(array_filter([$priceMinor > 0 ? 'You pay' : null, 'The lesson'])),
+        'awaiting_guardian' => array_values(array_filter(['Your parent or guardian approves', $group ? null : 'The tutor accepts', $priceMinor > 0 ? $payStep : null, 'The lesson'])),
+        'pending', 'requested' => array_values(array_filter([$priceMinor > 0 ? $payStep : null, 'The lesson'])),
         'awaiting_payment' => ['The lesson'],
         'confirmed' => [],
         default => [],
