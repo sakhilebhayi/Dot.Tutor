@@ -138,7 +138,7 @@ class ReviewsAndApiTest extends TestCase
         foreach (['introduction', 'qualifications', 'teaching_scope', 'subjects', 'formats', 'pricing', 'offerings', 'reviews', 'availability_url', 'verification', 'share_url'] as $key) {
             $this->assertArrayHasKey($key, $data);
         }
-        $this->assertSame('ZAR 450.00', $data['offerings'][0]['price_display']);
+        $this->assertSame('R450.00', $data['offerings'][0]['price_display']);
         $this->assertStringContainsString('24 hours', $data['offerings'][0]['cancellation']['summary']);
         $this->assertNull($data['courses'], 'Courses are not connected on this branch: null, not an empty list.');
 

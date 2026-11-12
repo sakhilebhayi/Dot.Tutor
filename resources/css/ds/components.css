@@ -912,11 +912,19 @@
     .td-stats dd {
         margin: 0;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
+        /* Normal width, so a tile's figures are the same drawing as the figures in tables and text (D-2103). */
+        font-stretch: 100%;
         font-weight: 700;
         font-size: var(--td-text-xl);
         line-height: 1.1;
         font-variant-numeric: tabular-nums;
+    }
+
+    /* Two tiles to a row on a phone: one step smaller so "R12 450.00" or "Mon 16 Nov" stays on one line. */
+    @media (max-width: 47.98rem) {
+        .td-stats dd {
+            font-size: var(--td-text-lg);
+        }
     }
 
     .td-stats .td-stats__hint {

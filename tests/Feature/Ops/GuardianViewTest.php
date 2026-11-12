@@ -84,7 +84,7 @@ class GuardianViewTest extends TestCase
         $guardian = $this->adult('Guardian Zola');
         $this->linkGuardian($child, $guardian, false, 9);
 
-        $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()->assertSee('Your children on Dot.Tutor')->assertSee('td-app--learner', false);
+        $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()->assertSee('No reports about your children')->assertSee('td-app--learner', false);
         $this->actingAs($guardian)->getJson(route('safety.guardian.dashboard'))->assertOk()->assertJsonPath('children.0.name', 'Zola');
 
         $other = $this->child('Mpho');

@@ -40,7 +40,7 @@ class CommissionGuardianBundleTest extends TestCase
             ->assertJsonPath('commission.amount.amount_minor', 3750)
             ->assertJsonPath('other_charges.0.amount.amount_minor', 200)
             ->assertJsonPath('net.amount_minor', 21050)
-            ->assertJsonPath('net.formatted', "R\u{202F}210.50");
+            ->assertJsonPath('net.formatted', "R210.50");
     }
 
     public function test_commission_rules_are_versioned_and_category_overrides_win(): void

@@ -27,4 +27,16 @@ class GuardianController extends Controller
 
         return view('guardian.child', $data + ['child' => $child]);
     }
+
+    /** Everything waiting for a decision, and every recent decision (D-2102). */
+    public function approvals(Request $request, GuardianView $view): View
+    {
+        return view('guardian.approvals', $view->for($request->user()));
+    }
+
+    /** What each child bought or asked to buy, and who paid. */
+    public function payments(Request $request, GuardianView $view): View
+    {
+        return view('guardian.payments', $view->for($request->user()));
+    }
 }

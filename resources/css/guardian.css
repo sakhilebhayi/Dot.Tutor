@@ -1,0 +1,165 @@
+/*
+ * Guardian screens (polish-guardian, D-2100 onward): the urgent band, the safety rows and the recent decisions.
+ * ds tokens only: square panels, no shadows at rest, status in words and a glyph (never colour alone).
+ */
+@layer components {
+    /* An urgent safety matter about a child: a full-width field of the danger colour above everything else. */
+    .gd-urgent {
+        display: grid;
+        gap: var(--td-space-3);
+        padding: var(--td-space-5);
+        background: var(--td-danger);
+        color: var(--td-primary-ink);
+    }
+
+    .gd-urgent__head {
+        display: flex;
+        gap: var(--td-space-3);
+        align-items: flex-start;
+    }
+
+    .gd-urgent__head .td-icon {
+        flex: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-top: 0.1rem;
+    }
+
+    .gd-urgent__title {
+        margin: 0;
+        font-size: var(--td-text-lg);
+        font-weight: 700;
+        line-height: 1.25;
+        color: inherit;
+    }
+
+    .gd-urgent p {
+        margin: 0;
+        max-width: 68ch;
+    }
+
+    .gd-urgent__meta {
+        font-weight: 650;
+    }
+
+    .gd-urgent__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-3);
+        align-items: center;
+    }
+
+    .gd-urgent__help {
+        font-size: var(--td-text-sm);
+    }
+
+    .gd-urgent__help a {
+        color: inherit;
+        text-underline-offset: 0.2em;
+    }
+
+    /* Safety rows: what and when on the left, where it stands on the right, then the next step and the actions. */
+    .gd-rows {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .gd-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--td-space-2) var(--td-space-4);
+        padding: var(--td-space-4) var(--td-space-5);
+        border-bottom: 1px solid var(--td-line);
+        scroll-margin-top: calc(var(--td-space-8) + var(--td-space-4));
+    }
+
+    .gd-row:last-child {
+        border-bottom: 0;
+    }
+
+    .gd-row:target {
+        background: var(--td-sunken);
+    }
+
+    .gd-row--urgent {
+        background: var(--td-danger-soft);
+    }
+
+    .gd-row__what {
+        margin: 0;
+        font-weight: 650;
+    }
+
+    .gd-row__meta {
+        margin: 0;
+        color: var(--td-ink-2);
+        font-size: var(--td-text-sm);
+    }
+
+    .gd-row--urgent .gd-row__meta {
+        color: var(--td-danger-ink);
+    }
+
+    .gd-row__status {
+        justify-self: end;
+        align-self: start;
+    }
+
+    .gd-row__next {
+        grid-column: 1 / -1;
+        margin: 0;
+        max-width: 72ch;
+    }
+
+    .gd-row__actions {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2);
+    }
+
+    @media (max-width: 47.98rem) {
+        .gd-row {
+            grid-template-columns: minmax(0, 1fr);
+            padding-inline: var(--td-space-4);
+        }
+
+        .gd-row__status {
+            justify-self: start;
+            grid-row: 2;
+        }
+
+        .gd-urgent {
+            padding: var(--td-space-4);
+        }
+    }
+
+    /* A conversation's messages: one column, sender line over the text. */
+    .gd-thread > li {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+
+    /* Help that does not depend on Dot.Tutor: who to call when a child is in danger now. */
+    .gd-help {
+        display: grid;
+        gap: var(--td-space-1);
+    }
+
+    .gd-help p {
+        margin: 0;
+    }
+
+    .gd-help__numbers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--td-space-2) var(--td-space-6);
+        font-weight: 650;
+    }
+
+    .gd-help__numbers a {
+        color: var(--td-ink);
+        text-underline-offset: 0.2em;
+    }
+}
