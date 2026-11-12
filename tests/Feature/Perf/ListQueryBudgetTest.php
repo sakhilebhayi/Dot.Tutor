@@ -9,6 +9,7 @@ use App\Domain\Marketplace\Support\LearningNeed;
 use App\Domain\Ops\Access\OpsRole;
 use App\Domain\Ops\Access\RoleAdministration;
 use App\Domain\Safety\Models\AgeRecord;
+use App\Domain\Safety\Services\AgeResolver;
 use App\Models\Subject;
 use App\Models\TutorProfile;
 use App\Models\User;
@@ -75,7 +76,10 @@ class ListQueryBudgetTest extends TestCase
         $people = function (int $n) {
             foreach (range(1, $n) as $i) {
                 $user = User::factory()->create();
-                AgeRecord::query()->create(['user_id' => $user->id, 'birth_date' => now()->subYears(10 + $i)->toDateString(), 'source' => 'operator_verified']);
+                // Half with a recorded birth date, half unknown (the unknown ones take the attested-adult checks).
+                if ($i % 2 === 0) {
+                    AgeRecord::query()->create(['user_id' => $user->id, 'birth_date' => now()->subYears(10 + $i)->toDateString(), 'source' => 'operator_verified']);
+                }
             }
         };
 
@@ -107,5 +111,27 @@ class ListQueryBudgetTest extends TestCase
         $many = $this->statementsOf(fn () => $this->get(route('marketplace.bookings'))->assertOk());
 
         $this->assertSame($few, $many, "bookings list statements with 2 lessons ({$few}) and with 12 ({$many})");
+    }
+
+    public function test_a_primed_age_resolver_answers_every_listed_person_without_another_query(): void
+    {
+        $people = User::factory()->count(6)->create();
+        AgeRecord::query()->create(['user_id' => $people[0]->id, 'birth_date' => now()->subYears(12)->toDateString(), 'source' => 'operator_verified']);
+        $tutor = $this->makeTutor([], $this->maths, $people[1]); // approved tutor: attested adult
+        $resolver = app(AgeResolver::class);
+        $resolver->prime($people);
+
+        $bands = [];
+        $statements = $this->statementsOf(function () use ($resolver, $people, &$bands) {
+            foreach ($people as $person) {
+                $bands[] = $resolver->band($person)->value;
+            }
+        });
+
+        $this->assertSame(0, $statements, 'band() for primed people reads nothing more');
+        $this->assertSame('child', $bands[0]);
+        $this->assertSame('adult', $bands[1]);
+        $this->assertSame(app(AgeResolver::class)->band($people[2])->value, $bands[2], 'primed and unprimed agree');
+        unset($tutor);
     }
 }

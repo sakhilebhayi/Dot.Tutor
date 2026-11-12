@@ -7,6 +7,7 @@ use App\Domain\Safety\Contracts\BirthDateSource;
 use App\Domain\Safety\Enums\AgeBand;
 use App\Domain\Safety\Models\AgeRecord;
 use App\Domain\Safety\Models\GuardianLink;
+use App\Domain\Safety\Models\ScreeningCheck;
 use App\Enums\TutorProfileStatus;
 use App\Models\TutorProfile;
 use App\Models\User;
@@ -26,6 +27,9 @@ class AgeResolver
 
     /** @var array<int, bool> whether a primed user has an active guardian link */
     private array $primedLinked = [];
+
+    /** @var array<int, bool> attestedAdult() for primed users, read in bulk (security S-03 checks, D-1604) */
+    private array $primedAttested = [];
 
     public function __construct(private readonly BirthDateSource $source) {}
 
@@ -56,7 +60,17 @@ class AgeResolver
         $declared = $this->source instanceof BatchBirthDateSource && $missing !== [] ? $this->source->birthDatesFor($missing) : null;
         $linked = GuardianLink::query()->active()->whereIn('learner_id', $ids)->pluck('learner_id')->map(fn ($id) => (int) $id)->flip();
 
+        // attestedAdult() in four queries for the whole list: operators, approved tutors, guardians, cleared screenings.
+        $operators = User::query()->whereIn('id', $ids)->where('is_platform_operator', true)->pluck('id')->map(fn ($id) => (int) $id)->flip();
+        $tutors = TutorProfile::query()->whereIn('user_id', $ids)->where('status', TutorProfileStatus::Approved->value)->pluck('user_id')->map(fn ($id) => (int) $id)->flip();
+        $guardians = GuardianLink::query()->active()->whereIn('guardian_id', $ids)->pluck('guardian_id')->map(fn ($id) => (int) $id)->flip();
+        $required = (array) config('safety.screening.required_kinds');
+        $cleared = ScreeningCheck::query()->whereIn('user_id', $ids)->where('status', ScreeningCheck::CLEARED)->get()
+            ->filter->isCurrent()->groupBy('user_id')
+            ->map(fn ($checks) => array_diff($required, $checks->map(fn (ScreeningCheck $c) => $c->kind->value)->unique()->all()) === []);
+
         foreach ($ids as $id) {
+            $this->primedAttested[$id] = $operators->has($id) || $tutors->has($id) || $guardians->has($id) || ($required === [] ? true : (bool) $cleared->get($id, false));
             if ($records->has($id)) {
                 $this->primedBirthDates[$id] = $records[$id]->birth_date;
             } elseif ($declared !== null) {
@@ -108,6 +122,10 @@ class AgeResolver
      */
     public function attestedAdult(User $user): bool
     {
+        if (array_key_exists((int) $user->id, $this->primedAttested)) {
+            return $this->primedAttested[(int) $user->id];
+        }
+
         if ($user->is_platform_operator) {
             return true;
         }
