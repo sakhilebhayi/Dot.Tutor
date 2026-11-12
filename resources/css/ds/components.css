@@ -910,6 +910,13 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* Two tiles to a row on a phone: one step smaller so "R12 450.00" or "Mon 16 Nov" stays on one line. */
+    @media (max-width: 47.98rem) {
+        .td-stats dd {
+            font-size: var(--td-text-lg);
+        }
+    }
+
     .td-stats .td-stats__hint {
         font-family: var(--td-font-text);
         font-stretch: 100%;
