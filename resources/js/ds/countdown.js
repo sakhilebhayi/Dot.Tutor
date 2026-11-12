@@ -6,8 +6,9 @@ export function spanWords(minutes) {
 }
 
 export function countdownText(deadlineMs, nowMs, before, after) {
-    const seconds = Math.floor((deadlineMs - nowMs) / 1000);
-    const minutes = Math.floor(seconds / 60);
+    // Nearest minute, the same rounding as the server's text (resources/views/ops/safeguarding/incident.blade.php).
+    const seconds = (deadlineMs - nowMs) / 1000;
+    const minutes = Math.sign(seconds) * Math.round(Math.abs(seconds) / 60);
     return minutes >= 0 ? `${before} ${spanWords(minutes)}` : `${after} ${spanWords(-minutes)}`;
 }
 

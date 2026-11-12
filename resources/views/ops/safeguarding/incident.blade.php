@@ -2,7 +2,8 @@
     $tz = \App\Domain\Student\Support\Times::zone();
     // The response deadline in words, from the real respond_by; resources/js/ds/countdown.js keeps it current (D-2405).
     $left = function (\Carbon\CarbonInterface $at): string {
-        $mins = (int) floor(now()->diffInSeconds($at, false) / 60);
+        $secs = now()->diffInSeconds($at, false);
+        $mins = ($secs < 0 ? -1 : 1) * (int) round(abs($secs) / 60);
         $span = fn (int $m) => $m >= 120 ? intdiv($m, 60).' h '.($m % 60).' min' : $m.' min';
 
         return $mins >= 0 ? 'Acknowledge within '.$span($mins) : 'Overdue by '.$span(-$mins);
