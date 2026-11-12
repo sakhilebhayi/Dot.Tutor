@@ -69,10 +69,9 @@ class DesignSystemKitTest extends TestCase
         $nav = app(ShellNavigation::class);
         $items = collect($nav->for('learner'))->flatMap(fn (array $section) => $section['items']);
 
-        // R-47 student UI (D-1116): the learner screens exist; the guardian home does not yet.
+        // R-47 student UI (D-1116) built the learner screens; the ops agent built the guardian home (D-1310).
         $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Lessons', 'Courses', 'Study library', 'Practice', 'Progress', 'Study assistant', 'Messages',
-            'Learning profile', 'Notifications', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
-        $this->assertNull($items->firstWhere('label', 'Guardian'), 'no link to a screen that has not been built');
+            'Learning profile', 'Notifications', 'Guardian', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
         $this->assertSame(route('learn.home'), $items->firstWhere('label', 'Home')['href'], 'the first candidate route that exists');
@@ -80,8 +79,10 @@ class DesignSystemKitTest extends TestCase
         $this->assertCount(4, $nav->bottomBar('learner'));
 
         $operations = collect($nav->for('operations', 'dense'))->flatMap(fn (array $section) => $section['items'])->pluck('href')->all();
-        $this->assertContains(route('operator.tutor-profiles.index'), $operations);
-        $this->assertContains(route('operator.subjects.index'), $operations);
+        // The command centre (ops agent, D-1310) registered the preferred routes, so they win over the legacy pages.
+        $this->assertContains(route('ops.verification'), $operations);
+        $this->assertContains(route('ops.subjects'), $operations);
+        $this->assertNotContains(route('operator.tutor-profiles.index'), $operations);
     }
 
     public function test_the_landing_says_what_the_product_is_and_loads_nothing_from_other_hosts(): void

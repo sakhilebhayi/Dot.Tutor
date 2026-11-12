@@ -223,3 +223,17 @@ InfoDot sign-in, team sync, closed registration, the scheduling core (availabili
 | Static files | Deploy synced only `build/` to the docroot | B | R-47 fonts, sprites, push script and `/comms-sw.js` would 404 where the docroot holds copies | Every `public/` entry kept in step (D-1907) |
 | `.env.example` | `APP_URL` of the live host, `BROADCAST_CONNECTION=reverb`, no R-47 variable documented | P | CI copied a live-host URL and a broadcaster the host cannot run; owners had no list of the new settings | Safe values, every R-47 variable documented with its default (D-1908) |
 | Owner runbook | `docs/deployment.md` (pre-R-47) | M | No first-steps order, monitoring thresholds, incident or restore procedure for the R-47 platform | `docs/R47_OPERATIONS.md` |
+### Operations command centre and guardian views (ops agent, 2026-11-12)
+
+| Area | As found | Class | Finding | After |
+|---|---|---|---|---|
+| Operator roles | One flag, `is_platform_operator`; every operator could do everything | M | No separation of duties (brief 20) | Seven roles, permission matrix over every operator route, team screen, `ops:grant`, audited changes |
+| Operator route coverage | Operator routes guarded three different ways (middleware, gates, inside controllers) | I | A new route could be open to every operator unnoticed | Router scan test; guard before route binding; gate answers from the role |
+| Admin overview | Legacy dashboard with a few counts | P | No business intelligence (brief 20) | Real-data overview: queues, people, lessons, weekly chart, money (finance), languages, geography, satisfaction, retention |
+| Users and minors | Safety JSON endpoints only | P | No screen for restrictions, minors, guardians | Users list with filters, account page with history and actions, minors page with the rules in force |
+| Verification | Minimal marketplace page and legacy tutor-profile page | P | Separate pages, no level setting in a screen, no screening status beside it | One verification area: evidence, applications, languages, tutor record with levels, decisions and screening status |
+| Safeguarding | Safety queue and incident pages (minimal) | P | No integrity, screening or minors screens; no fast path emphasis | Reports with the child-safety fast path, incidents with timers, integrity, screening (four eyes), AI log tab |
+| Content | Community held-post page, learning moderation JSON | P | Resource reviews and copyright complaints had no screen | Content area: held posts, resource reviews and tiers, complaints and takedowns, courses |
+| Money | Finance JSON API and a minimal page | P | Refunds, payouts and exceptions only through the API | Orders, refunds (finance only, idempotent forms), exceptions incl. unmatched payments, disputes, commission rules, payouts and batches |
+| Audit viewer | JSON endpoint | P | No screen for audit history | Filtered audit screen with the chain check |
+| Guardian experience | Minimal safety page, no money orders | P | Not phone-first, purchases said "not connected" | Guardian home and child pages in the learner shell, decisions with reasons, orders, notices, settings |
