@@ -69,10 +69,10 @@ class DesignSystemKitTest extends TestCase
         $nav = app(ShellNavigation::class);
         $items = collect($nav->for('learner'))->flatMap(fn (array $section) => $section['items']);
 
-        // R-47 student UI (D-1116): the learner screens exist now; rooms and the guardian home do not yet.
-        $this->assertSame(['Home', 'Find a tutor', 'Lessons', 'Courses', 'Study library', 'Practice', 'Progress', 'Study assistant', 'Messages',
+        // R-47 student UI (D-1116): the learner screens exist; the guardian home does not yet.
+        $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Lessons', 'Courses', 'Study library', 'Practice', 'Progress', 'Study assistant', 'Messages',
             'Learning profile', 'Notifications', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
-        $this->assertNull($items->firstWhere('label', 'My rooms'), 'no link to a screen that has not been built');
+        $this->assertNull($items->firstWhere('label', 'Guardian'), 'no link to a screen that has not been built');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
         $this->assertSame(route('learn.home'), $items->firstWhere('label', 'Home')['href'], 'the first candidate route that exists');
