@@ -115,7 +115,7 @@ Learner: `POST quote`, `GET|POST orders`, `GET orders/{uuid}`, `POST orders/{uui
 5. Payouts: day, minimum; for automatic transfers a Registered Business with transfers enabled and a funded balance, then `MONEY_PAYSTACK_TRANSFERS=true`.
 6. VAT: registration status and number; receipts: `MONEY_OPERATOR_LEGAL_NAME`, `..._REGISTRATION`, `..._ADDRESS`, `MONEY_SUPPORT_EMAIL`.
 7. Finance operators: `MONEY_FINANCE_OPERATOR_EMAILS` until the ops roles land.
-8. Dot.Billing / Dot.Finance: not called (no documented contract for Tutor); export the trial balance for the accountant.
+8. Dot.Finance: not called (no documented contract for Tutor); export the trial balance for the accountant.
 
 ## 12. Not built, and why
 

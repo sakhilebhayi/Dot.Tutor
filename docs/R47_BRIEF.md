@@ -747,7 +747,7 @@ Tutors should clearly understand:
 Students should receive transparent pricing before committing to a purchase.
 Use real payment gateway integrations.
 Verify payments server-side and protect against duplicate transactions, fraudulent callbacks and unauthorised refunds.
-Integrate Dot.Billing and Dot.Finance only where real APIs and clear integration contracts exist.
+Integrate Dot.Finance only where real APIs and clear integration contracts exist.
 18. Tutor Marketplace and Business Growth
 Give tutors the tools to establish a professional educational presence.
 Create tutor storefronts containing:
@@ -878,7 +878,6 @@ Investigate opportunities with:
 * InfoDot: Central authentication and user identity.
 * Dot.Files: Secure study material and course document storage.
 * Dot.Finance: Financial insights for tutors who operate businesses.
-* Dot.Billing: Payments, subscriptions and billing workflows.
 * Dot.Notify: Notifications and reminders.
 * Dot.Agents: AI-assisted learning and tutoring workflows.
 * Dot.Brain: Contextual educational intelligence where supported.
