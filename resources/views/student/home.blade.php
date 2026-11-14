@@ -1,13 +1,16 @@
 @php
+    use App\Domain\Student\Support\ComingUp;
     use App\Domain\Student\Support\Times;
     $young = $ctx['step'] === 'young';
     $first = \Illuminate\Support\Str::of(auth()->user()->name)->before(' ');
     $level = $ctx['level'];
+    $presenter = app(\App\Domain\Marketplace\Services\BookingPresenter::class);
 @endphp
 <x-student.shell title="Home">
     @php
-        // The arrival's one primary action, decided from the learner's own records (R-50): what blocks them first,
-        // then the one next thing, and only when there is nothing at all, finding a tutor. No tutor is named here.
+        // The head's one primary action, decided from the learner's own records (R-50): what blocks them first, then the
+        // one next thing, and only when there is nothing at all, finding a tutor. The headline says the same thing in a
+        // true sentence about this learner's state (R-51). No tutor is named in the head.
         $subjectOf = fn ($lesson) => $lesson->subject?->name ?? 'Lesson';
         [$primary, $slip] = match (true) {
             $ctx['suspended'] => [
@@ -29,7 +32,7 @@
             ],
             ($next['kind'] ?? null) === 'lesson' => [
                 ['label' => 'Open your next lesson', 'href' => route('learn.lessons.show', $next['lesson'])],
-                ['label' => 'Your next lesson', 'text' => $subjectOf($next['lesson']).', '.Times::relative($next['lesson']->starts_at), 'note' => app(\App\Domain\Marketplace\Services\BookingPresenter::class)->nextStep($next['lesson'])],
+                ['label' => 'Your next lesson', 'text' => $subjectOf($next['lesson']).', '.Times::relative($next['lesson']->starts_at), 'note' => $presenter->nextStep($next['lesson'])],
             ],
             ($next['kind'] ?? null) === 'work' => [
                 ['label' => 'Start your work', 'href' => route('learning.assessments.take', $next['work']['assignment']->assessment_id)],
@@ -44,52 +47,51 @@
                 ['label' => $young ? 'No lessons yet' : 'Nothing booked yet', 'text' => $young ? 'Find a tutor to start.' : 'You have no lessons, set work or courses in progress.'],
             ],
         };
+
+        // The headline: one true sentence built from the same record as the action.
+        $nextLesson = $next['lesson'] ?? null;
+        [$headline, $sub] = match (true) {
+            $ctx['suspended'] => ['Your account is paused.', $slip['text']],
+            $ctx['limited'] && ! $ctx['onboarded'] => ['Tell us about your learning.', $slip['text']],
+            $ctx['limited'] => [($young ? 'A grown-up must join first.' : 'A parent or guardian needs to join you first.'), $slip['text'].($young ? ' You can still look around and practise.' : '')],
+            ($next['kind'] ?? null) === 'pay' => [$subjectOf($nextLesson).' is '.Times::relative($nextLesson->starts_at).', waiting for your payment.', $presenter->nextStep($nextLesson)],
+            ($next['kind'] ?? null) === 'lesson' => [$subjectOf($nextLesson).' is '.Times::relative($nextLesson->starts_at).($nextLesson->status === 'pending' ? ', waiting for the tutor' : '').'.', $presenter->nextStep($nextLesson)],
+            ($next['kind'] ?? null) === 'work' => [$next['work']['title'].($next['work']['due_at'] ? ' is due '.Times::relative($next['work']['due_at']).'.' : ' is waiting for you.'), 'Set by your tutor.'],
+            ($next['kind'] ?? null) === 'course' => ['Carry on with '.$next['course']['title'].'.', $next['course']['summary']['completed'].' of '.$next['course']['summary']['total'].' lessons done.'],
+            default => ['Nothing is booked yet.', $young ? 'Find a tutor to start.' : 'Find a tutor for one lesson at a time. There is no subscription.'],
+        };
+        if ($young) {
+            $sub = 'Hi '.$first.'. '.$sub;
+        }
+
+        $rows = ComingUp::rows($lessons, $seats, $work, $courses, $toReview, $last, $young ? 3 : 6);
+        $dated = collect($rows)->reject(fn ($r) => $r['kind'] === 'last');
     @endphp
-    <x-td.arrival
-        :headline="$young ? 'Find help with your schoolwork' : 'Find someone who can teach you'"
-        :greeting="$young ? 'Hi' : 'Welcome'"
-        :lede="$young
-            ? 'Dot.Tutor has tutors and courses for your grade.'
-            : 'Say what you need in plain words. Dot.Tutor shows tutors and courses for your level, subject and language, and explains why each one fits.'"
-        :primary="$primary" :slip="$slip">
+    <div class="hm">
+    <x-td.home-head :headline="$headline" :sub="$sub" :primary="$primary">
         @if ($level)
             <x-td.button variant="quiet" icon="graduation-cap" :href="route('academic.profile.edit')">Learning profile: {{ $level->name }}, {{ $level->curriculum->label() }}</x-td.button>
         @else
             <x-td.button variant="quiet" icon="graduation-cap" :href="route('learn.onboarding')">Add your grade or level</x-td.button>
         @endif
-    </x-td.arrival>
+    </x-td.home-head>
 
-    @if ($ctx['suspended'])
-        <x-td.notice tone="danger" title="Your account is paused">An operator paused this account. You can read, but booking, paying and messaging are off. <a class="td-link" href="{{ route('safety.account') }}">See why</a>.</x-td.notice>
-    @elseif ($ctx['limited'])
-        <x-td.notice tone="warning" title="A parent or guardian needs to join you first">
-            @if ($young)
-                {{-- Young step: Grade 1-3 reading level, short sentences (R-47 a11y D-1708). --}}
-                A grown-up who looks after you must join first. Then you can book lessons. You can still look around and practise.
-            @else
-                Before you can book a lesson, pay or message a tutor, a parent or guardian links to your account and says yes. You can still look around and practise.
-            @endif
-            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" :href="route('safety.account')" icon="hand-heart">Invite a parent or guardian</x-td.button></div>
-        </x-td.notice>
+    @if ($ctx['limited'] && ! $ctx['onboarded'])
+        {{-- Two things block: the profile (the primary action) and the consent. The consent is the one notice. --}}
+        <div class="hm-notice" role="note">
+            <x-td.icon name="triangle-alert" />
+            <p>{{ $young ? 'A grown-up who looks after you must join first. Then you can book lessons.' : 'Before you can book a lesson, pay or message a tutor, a parent or guardian links to your account and says yes.' }} <a class="td-link" href="{{ route('safety.account') }}">Invite a parent or guardian</a></p>
+        </div>
     @endif
 
-    @unless ($ctx['onboarded'])
-        <x-td.notice tone="info" title="Tell us about your learning">
-            Your grade, subjects and the languages you learn best in. It takes about a minute, and every part except the grade can be skipped.
-            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" :href="route('learn.onboarding')" icon-end="arrow-right">Start</x-td.button></div>
-        </x-td.notice>
-    @endunless
-
-    {{-- Tell us what you need. --}}
-    <form method="POST" action="{{ route('learn.need') }}" class="st-slip" role="search" aria-labelledby="need-label">
+    {{-- Tell us what you need: a guided need-reader, not a search box (the shared search pill in the bar is the finder). --}}
+    <form method="POST" action="{{ route('learn.need') }}" class="hm-find" role="search" aria-labelledby="need-label">
         @csrf
-        <label class="st-slip__label" id="need-label" for="need">{{ $young ? 'What do you need help with?' : 'Tell us what you need' }}</label>
-        <div class="st-slip__row">
-            <x-td.input name="need" :hint="true" maxlength="500" autocomplete="off"
-                placeholder="{{ $young ? 'Maths, '.($level?->name ?? 'my grade') : 'Grade 11 Maths in isiZulu, after school, under R250' }}" />
-            <x-td.button type="submit" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
-        </div>
-        <p class="td-hint" id="need-hint">
+        <label id="need-label" for="need">{{ $young ? 'What do you need help with?' : 'Tell us what you need' }}</label>
+        <x-td.input name="need" :hint="true" maxlength="500" autocomplete="off"
+            placeholder="{{ $young ? 'Maths, '.($level?->name ?? 'my grade') : 'Grade 11 Maths in isiZulu, after school, under R250' }}" />
+        <x-td.button type="submit" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
+        <p class="hm-find__hint" id="need-hint">
             @if ($young)
                 Say it your way. We show you tutors who can help, and why.
             @else
@@ -99,185 +101,132 @@
                 If we miss something, <a class="td-link" href="{{ route('ai.need.form') }}">the AI assistant can reword it</a>.
             @endif
         </p>
-        @error('need')<p class="td-error" id="need-error"><x-td.icon name="circle-alert" />{{ $message }}</p>@enderror
+        @error('need')<p class="td-error hm-find__error" id="need-error"><x-td.icon name="circle-alert" />{{ $message }}</p>@enderror
     </form>
 
-    <div class="st-cols">
-        <div class="st-stack">
-            <x-td.panel title="Lessons coming up" flush>
-                <x-slot:actions>
-                    <x-td.button variant="quiet" size="sm" :href="route('marketplace.bookings')">All lessons</x-td.button>
-                </x-slot:actions>
-                @if ($lessons->isEmpty() && $seats->isEmpty())
-                    <x-td.state kind="empty" title="No lessons booked">
-                        Find a tutor for one lesson at a time. There is no subscription and nothing to sign up for.
-                        <x-slot:actions><x-td.button :href="route('marketplace.find')" icon="search">Find a tutor</x-td.button></x-slot:actions>
-                    </x-td.state>
-                @else
-                    <ul class="st-list">
-                        @foreach ($lessons as $lesson)
-                            <li class="st-row">
-                                <div>
-                                    <p class="st-row__title"><a href="{{ route('learn.lessons.show', $lesson) }}">{{ $lesson->subject?->name ?? 'Lesson' }} with {{ $lesson->tutorProfile->displayName() }}</a></p>
-                                    <p class="st-row__meta"><time datetime="{{ $lesson->starts_at->toIso8601String() }}">{{ Times::when($lesson->starts_at) }}</time> · {{ $lesson->duration_minutes }} min · {{ $lesson->delivery === 'in_person' ? 'In person' : 'Online' }}</p>
-                                </div>
-                                <div class="st-row__end">@include('student.partials.lesson-state', ['status' => $lesson->status])</div>
-                            </li>
-                        @endforeach
-                        @foreach ($seats as $seat)
-                            <li class="st-row">
-                                <div>
-                                    <p class="st-row__title"><a href="{{ route('learn.lessons.show', $seat->session) }}">{{ $seat->session->subject?->name ?? 'Group lesson' }}, group with {{ $seat->session->tutorProfile->displayName() }}</a></p>
-                                    <p class="st-row__meta"><time datetime="{{ $seat->session->starts_at->toIso8601String() }}">{{ Times::when($seat->session->starts_at) }}</time> · your seat</p>
-                                </div>
-                                <div class="st-row__end">@include('student.partials.lesson-state', ['status' => $seat->status])</div>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <p class="st-small" style="padding:0 var(--td-row-pad-x) var(--td-space-3)">{{ Times::zoneNote() }}</p>
-                @endif
-            </x-td.panel>
-
-            @if ($last)
-                {{-- The lesson already taken (D-2024): what the tutor wrote afterwards, and the way back to them. --}}
-                @php $l = $last['lesson']; @endphp
-                <x-td.panel title="Your last lesson">
-                    <div class="st-stack st-stack--tight">
-                        <p class="st-row__title" style="margin:0"><a href="{{ route('learn.lessons.show', $l) }}">{{ $l->subject?->name ?? 'Lesson' }} with {{ $l->tutorProfile->displayName() }}</a></p>
-                        <p class="st-row__meta" style="margin:0"><time datetime="{{ $l->starts_at->toIso8601String() }}">{{ Times::stamp($l->starts_at) }}</time> · {{ $l->duration_minutes }} min</p>
-                        @if ($last['summary'])
-                            <blockquote class="st-quote" style="margin:var(--td-space-2) 0 0">
-                                <p style="margin:0;white-space:pre-line">{{ \Illuminate\Support\Str::limit($last['summary'], $young ? 200 : 400) }}</p>
-                                <footer class="st-small">{{ $young ? 'From your tutor' : 'Summary from '.$l->tutorProfile->displayName() }}</footer>
-                            </blockquote>
-                        @else
-                            <p class="st-small" style="margin:0">{{ $young ? 'Your tutor has not written about it yet.' : 'The tutor has not shared a summary of this lesson.' }}</p>
-                        @endif
-                        <div class="st-inline" style="margin-top:var(--td-space-2)">
-                            @if ($l->tutor_offering_id && $l->offering?->is_active)
-                                <x-td.button size="sm" :href="route('learn.book', $l->tutor_offering_id)" icon="calendar">Book again</x-td.button>
-                            @else
-                                <x-td.button size="sm" :href="route('marketplace.tutors.show', $l->tutor_profile_id)">See {{ $l->tutorProfile->displayName() }}'s profile</x-td.button>
-                            @endif
-                            <x-td.button size="sm" variant="quiet" :href="route('learn.lessons.show', $l)" icon-end="arrow-right">The lesson</x-td.button>
-                        </div>
-                    </div>
-                </x-td.panel>
-            @endif
-
-            <x-td.panel title="{{ $young ? 'Your courses' : 'Courses in progress' }}" flush>
-                <x-slot:actions>
-                    @if (Route::has('learn.courses'))<x-td.button variant="quiet" size="sm" :href="route('learn.courses')">My courses</x-td.button>@endif
-                </x-slot:actions>
-                @if ($courses === [])
-                    <x-td.state kind="empty" title="No course in progress">
-                        Courses are written by tutors. Some are free.
-                        <x-slot:actions><x-td.button :href="route('learning.courses.index')" icon="book-open">Browse courses</x-td.button></x-slot:actions>
-                    </x-td.state>
-                @else
-                    <ul class="st-list">
-                        @foreach ($courses as $course)
-                            <li class="st-row">
-                                <div class="st-stack st-stack--tight">
-                                    <p class="st-row__title"><a href="{{ route('learning.learn', [$course['enrolment']->course_id, $course['summary']['resume_lesson_id']]) }}">{{ $course['title'] }}</a></p>
-                                    <x-td.progress :label="'Lessons done'" :value="$course['summary']['completed']" :max="max(1, $course['summary']['total'])"
-                                        :display="$course['summary']['completed'].' of '.$course['summary']['total']" :stage="$ctx['stage_colour']" />
-                                </div>
-                                <div class="st-row__end"><x-td.button size="sm" :href="route('learning.learn', [$course['enrolment']->course_id, $course['summary']['resume_lesson_id']])">Resume</x-td.button></div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </x-td.panel>
-        </div>
-
-        <div class="st-stack">
-            <x-td.panel title="{{ $young ? 'Work from your tutor' : 'Work due' }}" flush>
-                @if ($work === [])
-                    <x-td.state kind="empty" title="Nothing due">{{ $young ? 'Quizzes from your tutor show here.' : 'When a tutor sets you a quiz or test, it shows here with its due date.' }}</x-td.state>
-                @else
-                    <ul class="st-list">
-                        @foreach ($work as $item)
-                            <li class="st-row">
-                                <div>
-                                    <p class="st-row__title"><a href="{{ route('learning.assessments.take', $item['assignment']->assessment_id) }}">{{ $item['title'] }}</a></p>
-                                    <p class="st-row__meta">
-                                        @if ($item['due_at'])
-                                            @if ($item['overdue'])<strong>Past its due date</strong> ({{ Times::when($item['due_at']) }})@else Due {{ Times::relative($item['due_at']) }}@endif
-                                        @else
-                                            No due date
-                                        @endif
-                                    </p>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </x-td.panel>
-
-            @if (Route::has('rooms.index'))
-                <x-td.panel title="Questions waiting in your rooms" flush>
-                    <x-slot:actions><x-td.button variant="quiet" size="sm" :href="route('rooms.index')">My rooms</x-td.button></x-slot:actions>
-                    @if ($questions->isEmpty())
-                        <x-td.state kind="empty" title="No unanswered questions">Questions from classmates in your rooms show here when nobody has answered yet. Helping someone is a good way to learn.</x-td.state>
-                    @else
-                        <ul class="st-list">
-                            @foreach ($questions as $question)
-                                <li class="st-row">
-                                    <div>
-                                        <p class="st-row__title"><a href="{{ route('rooms.posts.show', $question) }}">{{ $question->title ?: \Illuminate\Support\Str::limit($question->body, 80) }}</a></p>
-                                        <p class="st-row__meta">{{ $question->room?->displayName() ?? 'Room' }} · {{ Times::when($question->created_at) }}</p>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </x-td.panel>
-            @endif
-
-            <x-td.panel title="What your answers show">
-                @if ($insights['sentences'] === [])
-                    <p style="margin:0">Answer a few practice questions or a quiz and this says what is going well and what needs more practice, topic by topic.</p>
-                @else
-                    <ul class="st-stack st-stack--tight" style="margin:0;padding-left:1.1rem;list-style:disc">
-                        @foreach (array_slice($insights['sentences'], 0, $young ? 2 : 4) as $sentence)
-                            <li>{{ $sentence }}</li>
-                        @endforeach
-                    </ul>
-                    <p class="st-small" style="margin:var(--td-space-3) 0 0">{{ $young ? 'Worked out from your answers.' : $insights['label'] }}</p>
-                @endif
-                <div class="st-inline" style="margin-top:var(--td-space-3)">
-                    <x-td.button size="sm" variant="quiet" :href="route('learn.progress')" icon-end="arrow-right">Progress</x-td.button>
-                    <x-td.button size="sm" variant="quiet" :href="route('practice.index')" icon-end="arrow-right">Practise</x-td.button>
+    <div @class(['hm-split' => ! $young, 'hm-one' => $young])>
+        <section aria-labelledby="coming-title">
+            <div class="hm-sech">
+                <h2 id="coming-title">Coming up</h2>
+                @if ($dated->isNotEmpty())<span class="hm-sech__n">{{ $dated->count() }} {{ \Illuminate\Support\Str::plural('item', $dated->count()) }}</span>@endif
+                <x-td.button variant="quiet" size="sm" :href="route('marketplace.bookings')">All lessons</x-td.button>
+            </div>
+            @if ($rows === [])
+                <div class="hm-empty">
+                    <x-td.shelf />
+                    <p>{{ $young ? 'No lessons yet. A tutor can only be booked after a grown-up says yes.' : 'No lessons booked. Find a tutor for one lesson at a time. There is no subscription and nothing to sign up for.' }}</p>
                 </div>
-            </x-td.panel>
+            @else
+                <ul class="hm-rows">
+                    @foreach ($rows as $row)
+                        <li class="hm-row">
+                            <div>
+                                <a class="hm-row__link" href="{{ $row['href'] }}">{{ $row['title'] }}</a>
+                                <span class="hm-row__meta">@if ($row['at'] !== null && in_array($row['kind'], ['lesson', 'seat', 'review'], true))<time datetime="{{ $row['at']->toIso8601String() }}">{{ $row['meta'] }}</time>@else{{ $row['meta'] }}@endif</span>
+                            </div>
+                            <div class="hm-row__end">
+                                @if ($row['tag'])<x-td.home-tag :text="$row['tag']['text']" :icon="$row['tag']['icon']" :tone="$row['tag']['tone']" />@endif
+                                @if ($row['action'])<x-td.button size="sm" :href="$row['action']['href']">{{ $row['action']['label'] }}</x-td.button>@endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                @if ($lessons->isNotEmpty() || $seats->isNotEmpty())<p class="hm-note">{{ Times::zoneNote() }}</p>@endif
+            @endif
 
-            @if ($toReview->isNotEmpty())
-                <x-td.panel title="How did it go?" flush>
-                    <ul class="st-list">
-                        @foreach ($toReview as $lesson)
-                            <li class="st-row">
-                                <div>
-                                    <p class="st-row__title">{{ $lesson->subject?->name ?? 'Lesson' }} with {{ $lesson->tutorProfile->displayName() }}</p>
-                                    <p class="st-row__meta">{{ Times::when($lesson->starts_at) }}</p>
-                                </div>
-                                <div class="st-row__end"><x-td.button size="sm" :href="route('learn.lessons.show', $lesson).'#review'">Review</x-td.button></div>
-                            </li>
+            @if ($young)
+                <div class="hm-sech hm-gap"><h2>Practise</h2></div>
+                <ul class="hm-rows">
+                    <li class="hm-row">
+                        <div><a class="hm-row__link" href="{{ route('practice.index') }}">Practise</a><span class="hm-row__meta">Questions and cards, at your pace.</span></div>
+                        <div class="hm-row__end"><x-td.button size="sm" :href="route('practice.index')">Practise</x-td.button></div>
+                    </li>
+                    @if ($courses === [])
+                        <li class="hm-row">
+                            <div><a class="hm-row__link" href="{{ route('learning.courses.index') }}">Your courses</a><span class="hm-row__meta">No course yet</span></div>
+                            <div class="hm-row__end"><x-td.button size="sm" :href="route('learning.courses.index')">Browse courses</x-td.button></div>
+                        </li>
+                    @endif
+                </ul>
+            @endif
+        </section>
+
+        @unless ($young)
+            <section aria-labelledby="next-title">
+                @if ($next && in_array($next['kind'], ['pay', 'lesson'], true))
+                    @php $nl = $next['lesson']; @endphp
+                    <div class="hm-sech"><h2 id="next-title">The next thing</h2></div>
+                    <dl class="hm-facts">
+                        <dt>Subject</dt><dd>{{ $nl->subject?->name ?? 'Lesson' }}</dd>
+                        <dt>Tutor</dt><dd>{{ $nl->tutorProfile->displayName() }}</dd>
+                        <dt>When</dt><dd>{{ Times::stamp($nl->starts_at) }}</dd>
+                        <dt>Length</dt><dd>{{ $nl->duration_minutes }} min, {{ $nl->delivery === 'in_person' ? 'in person' : 'online' }}</dd>
+                        <dt>State</dt><dd>@include('student.partials.lesson-state', ['status' => $nl->status])</dd>
+                        <dt>What happens next</dt><dd class="hm-plain">{{ $presenter->nextStep($nl) }}</dd>
+                    </dl>
+                @elseif ($next && $next['kind'] === 'work')
+                    <div class="hm-sech"><h2 id="next-title">The next thing</h2></div>
+                    <dl class="hm-facts">
+                        <dt>Work</dt><dd>{{ $next['work']['title'] }}</dd>
+                        <dt>Set by</dt><dd>Your tutor</dd>
+                        <dt>Due</dt><dd>{{ $next['work']['due_at'] ? Times::stamp($next['work']['due_at']) : 'No due date' }}</dd>
+                    </dl>
+                @elseif ($next && $next['kind'] === 'course')
+                    <div class="hm-sech"><h2 id="next-title">The next thing</h2></div>
+                    <dl class="hm-facts">
+                        <dt>Course</dt><dd>{{ $next['course']['title'] }}</dd>
+                        <dt>Progress</dt><dd>{{ $next['course']['summary']['completed'] }} of {{ $next['course']['summary']['total'] }} lessons done</dd>
+                    </dl>
+                @else
+                    <div class="hm-sech"><h2 id="next-title">Courses</h2></div>
+                    <div class="hm-empty">
+                        <p>Courses are written by tutors. Some are free.</p>
+                        <x-td.button size="sm" :href="route('learning.courses.index')" icon="book-open">Browse courses</x-td.button>
+                    </div>
+                @endif
+
+                <div class="hm-sech hm-gap">
+                    <h2>What your answers show</h2>
+                    <x-td.button variant="quiet" size="sm" :href="route('learn.progress')">Progress</x-td.button>
+                    <x-td.button variant="quiet" size="sm" :href="route('practice.index')">Practise</x-td.button>
+                </div>
+                @if ($insights['sentences'] === [])
+                    <p class="hm-note" style="margin-top:0">Answer a few practice questions or a quiz and this says what is going well and what needs more practice, topic by topic.</p>
+                @else
+                    <ul class="hm-rows">
+                        @foreach (array_slice($insights['sentences'], 0, 4) as $sentence)
+                            <li class="hm-row hm-row--dense"><span>{{ $sentence }}</span></li>
                         @endforeach
                     </ul>
-                </x-td.panel>
-            @endif
+                    <p class="hm-note">{{ $insights['label'] }}</p>
+                @endif
 
-            @if (Route::has('ai.index'))
-                <x-td.panel title="Study assistant">
-                    @if ($aiConfigured)
-                        <p style="margin:0">Ask for an explanation, practice questions or a revision plan. Its answers are AI guidance, not marked results.</p>
-                        <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" :href="route('ai.index')" icon="circle-help">Ask the assistant</x-td.button></div>
-                    @else
-                        <p style="margin:0" class="st-muted">The AI study assistant is not switched on for Dot.Tutor yet. Tutors and the study library can help in the meantime.</p>
-                    @endif
-                </x-td.panel>
-            @endif
-        </div>
+                @if (Route::has('rooms.index'))
+                    <div class="hm-sech hm-gap"><h2>Questions in your rooms</h2><x-td.button variant="quiet" size="sm" :href="route('rooms.index')">My rooms</x-td.button></div>
+                    <ul class="hm-rows">
+                        @forelse ($questions as $question)
+                            <li class="hm-row hm-row--dense">
+                                <div><a class="hm-row__link" href="{{ route('rooms.posts.show', $question) }}">{{ $question->title ?: \Illuminate\Support\Str::limit($question->body, 80) }}</a><span class="hm-row__meta">{{ $question->room?->displayName() ?? 'Room' }} · {{ Times::when($question->created_at) }}</span></div>
+                            </li>
+                        @empty
+                            <li class="hm-row hm-row--dense hm-row--empty"><span>No unanswered questions in your rooms. Helping someone is a good way to learn.</span></li>
+                        @endforelse
+                    </ul>
+                @endif
+
+                @if (Route::has('ai.index') && $aiConfigured)
+                    <div class="hm-sech hm-gap"><h2>Study assistant</h2><x-td.button variant="quiet" size="sm" :href="route('ai.index')" icon="circle-help">Ask the assistant</x-td.button></div>
+                    <p class="hm-note" style="margin-top:0">Ask for an explanation, practice questions or a revision plan. Its answers are AI guidance, not marked results.</p>
+                @endif
+            </section>
+        @endunless
+    </div>
+
+    <p class="hm-foot">
+        <span><b>{{ $lessons->count() + $seats->count() }}</b> {{ \Illuminate\Support\Str::plural('lesson', $lessons->count() + $seats->count()) }} coming up</span>
+        <span><b>{{ count($work) }}</b> {{ count($work) === 1 ? 'piece' : 'pieces' }} of work due</span>
+        <span><b>{{ count($courses) }}</b> {{ \Illuminate\Support\Str::plural('course', count($courses)) }} in progress</span>
+        <span>{{ Times::zoneNote() }}</span>
+    </p>
     </div>
 </x-student.shell>

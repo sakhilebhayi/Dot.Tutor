@@ -1,162 +1,177 @@
 {{-- Command centre overview (brief section 20). The screen's question: what needs a person now, and is learning
-     happening? Every figure is counted from the platform's own records on this request (App\Domain\Ops\Insights). --}}
+     happening? Every figure is counted from the platform's own records on this request (App\Domain\Ops\Insights).
+     No query is added here (R-51): the page lays out what Queues and Overview already return. --}}
 @php
+    use Illuminate\Support\Str;
     $d = $data;
     $waiting = collect($queues)->filter(fn ($q) => $q['count'] > 0);
     $dash = fn ($v, $suffix = '') => $v === null ? '—' : $v.$suffix;
-    // The arrival's one primary action (R-50): a child-safety report before anything, then a queue that is past its
-    // time, then the first with work in it, else the first queue this role covers. Counts are the panel's own.
+    $window = $d['window_days'];
+    // The head's one primary action (R-50): a child-safety report before anything, then a queue that is past its time,
+    // then the first with work in it, else the first queue this role covers. Counts are the list's own.
     $top = $waiting->firstWhere('key', 'child_safety') ?? $waiting->first(fn ($q) => $q['urgent'] > 0) ?? $waiting->first() ?? ($queues[0] ?? null);
     if ($top !== null) {
-        $primary = ['label' => 'Open '.\Illuminate\Support\Str::lcfirst($top['title']), 'href' => route($top['route'])];
-        $slip = $top['count'] > 0
-            ? ['label' => 'Waiting for you', 'text' => $top['count'].' in '.\Illuminate\Support\Str::lcfirst($top['title']).'.', 'note' => $top['urgent'] > 0 ? $top['urgent'].' '.$top['urgent_label'].'.' : null]
-            : ['label' => 'Nothing is waiting', 'text' => 'Every queue your role covers is empty right now.'];
+        $primary = ['label' => 'Open '.Str::lcfirst($top['title']), 'href' => route($top['route'])];
     } else {
         $primary = ['label' => 'Open your account', 'href' => route('profile.show'), 'icon' => 'user'];
-        $slip = ['label' => 'No work queues', 'text' => 'Your role has no work queues on this screen.'];
     }
+    $otherItems = $waiting->sum('count') - ($top['count'] ?? 0);
+    [$headline, $sub] = match (true) {
+        $top === null => ['Your role has no work queues on this screen.', 'The figures below are counted from Dot.Tutor\'s own records, last '.$window.' days.'],
+        $top['count'] === 0 => ['Every queue your role covers is empty.', 'The figures below are counted from Dot.Tutor\'s own records, last '.$window.' days. Nothing is estimated.'],
+        default => [
+            $top['title'].': '.(Str::endsWith($top['title'], 'waiting') ? $top['count'] : $top['count'].' waiting').($top['key'] === 'child_safety' ? ', with an hour to respond.' : '.'),
+            ($otherItems > 0 ? $otherItems.' more '.Str::plural('item', $otherItems).' wait across '.($waiting->count() - 1).' other '.Str::plural('queue', $waiting->count() - 1).'. ' : '').'The figures below are counted from Dot.Tutor\'s own records, last '.$window.' days.'.($top['urgent'] > 0 ? ' '.$top['urgent'].' '.$top['urgent_label'].'.' : ''),
+        ],
+    };
+    $langName = fn ($l) => $l->native_name && $l->native_name !== $l->name ? $l->native_name.' ('.$l->name.')' : $l->name;
+    $hasCohorts = collect($d['cohorts'])->sum('size') > 0;
+    $s = $d['satisfaction'];
+    $m = $d['money'];
 @endphp
 <x-layouts::operations title="Command centre">
-    <x-td.arrival headline="Keep learning safe and running"
-        lede="The command centre puts what is waiting for a person first, then the last {{ $d['window_days'] }} days counted from Dot.Tutor's own records. Nothing here is estimated."
-        :primary="$primary" :slip="$slip" />
+    <div class="hm">
+    <x-td.home-head :headline="$headline" :sub="$sub" :primary="$primary" />
 
-    <div class="grid gap-6">
-        <x-td.panel title="Waiting for you" flush>
+    <div class="hm-split">
+        <section aria-labelledby="queues-title">
+            <div class="hm-sech"><h2 id="queues-title">Waiting for a person</h2>@if ($waiting->isNotEmpty())<span class="hm-sech__n">{{ $waiting->sum('count') }} {{ Str::plural('item', $waiting->sum('count')) }}, {{ $waiting->count() }} {{ Str::plural('queue', $waiting->count()) }}</span>@endif</div>
             @if ($waiting->isEmpty())
-                <x-td.state kind="success" title="Nothing is waiting in your queues">
-                    {{ count($queues) === 0 ? 'Your role has no work queues on this screen.' : 'Every queue your role covers is empty right now.' }}
-                </x-td.state>
+                <div class="hm-empty">
+                    <x-td.shelf />
+                    <p>{{ count($queues) === 0 ? 'Your role has no work queues on this screen.' : 'Nothing is waiting in your queues. Every queue your role covers is empty right now.' }}</p>
+                </div>
             @else
-                <ul class="ops-work ops-work--grid">
+                <ul class="hm-rows">
                     @foreach ($waiting as $q)
-                        <li>
-                            <div>
-                                <p class="ops-work__title"><a href="{{ route($q['route']) }}">{{ $q['title'] }}</a></p>
+                        <li class="hm-row hm-row--dense hm-row--queue">
+                            <div><a class="hm-row__link" href="{{ route($q['route']) }}">{{ $q['title'] }}</a></div>
+                            <span class="hm-tagcell">
                                 @if ($q['urgent'] > 0)
-                                    <p class="ops-work__meta">@include('ops.partials.tag', ['text' => $q['urgent'].' '.$q['urgent_label'], 'tone' => $q['tone'] === 'neutral' ? 'warning' : $q['tone']])</p>
+                                    <x-td.home-tag :text="$q['urgent'].' '.$q['urgent_label']" :icon="$q['tone'] === 'danger' ? 'circle-alert' : 'triangle-alert'" :tone="$q['tone'] === 'danger' ? 'danger' : 'warn'" />
                                 @elseif ($q['key'] === 'child_safety')
-                                    <p class="ops-work__meta">@include('ops.partials.tag', ['text' => 'Respond within an hour', 'tone' => 'danger'])</p>
+                                    <x-td.home-tag text="Respond within an hour" icon="circle-alert" tone="danger" />
                                 @endif
-                            </div>
-                            <span class="ops-work__count">{{ $q['count'] }}</span>
+                            </span>
+                            <span class="hm-num">{{ $q['count'] }}</span>
                         </li>
                     @endforeach
                 </ul>
+                <p class="hm-note">Queues with nothing in them are not listed.</p>
             @endif
-        </x-td.panel>
 
-        <x-td.stat-strip label="People, last {{ $d['window_days'] }} days" :items="[
-            ['label' => 'Active learners', 'value' => $d['people']['learners_active'], 'hint' => 'with a lesson or a course enrolment'],
-            ['label' => 'Active tutors', 'value' => $d['people']['tutors_active'], 'hint' => 'of '.$d['people']['tutors_approved'].' approved; '.$d['people']['tutors_pending'].' applications waiting'],
-            ['label' => 'Lessons held', 'value' => $d['lessons']['completed'], 'hint' => $d['lessons']['completion_rate'] === null ? 'no lesson has reached its start time yet' : ($d['lessons']['no_show'] === 0 ? 'no learner missed a lesson' : $d['lessons']['no_show'].' '.\Illuminate\Support\Str::plural('no-show', $d['lessons']['no_show']).', '.$d['lessons']['completion_rate'].'% of started lessons held')],
-            ['label' => 'Guardians linked', 'value' => $d['people']['guardians_linked'], 'hint' => 'with consent recorded'],
-        ]" />
+            <div class="hm-sech hm-gap"><h2>Lessons requested each week</h2></div>
+            @if (collect($d['weekly'])->sum('value') === 0)
+                <div class="hm-empty"><x-td.shelf /><p>No lessons requested in the last 12 weeks. Requests appear here as learners book tutors.</p></div>
+            @else
+                @include('ops.partials.columns', ['points' => $d['weekly'], 'caption' => 'Lessons requested per week, last 12 weeks', 'unit' => 'requests'])
+            @endif
+            <div class="hm-sech hm-gap"><h2 id="study-title">Where learners study</h2></div>
+            @if ($d['geography']['profiles'] === 0)
+                <p class="hm-note" style="margin-top:0">No learner has completed a learning profile yet, so country and curriculum are not known.</p>
+            @else
+                <h3 class="hm-sech__n" id="geo-country">Country</h3>
+                @include('ops.partials.bars', ['rows' => $d['geography']['countries']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by country'])
+                <h3 class="hm-sech__n hm-gap" id="geo-curriculum">Curriculum</h3>
+                @include('ops.partials.bars', ['rows' => $d['geography']['curricula']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by curriculum'])
+            @endif
 
-        <div class="td-panels td-panels--2">
-            <x-td.panel title="Lessons requested each week">
-                @if (collect($d['weekly'])->sum('value') === 0)
-                    <x-td.state kind="empty" title="No lessons requested in the last 12 weeks">Requests appear here as learners book tutors.</x-td.state>
-                @else
-                    @include('ops.partials.columns', ['points' => $d['weekly'], 'caption' => 'Lessons requested per week, last 12 weeks', 'unit' => 'requests'])
-                @endif
-            </x-td.panel>
-            <x-td.panel title="Lessons, last {{ $d['window_days'] }} days">
-                <dl class="ops-facts">
-                    <dt>Requested</dt><dd class="ops-num">{{ $d['lessons']['requested'] }}</dd>
-                    <dt>Held</dt><dd class="ops-num">{{ $d['lessons']['completed'] }}</dd>
-                    <dt>Learner did not come</dt><dd class="ops-num">{{ $d['lessons']['no_show'] }}</dd>
-                    <dt>Cancelled</dt><dd class="ops-num">{{ $d['lessons']['cancelled'] }}</dd>
-                    <dt>Disputed now</dt><dd class="ops-num">{{ $d['lessons']['disputed'] }}</dd>
+            <div class="hm-sech hm-gap"><h2>Learners who came back</h2></div>
+            @if (! $hasCohorts)
+                <p class="hm-note" style="margin-top:0">No learner has had a lesson in the last six months. Each row will show learners by the month of their first lesson and how many had another lesson one, two and three months later.</p>
+            @else
+                <x-td.table caption="Share of each month's new learners with a lesson in a later month" class="ops-heat" dense stack>
+                    <thead><tr><th scope="col">First lesson</th><th scope="col" class="is-num" data-stack="key">Learners</th><th scope="col">1 month on</th><th scope="col">2 months on</th><th scope="col">3 months on</th></tr></thead>
+                    <tbody>
+                        @foreach ($d['cohorts'] as $row)
+                            <tr>
+                                <th scope="row">{{ $row['month'] }}</th>
+                                <td class="is-num">{{ $row['size'] }}</td>
+                                @foreach ($row['cells'] as $cell)
+                                    @if ($cell === null)
+                                        <td class="ops-heat__cell ops-heat__cell--none">{{ $row['size'] === 0 ? '—' : 'not yet' }}</td>
+                                    @else
+                                        <td class="ops-heat__cell" data-step="{{ $cell <= 0 ? 0 : min(4, (int) ceil($cell / 25)) }}">{{ $cell }}%</td>
+                                    @endif
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </x-td.table>
+            @endif
+        </section>
+
+        <section aria-labelledby="window-title">
+            <div class="hm-sech"><h2 id="window-title">Last {{ $window }} days</h2></div>
+            <dl class="hm-facts">
+                <dt>Active learners</dt><dd><span data-count="{{ $d['people']['learners_active'] }}">{{ $d['people']['learners_active'] }}</span> <small>with a lesson or a course enrolment</small></dd>
+                <dt>Active tutors</dt><dd><span data-count="{{ $d['people']['tutors_active'] }}">{{ $d['people']['tutors_active'] }}</span> <small>of {{ $d['people']['tutors_approved'] }} approved; {{ $d['people']['tutors_pending'] }} {{ Str::plural('application', $d['people']['tutors_pending']) }} waiting</small></dd>
+                <dt>Guardians linked</dt><dd><span data-count="{{ $d['people']['guardians_linked'] }}">{{ $d['people']['guardians_linked'] }}</span> <small>with consent recorded</small></dd>
+                <dt>Lessons requested</dt><dd><span data-count="{{ $d['lessons']['requested'] }}">{{ $d['lessons']['requested'] }}</span></dd>
+                <dt>Lessons held</dt><dd><span data-count="{{ $d['lessons']['completed'] }}">{{ $d['lessons']['completed'] }}</span> <small>{{ $d['lessons']['completion_rate'] === null ? 'no lesson has reached its start time yet' : $d['lessons']['completion_rate'].'% of started lessons held' }}</small></dd>
+                <dt>Learner did not come</dt><dd>{{ $d['lessons']['no_show'] }}</dd>
+                <dt>Cancelled</dt><dd>{{ $d['lessons']['cancelled'] }}</dd>
+                <dt>Disputed now</dt><dd>{{ $d['lessons']['disputed'] }}</dd>
+            </dl>
+
+            @if ($m !== null)
+                <div class="hm-sech hm-gap"><h2>Money</h2></div>
+                <dl class="hm-facts">
+                    <dt>Paid by learners</dt><dd>{{ \App\Domain\Money\Money::of($m['cash_minor'], $m['currency'])->format() }} <small>{{ $m['paid_orders'] }} paid {{ Str::plural('order', $m['paid_orders']) }}</small></dd>
+                    <dt>Commission</dt><dd>{{ \App\Domain\Money\Money::of($m['commission_minor'], $m['currency'])->format() }} <small>from the ledger</small></dd>
+                    <dt>Tutor earnings</dt><dd>{{ \App\Domain\Money\Money::of($m['tutor_earnings_minor'], $m['currency'])->format() }} <small>net of commission</small></dd>
+                    <dt>Course sales</dt><dd>{{ $m['course_sales'] }} <small>and {{ $m['resource_sales'] }} resource sales</small></dd>
+                    <dt>Refunded</dt><dd>{{ \App\Domain\Money\Money::of($m['refunds_minor'], $m['currency'])->format() }} <small>processed by Paystack</small></dd>
                 </dl>
-            </x-td.panel>
-        </div>
+            @endif
 
-        @if ($d['money'] !== null)
-            @php($m = $d['money'])
-            <x-td.stat-strip label="Money, last {{ $d['window_days'] }} days" :items="[
-                ['label' => 'Paid by learners', 'value' => \App\Domain\Money\Money::of($m['cash_minor'], $m['currency'])->format(), 'hint' => $m['paid_orders'].' paid orders'],
-                ['label' => 'Platform commission', 'value' => \App\Domain\Money\Money::of($m['commission_minor'], $m['currency'])->format(), 'hint' => 'from the ledger'],
-                ['label' => 'Tutor earnings', 'value' => \App\Domain\Money\Money::of($m['tutor_earnings_minor'], $m['currency'])->format(), 'hint' => 'net of commission'],
-                ['label' => 'Course sales', 'value' => $m['course_sales'], 'hint' => 'and '.$m['resource_sales'].' resource sales'],
-                ['label' => 'Refunded', 'value' => \App\Domain\Money\Money::of($m['refunds_minor'], $m['currency'])->format(), 'hint' => 'processed by Paystack'],
-            ]" />
-        @endif
+            <div class="hm-sech hm-gap"><h2>Teaching languages</h2><span class="hm-sech__n">approved tutors</span></div>
+            @if ($d['languages']['teaching']->isEmpty())
+                <p class="hm-note" style="margin-top:0">No approved tutor has listed a teaching language yet.</p>
+            @else
+                <dl class="hm-facts">
+                    @foreach ($d['languages']['teaching'] as $l)
+                        <dt lang="{{ $l->code }}">{{ $langName($l) }}</dt><dd>{{ (int) $l->n }}</dd>
+                    @endforeach
+                </dl>
+            @endif
 
-        <div class="td-panels ops-panels-3">
-            <x-td.panel title="Teaching languages of approved tutors">
-                @include('ops.partials.bars', ['rows' => $d['languages']['teaching']->map(fn ($l) => ['label' => $l->native_name && $l->native_name !== $l->name ? $l->native_name.' ('.$l->name.')' : $l->name, 'value' => (int) $l->n, 'lang' => $l->code])->all(), 'label' => 'Tutors per teaching language', 'empty' => 'No approved tutor has listed a teaching language yet.'])
-            </x-td.panel>
-            <x-td.panel title="Languages learners want to be taught in">
-                @include('ops.partials.bars', ['rows' => $d['languages']['preferred']->map(fn ($l) => ['label' => $l->native_name && $l->native_name !== $l->name ? $l->native_name.' ('.$l->name.')' : $l->name, 'value' => (int) $l->n, 'lang' => $l->code])->all(), 'label' => 'Learners per preferred teaching language', 'empty' => 'No learner has set a preferred teaching language yet.'])
-            </x-td.panel>
-            <x-td.panel title="Where learners study">
-                @if ($d['geography']['profiles'] === 0)
-                    <p class="m-0 ops-muted">No learner has completed a learning profile yet, so country and curriculum are not known.</p>
-                @else
-                    <div class="grid gap-5">
-                        <section aria-labelledby="geo-country" class="grid gap-2">
-                            <h3 id="geo-country" class="m-0 text-sm font-bold">Country</h3>
-                            @include('ops.partials.bars', ['rows' => $d['geography']['countries']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by country'])
-                        </section>
-                        <section aria-labelledby="geo-curriculum" class="grid gap-2">
-                            <h3 id="geo-curriculum" class="m-0 text-sm font-bold">Curriculum</h3>
-                            @include('ops.partials.bars', ['rows' => $d['geography']['curricula']->map(fn ($c) => ['label' => $c->name, 'value' => (int) $c->n])->all(), 'label' => 'Learners by curriculum'])
-                        </section>
-                    </div>
-                @endif
-            </x-td.panel>
-        </div>
+            <div class="hm-sech hm-gap"><h2>Languages learners want</h2><span class="hm-sech__n">to be taught in</span></div>
+            @if ($d['languages']['preferred']->isEmpty())
+                <p class="hm-note" style="margin-top:0">No learner has set a preferred teaching language yet.</p>
+            @else
+                <dl class="hm-facts">
+                    @foreach ($d['languages']['preferred'] as $l)
+                        <dt lang="{{ $l->code }}">{{ $langName($l) }}</dt><dd>{{ (int) $l->n }}</dd>
+                    @endforeach
+                </dl>
+            @endif
+            <div class="hm-sech hm-gap"><h2 id="learning-title">Learning, last {{ $window }} days</h2></div>
+            <dl class="hm-facts">
+                <dt>Course enrolments</dt><dd>{{ $d['learning']['enrolments'] }} <small>{{ $d['learning']['courses_published'] }} courses published</small></dd>
+                <dt>Resources added</dt><dd>{{ $d['learning']['resources_added'] }} <small>{{ $d['learning']['resources_published'] }} published in the library; downloads are not counted</small></dd>
+                <dt>Recommendations</dt><dd>{{ $d['learning']['recommendations'] }} <small>by learners and tutors</small></dd>
+                <dt>Practice attempts</dt><dd>{{ $d['learning']['attempts'] }} <small>submitted quizzes and assessments</small></dd>
+                <dt>Room questions</dt><dd>{{ $d['learning']['room_questions'] }} <small>{{ $d['learning']['room_answers'] }} {{ Str::plural('answer', $d['learning']['room_answers']) }} posted</small></dd>
+            </dl>
 
-        <div class="td-panels td-panels--2">
-            <x-td.panel title="Learners who came back">
-                @php($hasCohorts = collect($d['cohorts'])->sum('size') > 0)
-                @if (! $hasCohorts)
-                    <x-td.state kind="empty" title="No learner has had a lesson in the last six months">Each row will show learners by the month of their first lesson and how many had another lesson one, two and three months later.</x-td.state>
-                @else
-                    <x-td.table caption="Share of each month's new learners with a lesson in a later month" class="ops-heat" dense stack>
-                        <thead><tr><th scope="col">First lesson</th><th scope="col" class="is-num" data-stack="key">Learners</th><th scope="col">1 month on</th><th scope="col">2 months on</th><th scope="col">3 months on</th></tr></thead>
-                        <tbody>
-                            @foreach ($d['cohorts'] as $row)
-                                <tr>
-                                    <th scope="row">{{ $row['month'] }}</th>
-                                    <td class="is-num">{{ $row['size'] }}</td>
-                                    @foreach ($row['cells'] as $cell)
-                                        @if ($cell === null)
-                                            <td class="ops-heat__cell ops-heat__cell--none">{{ $row['size'] === 0 ? '—' : 'not yet' }}</td>
-                                        @else
-                                            <td class="ops-heat__cell" data-step="{{ $cell <= 0 ? 0 : min(4, (int) ceil($cell / 25)) }}">{{ $cell }}%</td>
-                                        @endif
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </x-td.table>
-                @endif
-            </x-td.panel>
-            <x-td.panel title="How learners rate lessons">
-                @php($s = $d['satisfaction'])
-                @if ($s['lessons']['total'] === 0 && $s['courses']['total'] === 0)
-                    <p class="m-0 ops-muted">No published reviews yet. Reviews come only from learners who took the lesson or the course.</p>
-                @else
-                    <div class="grid gap-5">
-                        <div>
-                            <p class="m-0 mb-3"><span class="ops-work__count">{{ $dash($s['lessons']['average']) }}</span> <span class="ops-muted">average of {{ $s['lessons']['total'] }} published lesson reviews</span></p>
-                            @include('ops.partials.bars', ['rows' => collect($s['lessons']['distribution'])->map(fn ($r) => ['label' => $r['stars'].' of 5', 'value' => $r['n']])->all(), 'label' => 'Lesson reviews by rating'])
-                        </div>
-                        <p class="m-0 ops-muted">Courses: {{ $s['courses']['total'] === 0 ? 'no published reviews yet' : $s['courses']['average'].' average of '.$s['courses']['total'].' reviews' }}.</p>
-                    </div>
-                @endif
-            </x-td.panel>
-        </div>
+            <div class="hm-sech hm-gap"><h2>How learners rate lessons</h2></div>
+            @if ($s['lessons']['total'] === 0 && $s['courses']['total'] === 0)
+                <p class="hm-note" style="margin-top:0">No published reviews yet. Reviews come only from learners who took the lesson or the course.</p>
+            @else
+                <dl class="hm-facts">
+                    <dt>Lessons</dt><dd class="hm-big">{{ $dash($s['lessons']['average']) }} <small>average of {{ $s['lessons']['total'] }} published lesson reviews</small></dd>
+                    <dt>Courses</dt><dd class="hm-plain">{{ $s['courses']['total'] === 0 ? 'No published reviews yet' : $s['courses']['average'].' average of '.$s['courses']['total'].' reviews' }}</dd>
+                </dl>
+                @include('ops.partials.bars', ['rows' => collect($s['lessons']['distribution'])->map(fn ($r) => ['label' => $r['stars'].' of 5', 'value' => $r['n']])->all(), 'label' => 'Lesson reviews by rating'])
+            @endif
+        </section>
+    </div>
 
-        <x-td.stat-strip label="Learning, last {{ $d['window_days'] }} days" :items="[
-            ['label' => 'Course enrolments', 'value' => $d['learning']['enrolments'], 'hint' => $d['learning']['courses_published'].' courses published'],
-            ['label' => 'Resources added', 'value' => $d['learning']['resources_added'], 'hint' => $d['learning']['resources_published'].' published in the library; downloads are not counted'],
-            ['label' => 'Resource recommendations', 'value' => $d['learning']['recommendations'], 'hint' => 'by learners and tutors'],
-            ['label' => 'Practice attempts', 'value' => $d['learning']['attempts'], 'hint' => 'submitted quizzes and assessments'],
-            ['label' => 'Room questions', 'value' => $d['learning']['room_questions'], 'hint' => $d['learning']['room_answers'].' '.\Illuminate\Support\Str::plural('answer', $d['learning']['room_answers']).' posted'],
-        ]" />
+    <p class="hm-foot">
+        <span><b>{{ $waiting->sum('count') }}</b> {{ Str::plural('item', $waiting->sum('count')) }} waiting</span>
+        <span><b>{{ $waiting->count() }}</b> {{ Str::plural('queue', $waiting->count()) }}</span>
+        <span>Window: last {{ $window }} days</span>
+    </p>
     </div>
 </x-layouts::operations>
