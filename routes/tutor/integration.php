@@ -8,7 +8,7 @@
 use App\Domain\Integration\Http\TeachingLanguagesController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->prefix('api/tutor/me')->name('integration.')->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->prefix('api/tutor/me')->name('integration.')->group(function () {
     Route::get('/teaching-languages', [TeachingLanguagesController::class, 'show'])->name('teaching-languages.show');
     Route::put('/teaching-languages', [TeachingLanguagesController::class, 'update'])->name('teaching-languages.update');
 });

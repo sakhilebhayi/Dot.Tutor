@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/language', [LocaleController::class, 'index'])->name('academic.locale.index');
 Route::post('/language', [LocaleController::class, 'update'])->middleware('throttle:20,1')->name('academic.locale.update');
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
     Route::get('/learn/profile', [LearnerProfileController::class, 'edit'])->name('academic.profile.edit');
     Route::put('/learn/profile', [LearnerProfileController::class, 'update'])->name('academic.profile.update');
     Route::post('/learn/describe', DescribeNeedController::class)->middleware('throttle:academic-describe')->name('academic.describe');

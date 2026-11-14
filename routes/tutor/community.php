@@ -67,7 +67,7 @@ $communityRoutes = function (): void {
     Route::get('{room}/activity', [RoomController::class, 'activity'])->whereNumber('room')->middleware('throttle:community-polls')->name('activity');
 };
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () use ($communityRoutes) {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () use ($communityRoutes) {
     Route::prefix('rooms')->name('rooms.')->group($communityRoutes);
     Route::prefix('api/tutor/community')->name('community.api.')->group($communityRoutes);
 

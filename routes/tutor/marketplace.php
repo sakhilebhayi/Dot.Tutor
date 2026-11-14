@@ -29,7 +29,7 @@ Route::get('/tutors/{tutorProfile}/photo', [DiscoveryController::class, 'photo']
 Route::get('/find-a-tutor', [MarketplacePageController::class, 'find'])->middleware(['throttle:tutor-guest-search', 'throttle:marketplace-matching'])->name('marketplace.find');
 Route::get('/t/{tutorProfile}', [MarketplacePageController::class, 'storefront'])->middleware('throttle:tutor-public-pages')->name('marketplace.tutors.show');
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
 
     // ---------------------------------------------------------------- JSON API
     Route::prefix('api/tutor')->name('marketplace.api.')->group(function () {

@@ -58,6 +58,7 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
+    'entitled',
 ])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/notifications/read', [DashboardController::class, 'markNoticesRead'])->name('notifications.read');

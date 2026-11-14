@@ -9,7 +9,7 @@ use App\Domain\Classroom\Http\Controllers\ClassroomPageController;
 use App\Domain\Classroom\Http\Controllers\RoomApiController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
     Route::get('/classroom', [ClassroomPageController::class, 'index'])->name('classroom.index');
 
     Route::prefix('lessons/{tutorSession}/classroom')->name('classroom.')->group(function () {

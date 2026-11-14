@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 // The find form's tidy-up redirect is public with /find-a-tutor (R-47 polish D-2003): it reads no data but the level.
 Route::get('/learn/find', [FindController::class, 'search'])->middleware('throttle:tutor-guest-search')->name('match.search');
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
     Route::get('/learn', HomeController::class)->name('learn.home');
     Route::post('/learn/need', [HomeController::class, 'need'])->middleware('throttle:academic-describe')->name('learn.need');
 

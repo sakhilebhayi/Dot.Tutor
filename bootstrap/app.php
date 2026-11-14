@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Integration\Support\JsonErrors;
+use App\Http\Middleware\EnsureCompanyEntitled;
 use App\Http\Middleware\EnsurePlatformOperator;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'operator' => EnsurePlatformOperator::class,
+            'entitled' => EnsureCompanyEntitled::class,
         ]);
 
         // Global, so the health check, error pages, Livewire requests and /csp-report carry the headers too.

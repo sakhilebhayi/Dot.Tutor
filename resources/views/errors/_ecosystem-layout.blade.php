@@ -52,7 +52,9 @@
                     </a>
                     @include('layouts.partials.public-nav')
                     <div class="td-public-top__actions">
-                        @if ($signedIn && Route::has('dashboard'))
+                        @if ($signedIn && ($entitlementRefused ?? false))
+                            {{-- R-50: the desk is closed to this person right now; the one action is on the page. --}}
+                        @elseif ($signedIn && Route::has('dashboard'))
                             <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}"><span>Your desk</span></a>
                         @elseif (Route::has('login'))
                             <a class="td-btn td-btn--primary" href="{{ route('login') }}"><span>Sign in</span></a>
@@ -66,12 +68,13 @@
         <main id="main-content" class="td-wrap err">
             <div class="err__grid">
                 <div>
-                    <p class="err__code">Error {{ $code }}</p>
+                    @if (isset($errorLabel))<p class="err__code">{{ $errorLabel }}</p>@else<p class="err__code">Error {{ $code }}</p>@endif
                     <h1 class="err__title">@yield('title')</h1>
                     <p class="err__message">@yield('message')</p>
                     <div class="err__actions">
                         @yield('actions')
                     </div>
+                    @yield('after-actions')
                 </div>
                 <div class="err__shelf" aria-hidden="true">
                     <span></span><span></span><span class="is-gap"></span><span></span><span></span><span></span><span></span><span></span>

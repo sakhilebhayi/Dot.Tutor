@@ -29,7 +29,8 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    // R-50: Jetstream's signed-in pages (team settings) honour the company's entitlement too.
+    'middleware' => ['web', 'entitled'],
 
     'auth_session' => AuthenticateSession::class,
 

@@ -29,10 +29,10 @@ Route::get('/u/{handle}', [StorefrontController::class, 'handle'])
 // sign-in group so a visitor who signs in first comes back here and is counted (the storefront needs sign-in).
 Route::get('/r/{code}', [StorefrontController::class, 'referral'])
     ->where('code', '[a-z0-9]{6,16}')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'throttle:teach-referrals'])
+    ->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled', 'throttle:teach-referrals'])
     ->name('teach.referral');
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->prefix('teach')->name('teach.')->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->prefix('teach')->name('teach.')->group(function () {
     // Becoming a tutor: the guided onboarding works before a profile exists.
     Route::get('/profile', [OnboardingController::class, 'show'])->name('profile');
     Route::post('/profile/start', [OnboardingController::class, 'start'])->name('profile.start');
