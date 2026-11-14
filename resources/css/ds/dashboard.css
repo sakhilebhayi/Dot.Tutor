@@ -612,6 +612,13 @@
         .hm-shelf--band {
             display: none;
         }
+
+        /* Touch: every target on a phone is 44 px or more, whatever the step (the dense and small sizes are for a pointer). */
+        .hm .td-btn,
+        .hm summary.td-btn,
+        .hm .hm-table summary {
+            min-height: 2.75rem;
+        }
     }
 
     /* ---------- Motion: content only, once, on arrival ---------- */

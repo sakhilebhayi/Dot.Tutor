@@ -15,9 +15,10 @@ use Tests\Feature\Safety\BuildsSafetyState;
 use Tests\TestCase;
 
 /**
- * R-50, the arrival: what each role sees first after InfoDot hands them to Dot.Tutor. Every role home carries the
- * original logo, a welcome from the person's own record, and exactly one primary action that leads to a page which
- * answers 200 for that role. Nothing on the arrival is a made-up figure, and no other person is named on it.
+ * R-50 and R-51, the head of each role home: what each role sees first after InfoDot hands them to Dot.Tutor. Every
+ * role home carries the original logo, one headline that says something true about the person's own records (R-51
+ * replaced the repeated marketing line and the welcome), and exactly one primary action that leads to a page which
+ * answers 200 for that role. Nothing in the head is a made-up figure, and no other person is named in it.
  */
 class ArrivalLandingTest extends TestCase
 {
@@ -33,13 +34,14 @@ class ArrivalLandingTest extends TestCase
         Notification::fake();
     }
 
-    /** The arrival's own markup, so assertions never read the working lists below it. */
+    /** The head's own markup, so assertions never read the working lists below it. */
     private function arrival(TestResponse $page): string
     {
         $html = $page->getContent();
-        $this->assertSame(1, substr_count($html, 'class="td-arrival"'), 'one arrival on the page');
+        $this->assertSame(1, substr_count($html, 'class="hm-head"'), 'one head on the page');
+        $this->assertStringNotContainsString('td-arrival', $html, 'the old arrival plate is gone');
 
-        return Str::betweenFirst($html, '<section class="td-arrival"', '</section>');
+        return Str::betweenFirst($html, '<section class="hm-head"', '</section>');
     }
 
     /** Exactly one primary action on the whole page; returns where it leads. */
@@ -47,7 +49,7 @@ class ArrivalLandingTest extends TestCase
     {
         $html = $page->getContent();
         $this->assertSame(1, preg_match_all('/\sdata-primary-action[=\s>]/', $html), 'exactly one primary action');
-        $this->assertSame(1, substr_count($html, 'td-btn--primary td-btn--lg'), 'only the arrival has the large primary button');
+        $this->assertSame(1, substr_count($html, 'td-btn--primary td-btn--lg'), 'only the head has the large primary button');
         $this->assertSame(1, preg_match('#<a href="([^"]+)"[^>]*data-primary-action#', $html, $m), 'the primary action is a link');
 
         return html_entity_decode($m[1]);
@@ -58,8 +60,8 @@ class ArrivalLandingTest extends TestCase
         $this->assertStringContainsString('src="'.asset('dot_tutor.png').'"', $arrival);
         $this->assertStringContainsString('alt="Dot.Tutor"', $arrival);
         $this->assertSame(1, substr_count($arrival, '<h1'), 'the headline is the one h1');
-        $this->assertStringContainsString('href="https://infodot.co.za/home">InfoDot</a>', $arrival);
-        $this->assertStringContainsString('href="https://infodot.co.za/platforms">Platforms</a>', $arrival);
+        $this->assertStringNotContainsString('Welcome', $arrival, 'no repeated welcome or marketing line (R-51)');
+        $this->assertStringNotContainsString('part of the Dot ecosystem', $arrival, 'the shared switcher in the bar replaces the ecosystem links');
     }
 
     private function words(string $arrival): string
@@ -85,7 +87,7 @@ class ArrivalLandingTest extends TestCase
         $arrival = $this->arrival($page);
         $this->assertComposition($arrival);
         $words = $this->words($arrival);
-        $this->assertStringContainsString('Welcome, Nomsa.', $words);
+        $this->assertStringContainsString('Tell us about your learning.', $words);
         $this->assertStringNotContainsString('Team', $words, 'a personal team is not a company');
         $this->assertDoesNotMatchRegularExpression('/\d/', $words, 'no figure on an arrival with no records behind it');
 
@@ -100,8 +102,8 @@ class ArrivalLandingTest extends TestCase
 
         $page = $this->actingAs($learner)->get(route('learn.home'))->assertOk();
         $words = $this->words($this->arrival($page));
-        $this->assertStringContainsString('Nothing booked yet', $words);
-        $this->assertStringContainsString('You have no lessons, set work or courses in progress.', $words);
+        $this->assertStringContainsString('Nothing is booked yet.', $words);
+        $this->assertStringContainsString('There is no subscription.', $words);
         $this->assertDoesNotMatchRegularExpression('/\d/', $words);
 
         $href = $this->primaryHref($page);
@@ -120,9 +122,8 @@ class ArrivalLandingTest extends TestCase
         $arrival = $this->arrival($page);
         $this->assertComposition($arrival);
         $words = $this->words($arrival);
-        $this->assertStringContainsString('Welcome, Sipho.', $words);
-        $this->assertStringContainsString('Your next lesson', $words);
-        $this->assertStringContainsString('Physical Sciences', $words);
+        $this->assertStringContainsString('Physical Sciences is ', $words);
+        $this->assertStringContainsString('Open your next lesson', $words);
         $this->assertStringNotContainsString('Zanele', $words);
         $this->assertStringNotContainsString('Ndlovu', $words);
 
@@ -131,14 +132,15 @@ class ArrivalLandingTest extends TestCase
         $this->actingAs($learner)->get($href)->assertOk();
     }
 
-    public function test_the_company_is_named_only_when_the_team_is_one(): void
+    public function test_no_company_or_person_is_named_in_the_head(): void
     {
         $learner = $this->adult('Lerato Mokoena');
         $team = Team::factory()->create(['user_id' => $learner->id, 'name' => 'Khanya Study Centre', 'personal_team' => false]);
         $learner->forceFill(['current_team_id' => $team->id])->save();
 
         $words = $this->words($this->arrival($this->actingAs($learner->fresh())->get(route('learn.home'))->assertOk()));
-        $this->assertStringContainsString('Welcome, Lerato, from Khanya Study Centre.', $words);
+        $this->assertStringNotContainsString('Khanya', $words);
+        $this->assertStringNotContainsString('Lerato', $words);
     }
 
     public function test_a_tutor_with_requests_answers_them_and_the_count_is_the_real_one(): void
@@ -152,8 +154,8 @@ class ArrivalLandingTest extends TestCase
         $arrival = $this->arrival($page);
         $this->assertComposition($arrival);
         $words = $this->words($arrival);
-        $this->assertStringContainsString('Welcome, Thandi.', $words);
-        $this->assertStringContainsString('Waiting for your answer 2 requests.', $words);
+        $this->assertStringNotContainsString('Thandi', $words);
+        $this->assertStringContainsString('2 booking requests are waiting for your answer.', $words);
         $this->assertSame(['2'], array_values(array_unique(preg_match_all('/\d+/', $words, $m) ? $m[0] : [])), 'the only figure is the seeded request count');
         $this->assertStringNotContainsString('Kabelo', $words);
         $this->assertStringNotContainsString('Aisha', $words);
@@ -169,7 +171,8 @@ class ArrivalLandingTest extends TestCase
         TutorProfile::create(['user_id' => $user->id, 'hourly_rate' => 250, 'status' => 'draft']);
 
         $page = $this->actingAs($user)->get(route('teach.home'))->assertOk();
-        $this->assertStringContainsString('Still to do:', $this->words($this->arrival($page)));
+        $this->assertStringContainsString('Your profile is not sent yet.', $this->words($this->arrival($page)));
+        $this->assertStringContainsString('Still to do: ', $this->words($this->arrival($page)));
 
         $href = $this->primaryHref($page);
         $this->assertSame(route('teach.profile'), $href);
@@ -182,7 +185,7 @@ class ArrivalLandingTest extends TestCase
 
         $page = $this->actingAs($profile->user)->get(route('teach.home'))->assertOk();
         $words = $this->words($this->arrival($page));
-        $this->assertStringContainsString('No offering yet', $words);
+        $this->assertStringContainsString('You have no offering yet.', $words);
         $this->assertDoesNotMatchRegularExpression('/\d/', $words);
 
         $href = $this->primaryHref($page);
@@ -200,8 +203,8 @@ class ArrivalLandingTest extends TestCase
         $arrival = $this->arrival($page);
         $this->assertComposition($arrival);
         $words = $this->words($arrival);
-        $this->assertStringContainsString('Welcome, Refilwe.', $words);
-        $this->assertStringContainsString('Nothing is waiting', $words);
+        $this->assertStringNotContainsString('Refilwe', $words);
+        $this->assertStringContainsString('Every queue your role covers is empty.', $words);
         $this->actingAs($admin)->get($this->primaryHref($page))->assertOk();
 
         // One tutor application arrives: the arrival names that queue with its real count.
@@ -210,7 +213,7 @@ class ArrivalLandingTest extends TestCase
 
         $page = $this->actingAs($admin)->get(route('ops.home'))->assertOk();
         $words = $this->words($this->arrival($page));
-        $this->assertStringContainsString('Waiting for you 1 in tutor applications waiting.', $words);
+        $this->assertStringContainsString('Tutor applications waiting: 1.', $words);
         $this->assertStringNotContainsString('Applicant', $words);
         $href = $this->primaryHref($page);
         $this->assertSame(route('ops.verification'), $href);
@@ -227,8 +230,8 @@ class ArrivalLandingTest extends TestCase
         $arrival = $this->arrival($page);
         $this->assertComposition($arrival);
         $words = $this->words($arrival);
-        $this->assertStringContainsString('Welcome, Thabo.', $words);
-        $this->assertStringContainsString('Nothing is waiting', $words);
+        $this->assertStringNotContainsString('Thabo', $words);
+        $this->assertStringContainsString('Nothing is waiting for your approval.', $words);
         $this->assertStringNotContainsString('Lindiwe', $words);
         $this->assertDoesNotMatchRegularExpression('/\d\d?\s/', Str::after($words, 'Welcome'));
 
@@ -237,20 +240,17 @@ class ArrivalLandingTest extends TestCase
         $this->actingAs($guardian)->get($href)->assertOk();
     }
 
-    public function test_the_older_overview_points_each_person_to_their_own_home(): void
+    public function test_the_older_overview_sends_each_person_to_their_own_home(): void
     {
         $learner = $this->adult('Pieter Botha');
-        $page = $this->actingAs($learner)->get(route('dashboard'))->assertOk();
-        $this->assertComposition($this->arrival($page));
-        $href = $this->primaryHref($page);
-        $this->assertSame(route('marketplace.find'), $href);
-        $this->actingAs($learner)->get($href)->assertOk();
+        $this->actingAs($learner)->get(route('dashboard'))->assertRedirect(route('learn.home', absolute: false));
 
         $profile = $this->makeTutor([], null, $this->makeUser('Naledi Dube'));
-        $page = $this->actingAs($profile->user)->get(route('dashboard'))->assertOk();
-        $href = $this->primaryHref($page);
-        $this->assertSame(route('teach.home', absolute: false), $href);
-        $this->actingAs($profile->user)->get($href)->assertOk();
+        $this->actingAs($profile->user)->get(route('dashboard'))->assertRedirect(route('teach.home', absolute: false));
+
+        $admin = User::factory()->create();
+        app(RoleAdministration::class)->setRoles(null, $admin, [OpsRole::Admin->value]);
+        $this->actingAs($admin->fresh())->get(route('dashboard'))->assertRedirect(route('ops.home', absolute: false));
     }
 
     public function test_the_platform_list_holds_only_current_platforms(): void

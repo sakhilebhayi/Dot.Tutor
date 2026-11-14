@@ -118,7 +118,7 @@
                 <div class="hm-sech hm-gap"><h2>Money</h2></div>
                 <dl class="hm-facts">
                     <dt>Paid by learners</dt><dd>{{ \App\Domain\Money\Money::of($m['cash_minor'], $m['currency'])->format() }} <small>{{ $m['paid_orders'] }} paid {{ Str::plural('order', $m['paid_orders']) }}</small></dd>
-                    <dt>Commission</dt><dd>{{ \App\Domain\Money\Money::of($m['commission_minor'], $m['currency'])->format() }} <small>from the ledger</small></dd>
+                    <dt>Platform commission</dt><dd>{{ \App\Domain\Money\Money::of($m['commission_minor'], $m['currency'])->format() }} <small>from the ledger</small></dd>
                     <dt>Tutor earnings</dt><dd>{{ \App\Domain\Money\Money::of($m['tutor_earnings_minor'], $m['currency'])->format() }} <small>net of commission</small></dd>
                     <dt>Course sales</dt><dd>{{ $m['course_sales'] }} <small>and {{ $m['resource_sales'] }} resource sales</small></dd>
                     <dt>Refunded</dt><dd>{{ \App\Domain\Money\Money::of($m['refunds_minor'], $m['currency'])->format() }} <small>processed by Paystack</small></dd>

@@ -154,7 +154,11 @@ class FixOpsTest extends TestCase
         $session->forceFill(['status' => 'confirmed', 'starts_at' => now()->addMinutes(30)])->save();
 
         $html = $this->actingAs($tutor)->get(route('teach.home'))->assertOk()->getContent();
-        $this->assertLessThan(strpos($html, 'Requests to answer'), strpos($html, 'Lessons today and this week'));
+        // R-51: the head says the next lesson in a sentence (the first thing on the page), and with no request the
+        // "Needs your answer" list is one line, so it never pushes the lessons down.
+        $this->assertStringContainsString('Your next lesson is', $html);
+        $this->assertLessThan(strpos($html, 'Needs your answer'), strpos($html, 'Your next lesson is'));
+        $this->assertStringContainsString('Lessons, today and next 7 days', $html);
         $this->assertStringContainsString('No requests waiting', $html);
     }
 }

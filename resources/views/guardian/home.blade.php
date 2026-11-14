@@ -100,7 +100,7 @@
         <p class="hm-foot">
             <span><b>{{ count($children) }}</b> {{ count($children) === 1 ? 'child' : 'children' }}</span>
             <span><b>{{ $waiting_total }}</b> {{ \Illuminate\Support\Str::plural('request', $waiting_total) }} waiting</span>
-            <span><b>{{ count($urgent) }}</b> urgent {{ \Illuminate\Support\Str::plural('report', count($urgent)) }}</span>
+            @if (count($urgent) > 0)<span><b>{{ count($urgent) }}</b> urgent {{ \Illuminate\Support\Str::plural('report', count($urgent)) }}</span>@endif
         </p>
     @endif
     </div>

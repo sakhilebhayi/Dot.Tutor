@@ -84,6 +84,14 @@
         </div>
     @endif
 
+    @if (! $ctx['onboarded'] && ! $ctx['limited'] && ! $ctx['suspended'])
+        {{-- Adult, no profile yet: a quiet note, never a second primary action (the head already has one). --}}
+        <div class="hm-notice" role="note">
+            <x-td.icon name="info" />
+            <p><strong>Tell us about your learning.</strong> Your grade, subjects and the languages you learn best in. It takes about a minute, and every part except the grade can be skipped. <a class="td-link" href="{{ route('learn.onboarding') }}">Start</a></p>
+        </div>
+    @endif
+
     {{-- Tell us what you need: a guided need-reader, not a search box (the shared search pill in the bar is the finder). --}}
     <form method="POST" action="{{ route('learn.need') }}" class="hm-find" role="search" aria-labelledby="need-label">
         @csrf
@@ -188,7 +196,6 @@
                 <div class="hm-sech hm-gap">
                     <h2>What your answers show</h2>
                     <x-td.button variant="quiet" size="sm" :href="route('learn.progress')">Progress</x-td.button>
-                    <x-td.button variant="quiet" size="sm" :href="route('practice.index')">Practise</x-td.button>
                 </div>
                 @if ($insights['sentences'] === [])
                     <p class="hm-note" style="margin-top:0">Answer a few practice questions or a quiz and this says what is going well and what needs more practice, topic by topic.</p>

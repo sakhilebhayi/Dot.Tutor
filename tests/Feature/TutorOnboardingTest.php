@@ -231,13 +231,13 @@ class TutorOnboardingTest extends TestCase
         );
     }
 
-    public function test_the_applicant_sees_the_decision_on_their_dashboard_and_can_mark_it_read(): void
+    public function test_the_applicant_sees_the_decision_on_their_profile_page_and_can_mark_it_read(): void
     {
         $algebra = $this->makeSubject('Algebra');
         $profile = $this->makeTutor(['status' => 'pending'], $algebra);
         $this->actingAs($this->makeOperator())->post("/operator/tutor-profiles/{$profile->id}/reject", ['reason' => 'Add a bio please.']);
 
-        $this->actingAs($profile->user)->get('/dashboard')
+        $this->actingAs($profile->user)->get(route('teach.profile'))
             ->assertOk()
             ->assertSee('Add a bio please.');
 
