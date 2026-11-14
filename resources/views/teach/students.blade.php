@@ -2,7 +2,7 @@
     <x-td.page-head title="Students" :lede="$total === 0 ? 'Everyone who books you, takes a seat, buys a package or enrols in your courses appears here.' : $total.' '.\Illuminate\Support\Str::plural('student', $total).', '.$repeat.' of them with two or more completed lessons.'" />
 
     <form method="GET" action="{{ route('teach.students') }}" class="mb-4 flex flex-wrap items-end gap-3" role="search">
-        <x-td.field label="Find a student" for="q"><x-td.input name="q" type="search" :value="$search" /></x-td.field>
+        <x-td.field label="Find a student" for="q"><x-dot.filter-search name="q" id="q" label="Find a student" placeholder="" :value="$search" /></x-td.field>
         <x-td.field label="Show" for="filter"><x-td.select name="filter" :options="['' => 'Everyone', 'repeat' => 'Returning students']" :value="$filter" /></x-td.field>
         <x-td.button type="submit" icon="search">Show</x-td.button>
     </form>

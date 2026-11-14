@@ -12,7 +12,7 @@
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($rootStep) data-td-step="{{ $rootStep }}" @endif>
 <head>
-    @include('layouts.partials.head', ['title' => $title, 'livewire' => $livewire])
+    @include('layouts.partials.head', ['title' => $title, 'livewire' => $livewire, 'dotUi' => true])
 </head>
 <body class="td-app td-app--{{ $shell }}">
     <a class="td-skip" href="#main-content">Skip to content</a>
@@ -92,6 +92,17 @@
         <x-td.button variant="quiet" icon="menu" class="td-top__menu shell-menu-btn" data-shell-open aria-controls="app-sidebar" aria-expanded="false">Menu</x-td.button>
         <div class="td-top__title">{{ $topTitle ?? $title ?? 'Dot.Tutor' }}</div>
         <div class="td-top__actions">
+            @auth
+                @php
+                    // The company the switcher is about: the person's current team, the same one the entitlement check reads
+                    // (App\Http\Middleware\EnsureCompanyEntitled). A personal or unlinked team has no InfoDot company, so the
+                    // switcher shows its personal state and asks InfoDot nothing.
+                    $switcherTeam = Auth::user()->currentTeam;
+                    $switcherCompany = $switcherTeam && ! $switcherTeam->personal_team && filled($switcherTeam->infodot_team_uuid)
+                        ? (string) $switcherTeam->infodot_team_uuid : null;
+                @endphp
+                <x-dot.switcher platform="tutor" :company="$switcherCompany" :company-name="$switcherCompany ? $switcherTeam->name : null" logos="/dot-ui/img/platforms" />
+            @endauth
             @if (Route::has('comms.inbox'))<x-comms::bell />@endif
             <x-td.theme-switch />
             @auth
@@ -118,6 +129,7 @@
 
     <x-td.toasts />
     @stack('modals')
+    <script src="{{ asset('dot-ui/js/dot-switcher.js') }}" defer></script>
     @include('layouts.partials.drawer-script')
     @if ($livewire)
         @livewireScripts

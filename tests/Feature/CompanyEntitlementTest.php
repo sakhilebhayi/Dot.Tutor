@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -78,6 +79,22 @@ class CompanyEntitlementTest extends TestCase
         Http::swap(new Factory);
         Http::preventStrayRequests();
         Http::fake($stubs);
+        $this->settleTheSwitcher();
+    }
+
+    /**
+     * R-51: every signed-in page now also draws the shared platform switcher, which reads the SAME InfoDot endpoint under
+     * its own cache key (infodot:platforms:...). These tests count and order the ENTITLEMENT check's reads, so the
+     * switcher's cache is pre-filled with a settled answer and its read never reaches the faked endpoint. The switcher's own
+     * reads are tested in DotUiHeaderTest.
+     */
+    private function settleTheSwitcher(): void
+    {
+        $rows = [['key' => 'tutor', 'name' => 'Dot.Tutor', 'entitled' => true, 'plain' => false, 'status' => 'active'], ['key' => 'infodot', 'name' => 'InfoDot', 'entitled' => true, 'plain' => false, 'status' => 'included']];
+
+        foreach ([self::ACME, self::GLOBEX, self::PERSONAL, '33333333-3333-4333-8333-333333333333'] as $uuid) {
+            Cache::forever('infodot:platforms:tutor:'.$uuid, ['ok' => true, 'personal' => false, 'rows' => $rows]);
+        }
     }
 
     /** @return array{0: User, 1: Team} a person and their InfoDot company, which is their current team */

@@ -4,7 +4,7 @@
     @include('ops.partials.tabs', ['label' => 'People', 'items' => [['label' => 'People', 'route' => 'ops.users'], ['label' => 'Operators and roles', 'route' => 'ops.users.team']]])
 
     <form method="GET" action="{{ route('ops.users') }}" class="ops-act mb-5" role="search">
-        <x-td.field label="Name or email" for="q"><x-td.input name="q" id="q" type="search" :value="$filters['q'] ?? ''" /></x-td.field>
+        <x-td.field label="Name or email" for="q"><x-dot.filter-search name="q" id="q" label="Name or email" placeholder="" :value="$filters['q'] ?? ''" /></x-td.field>
         <x-td.field label="Role" for="role"><x-td.select name="role" id="role" :options="UsersController::ROLES" :value="$filters['role'] ?? ''" placeholder="Everyone" /></x-td.field>
         <x-td.field label="Flag" for="flag"><x-td.select name="flag" id="flag" :options="UsersController::FLAGS" :value="$filters['flag'] ?? ''" placeholder="Any" /></x-td.field>
         <x-td.button type="submit" icon="search">Find</x-td.button>

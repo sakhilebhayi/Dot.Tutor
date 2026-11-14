@@ -1,0 +1,53 @@
+/*
+ * Host token mapping for the shared Dot UI (public/dot-ui, copied by dot-ui/sync.sh, never edited here).
+ * The compact filter and the platform switcher take Dot.Tutor's own tokens in light and night; the switcher's trigger and
+ * the filter keep the 44px control height of the learner step, 36px in the dense step. The package defaults are all under
+ * :where() (zero specificity), so these plain selectors win in either theme and either load order.
+ */
+body {
+    --dsr-panel: var(--td-surface);
+    --dsr-hover: var(--td-sunken);
+    --dsr-rule: var(--td-line);
+    --dsr-rule-strong: var(--td-edge);
+    --dsr-text: var(--td-ink);
+    --dsr-text-2: var(--td-ink-2);
+    --dsr-text-3: var(--td-ink-3);
+    --dsr-radius-panel: var(--td-radius);
+}
+
+/* The filter sits in a field beside Tutor's own selects and inputs, so it takes their height and corner. These are read
+   on the page, where data-td-step (the young and dense steps) is in scope. */
+.td-page {
+    --dsr-filter-h: var(--td-control-h);
+    --dsr-filter-radius: var(--td-radius);
+    --dsr-filter-bg: var(--td-surface);
+    --dsr-filter-ink: var(--td-ink);
+    --dsr-filter-placeholder: var(--td-ink-2);
+    --dsr-filter-border: var(--td-edge);
+    --dsr-filter-border-hover: var(--td-ink-2);
+    --dsr-filter-border-focus: var(--td-focus);
+    --dsr-focus-ring: var(--td-focus);
+    /* touch height follows the step: 44px learner, 36px dense (the package default is 44px) */
+    --dsr-filter-h-touch: var(--td-control-h);
+}
+
+/* The switcher lives in the top bar, beside the bell, the theme switch and the account button. */
+.td-top .dsw {
+    --dsw-btn-h: var(--td-control-h);
+    --dsw-btn-ink: var(--td-ink);
+    --dsw-btn-border: var(--td-edge);
+    --dsw-btn-bg-hover: var(--td-sunken);
+    --dsw-focus: var(--td-focus);
+    --dsw-radius: var(--td-radius);
+    --dsw-paper: var(--td-surface);
+    --dsw-ink: var(--td-ink);
+    --dsw-ink-2: var(--td-ink-2);
+    --dsw-rule: var(--td-line);
+    /* the logo plate stays white (the logos are drawn for white), so its text stays dark in night too */
+    --dsw-tile-ink: #1b2124;
+}
+
+/* Same text face as the inputs beside it. The package already sets 16px type on touch and small screens (iOS zoom). */
+.td-page .dsr-filter {
+    font-family: var(--td-font-text);
+}

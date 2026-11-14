@@ -1,5 +1,5 @@
 {{-- Shared <head> for every shell: no third-party hosts. Fonts, icons and scripts come from this app.
-     Expects $title (string|null) and optionally $description and $livewire (bool). --}}
+     Expects $title (string|null) and optionally $description, $livewire (bool) and $dotUi (bool: the signed-in frame loads the shared Dot UI). --}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -39,6 +39,14 @@
      The page cross-fade (shells.css, D-2311) is skipped when a navigation interrupts it or the tab is hidden; its
      promises are caught here so a skipped fade is not reported as an error. --}}
 <script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');try{var t=localStorage.getItem('td-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});</script>
+@if ($dotUi ?? false)
+    {{-- Shared Dot UI (platform switcher, compact filters), served from this site's own public/dot-ui ('self' only, no inline style or script). Signed-in shells only. Loaded before the app CSS; the host token mapping in the app stylesheet has the last word. --}}
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-search.css') }}">
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-switcher-fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-switcher.css') }}">
+@endif
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @if ($livewire ?? false)
     @livewireStyles

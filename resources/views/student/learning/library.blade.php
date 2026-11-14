@@ -16,7 +16,7 @@
         <div class="st-stack">
             <x-td.panel title="Find material">
                 <form method="GET" action="{{ route('learning.library.index') }}" role="search" class="st-form">
-                    <x-td.field label="Search" for="q"><x-td.input type="search" name="q" :value="$f['q'] ?? ''" maxlength="100" placeholder="Title, description or topic" /></x-td.field>
+                    <x-td.field label="Search" for="q"><x-dot.filter-search name="q" id="q" label="Search" :value="$f['q'] ?? ''" maxlength="100" placeholder="Title, description or topic" /></x-td.field>
                     <div class="st-form__pair">
                         <x-td.field label="Subject" for="subject_id"><x-td.select name="subject_id" :value="$f['subject_id'] ?? null" placeholder="Any subject" :options="$subjectOptions" /></x-td.field>
                         <x-td.field label="Grade or level" for="level_id"><x-td.select name="level_id" :value="$f['level_id'] ?? null" placeholder="Any level" :options="$levelOptions" /></x-td.field>
