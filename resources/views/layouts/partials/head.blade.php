@@ -40,7 +40,7 @@
      promises are caught here so a skipped fade is not reported as an error. --}}
 <script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');try{var t=localStorage.getItem('td-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});</script>
 @if ($dotUi ?? false)
-    {{-- Shared Dot UI (platform switcher, compact filters), served from this site's own public/dot-ui ('self' only, no inline style or script). Signed-in shells only. Loaded before the app CSS; the host mapping block in resources/css/ds/dot-ui.css has the last word. --}}
+    {{-- Shared Dot UI (platform switcher, compact filters), served from this site's own public/dot-ui ('self' only, no inline style or script). Signed-in shells only. Loaded before the app CSS; the host token mapping in the app stylesheet has the last word. --}}
     <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-tokens.css') }}">
     <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-search.css') }}">
