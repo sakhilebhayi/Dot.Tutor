@@ -28,7 +28,7 @@ class GuardianViewTest extends TestCase
         $approval = app(GuardianApprovals::class)->request($child, 'purchase', $child, ['summary' => 'Grade 4 fractions course', 'amount_minor' => 25000, 'currency' => 'ZAR']);
 
         $this->actingAs($guardian)->get(route('guardian.home'))->assertOk()
-            ->assertSee('Your children on Dot.Tutor')->assertSee('Grade 4 fractions course')->assertSee('250.00')->assertSee('Sipho Child');
+            ->assertSee('1 request needs your approval.')->assertSee('Grade 4 fractions course')->assertSee('250.00')->assertSee('Sipho Child');
 
         $this->actingAs($guardian)->get(route('guardian.child', $child->id))->assertOk()
             ->assertSee('every booking, purchase, paid room and live one-to-one lesson needs your approval')

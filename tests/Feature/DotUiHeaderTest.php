@@ -106,7 +106,7 @@ class DotUiHeaderTest extends TestCase
             'learner shell (/learn)' => [$member, '/learn'],
             'tutor workspace shell (teach.profile)' => [$member, route('teach.profile')],
             'operations shell (/ops)' => [$operator, '/ops'],
-            'legacy app shell (/dashboard)' => [$member, '/dashboard'],
+            'legacy app shell (profile.show)' => [$member, route('profile.show')],
         ];
 
         foreach ($shells as $label => [$user, $path]) {
@@ -132,7 +132,7 @@ class DotUiHeaderTest extends TestCase
 
         $html = $this->actingAs($guardian->fresh())->get(route('guardian.home'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('Your children on Dot.Tutor', $html);
+        $this->assertStringContainsString('Nothing is waiting for your approval.', $html);
         $this->assertStringContainsString('data-dsw data-state="ok" data-platform="tutor"', $this->switcherHtml($html));
     }
 
@@ -141,7 +141,7 @@ class DotUiHeaderTest extends TestCase
         $this->fakeInfoDot([self::url(self::ACME) => Http::response(self::body(self::ACME))]);
         $member = $this->memberOf(self::ACME, 'Acme Ltd');
 
-        foreach (['/learn', route('teach.profile'), '/dashboard', route('marketplace.find')] as $path) {
+        foreach (['/learn', route('teach.profile'), route('profile.show'), route('marketplace.find')] as $path) {
             $html = $this->actingAs($member)->get($path)->assertOk()->getContent();
             $this->assertStringNotContainsString('dsr-input', $html, "{$path}: no search pill: Dot.Tutor has no header search");
             $this->assertSame(1, preg_match('/<header class="td-top topbar".*?<\/header>/s', $html, $bar), "{$path}: has the top bar");

@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * Regression test for a cross-user information disclosure found during the
- * Aug 2026 ecosystem-integration pass: the /dashboard route's "Upcoming
+ * Aug 2026 ecosystem-integration pass: the learner home's (/dashboard now redirects there, R-51) "Upcoming
  * Sessions" and "Recent Sessions" panels queried TutorSession::with(...)
  * with no scoping at all, so any authenticated user — student or tutor,
  * regardless of involvement — could see every other user's booked session
@@ -28,7 +28,7 @@ class DashboardSessionScopingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_does_not_leak_other_users_session_details(): void
+    public function test_the_learner_home_does_not_leak_other_users_session_details(): void
     {
         $subject = Subject::create(['name' => 'Algebra', 'level' => 'high_school']);
 
@@ -52,7 +52,7 @@ class DashboardSessionScopingTest extends TestCase
 
         $me = User::factory()->withPersonalTeam()->create();
 
-        $response = $this->actingAs($me)->get('/dashboard');
+        $response = $this->actingAs($me)->get('/learn');
 
         $response->assertOk();
         $response->assertDontSee('Other Student');
@@ -61,7 +61,7 @@ class DashboardSessionScopingTest extends TestCase
         $response->assertDontSee('Other Tutor');
     }
 
-    public function test_dashboard_shows_the_signed_in_students_own_session(): void
+    public function test_the_learner_home_shows_the_signed_in_students_own_session(): void
     {
         $subject = Subject::create(['name' => 'Physics', 'level' => 'high_school']);
 
@@ -83,7 +83,7 @@ class DashboardSessionScopingTest extends TestCase
             'rate' => 50,
         ]);
 
-        $response = $this->actingAs($me)->get('/dashboard');
+        $response = $this->actingAs($me)->get('/learn');
 
         $response->assertOk();
         $response->assertSee('My Tutor');

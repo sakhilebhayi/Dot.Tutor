@@ -13,6 +13,7 @@ import { initTabOverflow } from './tabs-overflow.js';
 import { initCountdowns } from './countdown.js';
 import { initPublicMenu } from './public-menu.js';
 import { initPrint } from './print.js';
+import { initHome } from './home.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -28,6 +29,7 @@ function boot(root = document) {
     initCountdowns(root);
     initPublicMenu(root);
     initPrint(root);
+    initHome(root);
 }
 
 if (document.readyState === 'loading') {

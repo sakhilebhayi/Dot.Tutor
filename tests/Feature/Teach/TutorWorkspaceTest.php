@@ -104,7 +104,7 @@ class TutorWorkspaceTest extends TestCase
         $course = Course::create(['owner_id' => $tutor->id, 'slug' => 'c-'.Str::random(5), 'title' => 'Functions in four weeks', 'original_locale' => 'en', 'currency' => 'ZAR', 'status' => CourseStatus::Draft]);
 
         $pages = [
-            route('teach.home') => 'Requests to answer',
+            route('teach.home') => 'Needs your answer',
             route('teach.bookings') => 'Anele Ngcobo',
             route('teach.bookings', ['view' => 'upcoming']) => 'No upcoming lessons',
             route('teach.bookings', ['view' => 'waiting']) => 'Waiting',

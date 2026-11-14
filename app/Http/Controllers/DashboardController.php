@@ -2,51 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\SessionStatus;
-use App\Enums\TutorProfileStatus;
-use App\Models\Subject;
-use App\Models\TutorSession;
-use App\Services\DashboardMetrics;
+use App\Support\RoleHome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
+/**
+ * The older /dashboard is retired (R-51): it was a page of its own with a different look and a list of every subject.
+ * Anyone who still arrives here (an old link, a bookmark, "Your desk") goes to the home for their role. The route
+ * name stays so every existing link keeps working.
+ */
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, DashboardMetrics $metrics): View
+    public function __invoke(Request $request, RoleHome $home): RedirectResponse
     {
-        $user = $request->user();
-
-        // The session lists are always the viewer's own, whatever their role.
-        $own = function ($query) use ($user) {
-            $query->where('student_id', $user->id)
-                ->orWhereHas('tutorProfile', fn ($q) => $q->where('user_id', $user->id));
-        };
-
-        $upcomingSessionsList = TutorSession::with(['tutorProfile.user', 'subject'])
-            ->where($own)
-            ->whereIn('status', SessionStatus::holdingTime())
-            ->where('starts_at', '>=', now())
-            ->orderBy('starts_at')
-            ->limit(5)
-            ->get();
-
-        $recentSessions = TutorSession::with(['tutorProfile.user', 'subject'])
-            ->where($own)
-            ->latest('starts_at')->limit(8)->get();
-
-        $subjects = Subject::active()
-            ->withCount(['tutors' => fn ($q) => $q->where('status', TutorProfileStatus::Approved->value)])
-            ->orderBy('name')->get();
-
-        return view('dashboard', [
-            'metrics' => $metrics->forUser($user),
-            'subjects' => $subjects,
-            'upcomingSessionsList' => $upcomingSessionsList,
-            'recentSessions' => $recentSessions,
-            'notices' => $user->unreadNotifications()->latest()->limit(10)->get(),
-            'tutorProfile' => $user->tutorProfile,
-        ]);
+        return redirect($home->for($request->user()));
     }
 
     public function markNoticesRead(Request $request): RedirectResponse

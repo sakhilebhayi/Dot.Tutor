@@ -1,5 +1,7 @@
-{{-- One-series column chart (dataviz: one hue on the data, the current period in the full hue, earlier periods a
-     lighter step; recessive grid; values in ink; native hover titles; a table view beside it).
+{{-- One-series column chart (dataviz: one hue on the data, the current period in the full hue and earlier periods the
+     neutral edge step; zero baseline; recessive grid; the current value printed in ink; each bar focusable with a
+     plain-text tooltip; a table view beside it so nothing depends on hover or colour). No legend: one series, named by
+     the section heading above it.
      points: list of ['label', 'value', 'current' => bool]; caption: what is counted; unit: noun for the hover text. --}}
 @props(['points', 'caption', 'unit' => 'items'])
 @php
@@ -13,32 +15,33 @@
     $bar = max(4, min(40, $slot * 0.62));
     $y = fn ($v) => $top + ($h - $top - $bottom) * (1 - $v / $ceiling);
 @endphp
-<figure class="m-0 grid gap-3">
-    <svg class="ops-columns" viewBox="0 0 {{ $w }} {{ $h }}" role="img" aria-label="{{ $caption }}" preserveAspectRatio="xMidYMid meet">
+<figure class="hm-chart m-0" data-chart>
+    <svg viewBox="0 0 {{ $w }} {{ $h }}" role="img" aria-label="{{ $caption }}" preserveAspectRatio="xMidYMid meet">
         @foreach ($scale['ticks'] as $g)
-            <line class="ops-columns__grid" x1="{{ $left }}" x2="{{ $w }}" y1="{{ $y($g) }}" y2="{{ $y($g) }}" />
-            <text class="ops-columns__axis td-chart__tick" x="{{ $left - 8 }}" y="{{ $y($g) + 4 }}" text-anchor="end">{{ $g }}</text>
+            <line class="hm-chart__grid" x1="{{ $left }}" x2="{{ $w }}" y1="{{ $y($g) }}" y2="{{ $y($g) }}" />
+            <text class="hm-chart__tick" x="{{ $left - 8 }}" y="{{ $y($g) + 4 }}" text-anchor="end">{{ $g }}</text>
         @endforeach
         @foreach ($points as $i => $p)
             @php($x = $left + $slot * $i + ($slot - $bar) / 2)
             <g>
-                <title>{{ $p['label'] }}: {{ $p['value'] }} {{ $unit }}</title>
-                <rect class="ops-columns__hit" x="{{ $left + $slot * $i }}" y="{{ $top }}" width="{{ $slot }}" height="{{ $h - $top - $bottom }}" />
                 @if ($p['value'] > 0)
-                    <path @class(['ops-columns__bar', 'ops-columns__bar--current' => $p['current'] ?? false])
+                    <path @class(['hm-chart__bar', 'hm-chart__bar--now' => $p['current'] ?? false])
                         d="M{{ $x }},{{ $y(0) }} V{{ $y($p['value']) + 4 }} q0,-4 4,-4 h{{ $bar - 8 }} q4,0 4,4 V{{ $y(0) }} Z" />
                 @endif
                 @if (($p['current'] ?? false) || $p['value'] === $max)
-                    <text class="ops-columns__value td-chart__value" x="{{ $x + $bar / 2 }}" y="{{ $y($p['value']) - 6 }}" text-anchor="middle">{{ $p['value'] }}</text>
+                    <text class="hm-chart__value" x="{{ $x + $bar / 2 }}" y="{{ $y($p['value']) - 6 }}" text-anchor="middle">{{ $p['value'] }}</text>
                 @endif
                 @if ($i % 2 === ($n - 1) % 2)
-                    <text @class(['ops-columns__axis td-chart__label', 'td-chart__label--thin' => ($n - 1 - $i) % 4 !== 0]) x="{{ $x + $bar / 2 }}" y="{{ $h - 8 }}" text-anchor="middle">{{ $p['label'] }}</text>
+                    <text class="hm-chart__label" x="{{ $x + $bar / 2 }}" y="{{ $h - 8 }}" text-anchor="middle">{{ $p['label'] }}</text>
                 @endif
+                <rect class="hm-chart__hit" x="{{ $left + $slot * $i }}" y="{{ $top }}" width="{{ $slot }}" height="{{ $h - $top - $bottom }}"
+                    tabindex="0" data-tip="{{ $p['value'] }} {{ $unit }}, week of {{ $p['label'] }}{{ ($p['current'] ?? false) ? ' (this week, so far)' : '' }}"
+                    aria-label="{{ $p['value'] }} {{ $unit }}, week of {{ $p['label'] }}{{ ($p['current'] ?? false) ? ' (this week, so far)' : '' }}" />
             </g>
         @endforeach
     </svg>
-    <details class="text-sm">
-        <summary class="cursor-pointer">Show as a table</summary>
+    <details class="hm-table text-sm">
+        <summary>Show as a table</summary>
         <x-td.table :caption="$caption" caption-hidden dense>
             <thead><tr><th scope="col">Week starting</th><th scope="col" class="is-num">{{ ucfirst($unit) }}</th></tr></thead>
             <tbody>

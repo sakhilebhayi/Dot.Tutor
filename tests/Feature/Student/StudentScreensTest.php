@@ -42,6 +42,7 @@ class StudentScreensTest extends TestCase
             ->assertSee('td-app--learner', false)
             ->assertSee('Tell us about your learning')
             ->assertSee('Tell us what you need')
+            ->assertSee('Nothing is booked yet.')
             ->assertSee('No lessons booked')
             ->assertDontSee('data-td-step="young"', false);
     }
@@ -53,7 +54,8 @@ class StudentScreensTest extends TestCase
         $learner = $this->person('Assistant Learner');
         $this->learnerProfile($learner, 19);
         config(['ai.enabled' => false]);
-        $this->actingAs($learner)->get(route('learn.home'))->assertOk()->assertSee('not switched on for Dot.Tutor yet');
+        // R-51: when the assistant is off the home says nothing about it (a statement about the product, not the person).
+        $this->actingAs($learner)->get(route('learn.home'))->assertOk()->assertDontSee('Ask the assistant')->assertDontSee('not switched on for Dot.Tutor yet');
         config(['ai.enabled' => true, 'ai.anthropic.api_key' => 'sk-ant-test-not-used']);
         $this->app->forgetInstance(AiTutor::class);
         $this->actingAs($learner)->get(route('learn.home'))->assertOk()->assertSee('Ask the assistant')->assertDontSee('not switched on for Dot.Tutor yet');
@@ -68,11 +70,11 @@ class StudentScreensTest extends TestCase
 
         $young = $this->actingAs($child)->get(route('learn.home'))->assertOk();
         $young->assertSee('data-td-step="young"', false)->assertSee('Get help')->assertSee('Hi Lerato')
-            ->assertSee('A parent or guardian needs to join you first');
+            ->assertSee('A grown-up must join first.');
         $this->assertStringNotContainsString('>Courses<', preg_replace('/\s+/', '', strip_tags($young->getContent(), '<a>')) ?? '');
 
         $this->actingAs($student)->get(route('learn.home'))->assertOk()
-            ->assertDontSee('data-td-step="young"', false)->assertSee('Find someone who can teach you')->assertSee('Undergraduate year 1');
+            ->assertDontSee('data-td-step="young"', false)->assertSee('Nothing is booked yet.')->assertSee('Undergraduate year 1');
 
         // The learner can override it either way.
         $this->actingAs($student)->put(route('learn.account.step'), ['step' => 'young'])->assertRedirect(route('learn.account'));
