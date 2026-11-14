@@ -107,7 +107,7 @@ class DesignSystemKitTest extends TestCase
         $pages = [
             $this->get('/login'),
             $this->get('/does-not-exist-'.uniqid()),
-            $this->actingAs($this->makeUser())->get(route('dashboard')),
+            $this->actingAs($this->makeUser())->get(route('learn.home')),
         ];
 
         foreach ($pages as $response) {

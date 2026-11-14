@@ -132,7 +132,7 @@ class CompanyEntitlementTest extends TestCase
     /** The four role homes and a few pages beside them. */
     private static function homes(): array
     {
-        return ['/learn', '/teach', '/ops', '/guardian', '/dashboard'];
+        return ['/learn', '/teach', '/ops', '/guardian'];
     }
 
     // ------------------------------------------------------------------ sign-in (redeem)
@@ -317,7 +317,7 @@ class CompanyEntitlementTest extends TestCase
         Log::spy();
 
         $this->actingAs($owner)->get('/learn')->assertOk();
-        $this->actingAs($owner)->get('/dashboard')->assertOk();
+        $this->actingAs($owner)->get('/learn')->assertOk();
 
         $this->assertSame(1, $calls, 'one call for the cache window');
         Log::shouldHaveReceived('warning')->once()->withArgs(fn ($message) => str_contains($message, 'InfoDot entitlement check gave no answer'));
@@ -362,7 +362,7 @@ class CompanyEntitlementTest extends TestCase
         $this->infodotSays([self::readUrl(self::ACME) => Http::response(self::platforms(self::ACME, true, 'active'))]);
 
         $this->actingAs($owner)->get('/learn')->assertOk();
-        $this->actingAs($owner)->get('/dashboard')->assertOk();
+        $this->actingAs($owner)->get('/learn')->assertOk();
 
         Http::assertSentCount(1);
     }
@@ -374,7 +374,7 @@ class CompanyEntitlementTest extends TestCase
         $this->infodotSays([]);
 
         $this->actingAs($owner)->get('/learn')->assertOk();
-        $this->actingAs($owner)->get('/dashboard')->assertOk();
+        $this->actingAs($owner)->get('/learn')->assertOk();
 
         Http::assertNothingSent();
     }

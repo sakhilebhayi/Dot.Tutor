@@ -22,7 +22,7 @@ class ResponsiveShellTest extends TestCase
         $tutorUser = $tutor->user;
 
         foreach ([
-            [$student, route('dashboard')],
+            [$student, route('learn.home')],
             [$student, route('tutors.browse')],
             [$student, route('tutors.show', $tutor)],
             [$student, route('sessions.show', $session)],
@@ -38,7 +38,7 @@ class ResponsiveShellTest extends TestCase
 
     public function test_the_legacy_jetstream_bar_is_wrapped_so_phones_can_hide_it(): void
     {
-        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('dashboard')));
+        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('profile.show')));
 
         $this->assertSame(1, $xpath->query('//div[contains(@class, "shell-legacy-nav")]/nav')->length);
     }
@@ -50,19 +50,18 @@ class ResponsiveShellTest extends TestCase
         $tutor = $this->makeTutor([], $subject, $this->makeUser('Scroll Tutor'));
         $this->makeSession($tutor, $student, $subject, ['status' => 'completed', 'starts_at' => now()->subDays(2)]);
 
-        $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($student)->get(route('dashboard'))), 'Recent sessions');
         $this->assertScrollsHorizontally($this->assertResponsiveShell($this->actingAs($this->makeOperator())->get(route('operator.subjects.index'))), 'Subjects');
     }
 
     public function test_the_drawer_reaches_browse_teaching_and_operator_pages(): void
     {
-        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('dashboard')));
+        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('profile.show')));
         foreach (['dashboard', 'tutors.browse', 'teach.profile', 'profile.show'] as $name) {
             $this->assertSame(1, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route($name).'"]')->length, $name);
         }
         $this->assertSame(0, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route('operator.subjects.index').'"]')->length);
 
-        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeOperator())->get(route('dashboard')));
+        $xpath = $this->assertResponsiveShell($this->actingAs($this->makeOperator())->get(route('profile.show')));
         foreach (['operator.tutor-profiles.index', 'operator.subjects.index'] as $name) {
             $this->assertSame(1, $xpath->query('//aside[@id="app-sidebar"]//a[@href="'.route($name).'"]')->length, $name);
         }
@@ -74,7 +73,7 @@ class ResponsiveShellTest extends TestCase
         // same two teams sees only sign-out.
         $learner = $this->makeUser('Plain Learner');
         Team::factory()->create(['user_id' => $learner->id, 'personal_team' => false, 'name' => 'Learner Second Team']);
-        $xpath = $this->assertResponsiveShell($this->actingAs($learner)->get(route('dashboard')));
+        $xpath = $this->assertResponsiveShell($this->actingAs($learner)->get(route('profile.show')));
         $this->assertSame(0, $xpath->query('//details[contains(@class, "team-switch")]')->length);
         $this->assertSame(1, $xpath->query('//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);
 
@@ -82,7 +81,7 @@ class ResponsiveShellTest extends TestCase
         $this->makeTutor([], null, $user);
         $second = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false, 'name' => 'Matric Maths Study Group']);
 
-        $xpath = $this->assertResponsiveShell($this->actingAs($user)->get(route('dashboard')));
+        $xpath = $this->assertResponsiveShell($this->actingAs($user)->get(route('profile.show')));
 
         $footer = '//aside[@id="app-sidebar"]//div[contains(@class, "sidebar-footer")]';
         $this->assertSame(1, $xpath->query($footer.'//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);

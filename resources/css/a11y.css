@@ -30,10 +30,13 @@
     }
 
     [data-td-step='young'] a.td-pill,
-    [data-td-step='young'] summary,
-    [data-td-step='young'] .td-btn {
+    [data-td-step='young'] summary {
         min-block-size: 44px;
     }
+
+    /* Buttons are not in this rule: they take their height from the step's token (56 px, 48 px small, 64 px large),
+       which is above the 44 px floor. A fixed 44 px here used to override the token and shrink every young-step
+       button (R-51). */
 
     /* The sign-in card's page heading (the guest pages had no h1). */
     .td-auth__title {
