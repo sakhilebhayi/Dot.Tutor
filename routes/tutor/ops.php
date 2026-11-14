@@ -21,7 +21,7 @@ use App\Domain\Ops\Http\Controllers\UsersController;
 use App\Domain\Ops\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
     Route::middleware('operator')->prefix('ops')->name('ops.')->group(function () {
         Route::get('/', OverviewController::class)->name('home');
 

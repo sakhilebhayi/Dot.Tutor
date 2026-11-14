@@ -36,7 +36,7 @@ $aiRoutes = function (): void {
     Route::get('operator/log', [OperatorLogController::class, 'index'])->middleware('operator')->name('operator.log');
 };
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () use ($aiRoutes) {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () use ($aiRoutes) {
     Route::prefix('ai')->name('ai.')->group($aiRoutes);
     Route::prefix('api/tutor/ai')->name('api.ai.')->group($aiRoutes);
 });

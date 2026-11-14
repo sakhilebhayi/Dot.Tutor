@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 // R-47 comms. Rate limiters and listeners live in TutorCommsServiceProvider (route:cache safe).
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'throttle:comms'])
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled', 'throttle:comms'])
     ->prefix('comms')->name('comms.')->group(function () {
         Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
         Route::get('/inbox/summary', [InboxController::class, 'summary'])->name('inbox.summary');

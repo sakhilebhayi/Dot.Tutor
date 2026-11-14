@@ -107,7 +107,7 @@ $learningRoutes = function (): void {
     Route::get('progress', ProgressController::class)->name('progress');
 };
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () use ($learningRoutes) {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () use ($learningRoutes) {
     Route::prefix('learning')->name('learning.')->group(function () use ($learningRoutes) {
         $learningRoutes();
         // Signed, user-bound media URLs (video with range requests, images, documents, slides).

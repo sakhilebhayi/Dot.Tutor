@@ -61,18 +61,28 @@
 
 <div class="t-page" style="max-width:1400px;">
 
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;">
-        <div>
-            <h1 class="t-h1">Dashboard</h1>
-            <p style="font-size:.8rem;color:#a1a1aa;margin:0;">{{ now()->format('l, F j, Y') }}</p>
-        </div>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-            @unless($tutorProfile)
-                <a href="{{ route('teach.profile') }}" class="t-btn t-btn-quiet">Apply to teach</a>
-            @endunless
-            <a href="{{ route('tutors.browse') }}" class="t-btn t-btn-primary">Find a tutor</a>
-        </div>
-    </div>
+    {{-- The arrival (R-50). Sign-in lands on a role home (App\Support\RoleHome); this older overview is reached by
+         link, so its one primary action leads to the person's own home, or to finding a tutor for a learner. --}}
+    @php
+        $home = app(\App\Support\RoleHome::class)->for($user);
+        $primary = match (true) {
+            Route::has('ops.home') && $home === route('ops.home', absolute: false) => ['label' => 'Open the command centre', 'href' => $home],
+            Route::has('teach.home') && $home === route('teach.home', absolute: false) => ['label' => 'Open your teaching desk', 'href' => $home],
+            Route::has('guardian.home') && $home === route('guardian.home', absolute: false) => ['label' => 'Open your children\'s page', 'href' => $home],
+            default => ['label' => 'Find a tutor', 'href' => Route::has('marketplace.find') ? route('marketplace.find') : route('tutors.browse'), 'icon' => 'search'],
+        };
+    @endphp
+    <x-td.arrival headline="Learn from someone who can teach it"
+        lede="Dot.Tutor joins tutoring and courses from Grade 1 to doctoral study. This overview lists your sessions and notices."
+        :primary="$primary"
+        :slip="count($needs) ? ['label' => 'Needs you', 'text' => $needs[0]['text'].'.'] : ['label' => 'Nothing needs you right now', 'text' => 'Your sessions and notices are listed below.']">
+        @unless($tutorProfile)
+            <x-td.button variant="quiet" :href="route('teach.profile')">Apply to teach</x-td.button>
+        @endunless
+        @unless ($primary['label'] === 'Find a tutor')
+            <x-td.button variant="quiet" icon="search" :href="Route::has('marketplace.find') ? route('marketplace.find') : route('tutors.browse')">Find a tutor</x-td.button>
+        @endunless
+    </x-td.arrival>
 
     {{-- State bar: answers "does anything need me?" in words before any figure. --}}
     <div class="t-panel" style="padding:.9rem 1.25rem;margin-bottom:1rem;" role="status">

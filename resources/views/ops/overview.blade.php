@@ -4,9 +4,23 @@
     $d = $data;
     $waiting = collect($queues)->filter(fn ($q) => $q['count'] > 0);
     $dash = fn ($v, $suffix = '') => $v === null ? '—' : $v.$suffix;
+    // The arrival's one primary action (R-50): a child-safety report before anything, then a queue that is past its
+    // time, then the first with work in it, else the first queue this role covers. Counts are the panel's own.
+    $top = $waiting->firstWhere('key', 'child_safety') ?? $waiting->first(fn ($q) => $q['urgent'] > 0) ?? $waiting->first() ?? ($queues[0] ?? null);
+    if ($top !== null) {
+        $primary = ['label' => 'Open '.\Illuminate\Support\Str::lcfirst($top['title']), 'href' => route($top['route'])];
+        $slip = $top['count'] > 0
+            ? ['label' => 'Waiting for you', 'text' => $top['count'].' in '.\Illuminate\Support\Str::lcfirst($top['title']).'.', 'note' => $top['urgent'] > 0 ? $top['urgent'].' '.$top['urgent_label'].'.' : null]
+            : ['label' => 'Nothing is waiting', 'text' => 'Every queue your role covers is empty right now.'];
+    } else {
+        $primary = ['label' => 'Open your account', 'href' => route('profile.show'), 'icon' => 'user'];
+        $slip = ['label' => 'No work queues', 'text' => 'Your role has no work queues on this screen.'];
+    }
 @endphp
 <x-layouts::operations title="Command centre">
-    <x-td.page-head title="Command centre" lede="What is waiting for you first, then the last {{ $d['window_days'] }} days counted from Dot.Tutor's own records. Nothing here is estimated." />
+    <x-td.arrival headline="Keep learning safe and running"
+        lede="The command centre puts what is waiting for a person first, then the last {{ $d['window_days'] }} days counted from Dot.Tutor's own records. Nothing here is estimated."
+        :primary="$primary" :slip="$slip" />
 
     <div class="grid gap-6">
         <x-td.panel title="Waiting for you" flush>

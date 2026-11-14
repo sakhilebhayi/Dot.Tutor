@@ -72,7 +72,7 @@ class StudentScreensTest extends TestCase
         $this->assertStringNotContainsString('>Courses<', preg_replace('/\s+/', '', strip_tags($young->getContent(), '<a>')) ?? '');
 
         $this->actingAs($student)->get(route('learn.home'))->assertOk()
-            ->assertDontSee('data-td-step="young"', false)->assertSee('Your learning')->assertSee('Undergraduate year 1');
+            ->assertDontSee('data-td-step="young"', false)->assertSee('Find someone who can teach you')->assertSee('Undergraduate year 1');
 
         // The learner can override it either way.
         $this->actingAs($student)->put(route('learn.account.step'), ['step' => 'young'])->assertRedirect(route('learn.account'));

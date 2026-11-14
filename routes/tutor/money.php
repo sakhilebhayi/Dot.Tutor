@@ -26,7 +26,7 @@ Route::post('/api/tutor/money/webhooks/paystack', PaystackWebhookController::cla
     ->middleware('throttle:money-webhook')
     ->name('money.webhooks.paystack');
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])->group(function () {
     Route::prefix('api/tutor/money')->name('money.api.')->group(function () {
         // Learners.
         Route::post('/quote', [OrderController::class, 'quote'])->middleware('throttle:money-checkout')->name('quote');

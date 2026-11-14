@@ -257,7 +257,7 @@ Sources: `docs/R47_MONEY.md`, `tests/Feature/Money/*`, `tests/Feature/Security/M
 | Minors' purchases wait for a guardian | Implemented | E2E 06, money and integration tests |
 | Recurring subscriptions | Planned (not built). D-511: needs saved cards, dunning and a guardian mandate. Packages and weekly series cover the use |
 | Paystack split payments, saved cards | Planned (not built), by decision |
-| Dot.Billing, Dot.Finance | Not integrated (no documented contract for Tutor) |
+| Dot.Finance | Not integrated (no documented contract for Tutor) |
 
 ## 13. Dot ecosystem integrations
 
@@ -267,7 +267,7 @@ Sources: `docs/R47_MONEY.md`, `tests/Feature/Money/*`, `tests/Feature/Security/M
 | Dot.Notify | Partial: client for Notify's documented ingest contract, six event types, adults only. Off until configured; Notify's catalogue has no `tutor.*` entries yet | `docs/R47_COMMS.md` section 6 |
 | Dot.Analytics | Partial: the pre-R-47 daily snapshot (`tutor:publish-metrics`) is kept unchanged and is off until configured. No new R-47 metrics are sent |
 | Dot.Files | Not integrated. Files live on this app's private disks, served by authorising controllers |
-| Dot.Billing, Dot.Finance | Not integrated. No documented contract. Finance can export the trial balance |
+| Dot.Finance | Not integrated. No documented contract. Finance can export the trial balance |
 | Dot.Agents, Dot.Brain, Dot.Memory | Not integrated (D-916). No documented, consented API for learning context; Brain has no serving handler; Memory holds no learner preferences or minors' consent model |
 | Dot.Pulse | Not integrated |
 | Dot.Engage | Code adapted, not called: the classroom's WebRTC client was copied from Engage's R-39 meeting room |
@@ -410,7 +410,7 @@ Collected from every domain document. Grouped, not repeated.
 - Course report button; minor selling a priced library resource not caught at upload.
 - AI streaming, lesson-summary drafting, maths rendering.
 - Commission rules, platform coupons and credits are created through the finance API, not a screen. No course review queue. Support threads cannot be closed.
-- Dot.Files, Billing, Finance, Agents, Brain, Memory, Pulse not called.
+- Dot.Files, Finance, Agents, Brain, Memory, Pulse not called.
 
 **Content and language**
 - Interface strings in South African languages other than English and Afrikaans: 0 %. Afrikaans, French, Portuguese are AI-drafted and unreviewed, for academic strings only.
@@ -454,7 +454,7 @@ In order of value to learners and tutors:
 9. Recurring lesson subscriptions with a guardian mandate (D-511).
 10. Lesson-summary drafting and maths rendering for the AI assistant, once the key and budget are set.
 11. Larastan in CI; a request-wide cache of safeguarding facts if the safety owner agrees.
-12. Revisit Dot.Files, Billing, Finance and Brain when they publish documented, consented APIs.
+12. Revisit Dot.Files, Finance and Brain when they publish documented, consented APIs.
 
 ## 22. Implemented, partial and planned, by brief area
 
@@ -530,7 +530,7 @@ In order of value to learners and tutors:
 | Dot.Analytics | Off (pre-R-47 snapshot) | `ANALYTICS_INGEST_URL`, `ANALYTICS_INGEST_SECRET` |
 | SMS | Adapter only, no provider | Not built |
 | Dot.Agents, Brain, Memory | Not integrated (D-916) | None |
-| Dot.Files, Billing, Finance, Pulse | Not integrated | None |
+| Dot.Files, Finance, Pulse | Not integrated | None |
 
 `php artisan tutor:preflight` reads all of these and prints PASS, INFO, OFF, WARN or FAIL. Its last line, "Can a learner book a paid lesson?", names what still blocks a paid booking.
 

@@ -2,12 +2,33 @@
      decided lately, and each child with a status that tells the truth. Phone-first. --}}
 @php
     $tz = config('tutor.timezone');
+    // The arrival's one primary action (R-50): an urgent safety matter, then what waits for a decision, then the
+    // child's own page. No child is named on the arrival.
+    if (! $is_guardian) {
+        $primary = ['label' => 'Go to your learning', 'href' => route('learn.home'), 'icon' => 'graduation-cap'];
+        $slip = ['label' => 'You are not linked to a learner', 'text' => 'A learner invites their parent or guardian from their account.'];
+    } elseif ($urgent !== []) {
+        $primary = ['label' => 'Read the urgent report', 'href' => route('safety.guardian.dashboard').'#'.$urgent[0]['key']];
+        $slip = ['label' => 'Needs you now', 'text' => count($urgent) === 1 ? '1 urgent safety report about your child.' : count($urgent).' urgent safety reports.'];
+    } elseif ($waiting_total > 0) {
+        $primary = ['label' => $waiting_total === 1 ? 'Decide the request' : 'Decide the requests', 'href' => route('guardian.approvals')];
+        $slip = ['label' => 'Waiting for you', 'text' => $waiting_total === 1 ? '1 request needs your approval.' : $waiting_total.' requests need your approval.'];
+    } elseif (count($children) === 1) {
+        $primary = ['label' => 'See your child\'s learning', 'href' => route('guardian.child', $children[0]['id'])];
+        $slip = ['label' => 'Nothing is waiting', 'text' => 'No request needs your approval right now.'];
+    } else {
+        $primary = ['label' => 'See past decisions', 'href' => route('guardian.approvals')];
+        $slip = ['label' => 'Nothing is waiting', 'text' => 'No request needs your approval right now.'];
+    }
 @endphp
 <x-layouts::learner title="Children">
-    <x-td.page-head title="{{ $is_guardian ? 'Your children on Dot.Tutor' : 'Guardian' }}" :lede="$is_guardian ? 'Approve or decline what your child asks for, see their lessons, purchases and messages, and choose what needs your approval.' : 'A parent or guardian looks after a learner under 18 here: they approve lessons, purchases and rooms, and see messages and reports.'" />
+    <x-td.arrival :headline="$is_guardian ? 'Your children on Dot.Tutor' : 'Look after a learner on Dot.Tutor'"
+        :lede="$is_guardian ? 'Approve or decline what your child asks for on Dot.Tutor, see their lessons, purchases and messages, and choose what needs your approval.' : 'On Dot.Tutor a parent or guardian looks after a learner under 18: they approve lessons, purchases and rooms, and see messages and reports.'"
+        :primary="$primary" :slip="$slip" />
 
     @if (! $is_guardian)
-        @include('guardian.partials.not-linked')
+        {{-- The arrival carries this page's one primary action, so the invitation button is quiet here. --}}
+        @include('guardian.partials.not-linked', ['quietInvite' => true])
     @else
         <div class="grid gap-6">
             @foreach ($urgent as $row)

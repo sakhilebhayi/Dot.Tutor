@@ -5,14 +5,59 @@
     $level = $ctx['level'];
 @endphp
 <x-student.shell title="Home">
-    <x-td.page-head :title="$young ? 'Hi '.$first : 'Your learning'"
-        :lede="$level ? $level->name.', '.$level->curriculum->label() : 'Add your grade or level so help fits you.'">
-        <x-slot:actions>
-            @if ($level)
-                <x-td.button variant="quiet" icon="graduation-cap" :href="route('academic.profile.edit')">Learning profile</x-td.button>
-            @endif
-        </x-slot:actions>
-    </x-td.page-head>
+    @php
+        // The arrival's one primary action, decided from the learner's own records (R-50): what blocks them first,
+        // then the one next thing, and only when there is nothing at all, finding a tutor. No tutor is named here.
+        $subjectOf = fn ($lesson) => $lesson->subject?->name ?? 'Lesson';
+        [$primary, $slip] = match (true) {
+            $ctx['suspended'] => [
+                ['label' => 'See why your account is paused', 'href' => route('safety.account')],
+                ['label' => 'Your account is paused', 'text' => 'You can read, but booking, paying and messaging are off.'],
+            ],
+            // Age not given yet: the account is protected as a minor's until the short profile says otherwise.
+            $ctx['limited'] && ! $ctx['onboarded'] => [
+                ['label' => 'Tell us about your learning', 'href' => route('learn.onboarding')],
+                ['label' => 'About a minute, once', 'text' => 'Your grade and month of birth come first. Booking opens after that, and everything else can be skipped.'],
+            ],
+            $ctx['limited'] => [
+                ['label' => 'Invite a parent or guardian', 'href' => route('safety.account'), 'icon' => 'hand-heart'],
+                ['label' => $young ? 'A grown-up must join first' : 'A parent or guardian needs to join you first', 'text' => $young ? 'Then you can book lessons.' : 'They link to your account and say yes before you can book, pay or message a tutor.'],
+            ],
+            ($next['kind'] ?? null) === 'pay' => [
+                ['label' => 'Pay to confirm your lesson', 'href' => route('learn.lessons.show', $next['lesson'])],
+                ['label' => 'Waiting for you', 'text' => $subjectOf($next['lesson']).', '.Times::relative($next['lesson']->starts_at)],
+            ],
+            ($next['kind'] ?? null) === 'lesson' => [
+                ['label' => 'Open your next lesson', 'href' => route('learn.lessons.show', $next['lesson'])],
+                ['label' => 'Your next lesson', 'text' => $subjectOf($next['lesson']).', '.Times::relative($next['lesson']->starts_at), 'note' => app(\App\Domain\Marketplace\Services\BookingPresenter::class)->nextStep($next['lesson'])],
+            ],
+            ($next['kind'] ?? null) === 'work' => [
+                ['label' => 'Start your work', 'href' => route('learning.assessments.take', $next['work']['assignment']->assessment_id)],
+                ['label' => 'Set by your tutor', 'text' => $next['work']['title'], 'note' => $next['work']['due_at'] ? 'Due '.Times::relative($next['work']['due_at']).'.' : null],
+            ],
+            ($next['kind'] ?? null) === 'course' => [
+                ['label' => 'Resume your course', 'href' => route('learning.learn', [$next['course']['enrolment']->course_id, $next['course']['summary']['resume_lesson_id']])],
+                ['label' => 'Carry on where you stopped', 'text' => $next['course']['title'], 'note' => $next['course']['summary']['completed'].' of '.$next['course']['summary']['total'].' lessons done.'],
+            ],
+            default => [
+                ['label' => 'Find a tutor', 'href' => route('marketplace.find'), 'icon' => 'search'],
+                ['label' => $young ? 'No lessons yet' : 'Nothing booked yet', 'text' => $young ? 'Find a tutor to start.' : 'You have no lessons, set work or courses in progress.'],
+            ],
+        };
+    @endphp
+    <x-td.arrival
+        :headline="$young ? 'Find help with your schoolwork' : 'Find someone who can teach you'"
+        :greeting="$young ? 'Hi' : 'Welcome'"
+        :lede="$young
+            ? 'Dot.Tutor has tutors and courses for your grade.'
+            : 'Say what you need in plain words. Dot.Tutor shows tutors and courses for your level, subject and language, and explains why each one fits.'"
+        :primary="$primary" :slip="$slip">
+        @if ($level)
+            <x-td.button variant="quiet" icon="graduation-cap" :href="route('academic.profile.edit')">Learning profile: {{ $level->name }}, {{ $level->curriculum->label() }}</x-td.button>
+        @else
+            <x-td.button variant="quiet" icon="graduation-cap" :href="route('learn.onboarding')">Add your grade or level</x-td.button>
+        @endif
+    </x-td.arrival>
 
     @if ($ctx['suspended'])
         <x-td.notice tone="danger" title="Your account is paused">An operator paused this account. You can read, but booking, paying and messaging are off. <a class="td-link" href="{{ route('safety.account') }}">See why</a>.</x-td.notice>
@@ -24,45 +69,16 @@
             @else
                 Before you can book a lesson, pay or message a tutor, a parent or guardian links to your account and says yes. You can still look around and practise.
             @endif
-            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" variant="primary" :href="route('safety.account')" icon="hand-heart">Invite a parent or guardian</x-td.button></div>
+            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" :href="route('safety.account')" icon="hand-heart">Invite a parent or guardian</x-td.button></div>
         </x-td.notice>
     @endif
 
     @unless ($ctx['onboarded'])
         <x-td.notice tone="info" title="Tell us about your learning">
             Your grade, subjects and the languages you learn best in. It takes about a minute, and every part except the grade can be skipped.
-            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" variant="primary" :href="route('learn.onboarding')" icon-end="arrow-right">Start</x-td.button></div>
+            <div class="st-inline" style="margin-top:var(--td-space-3)"><x-td.button size="sm" :href="route('learn.onboarding')" icon-end="arrow-right">Start</x-td.button></div>
         </x-td.notice>
     @endunless
-
-    {{-- The one next thing. --}}
-    @if ($next)
-        <section class="st-next" aria-labelledby="next-title">
-            @switch($next['kind'])
-                @case('pay')
-                    <p class="st-next__when">Waiting for you · {{ Times::relative($next['lesson']->starts_at) }}</p>
-                    <h2 class="st-next__what" id="next-title">Pay to confirm {{ $next['lesson']->subject?->name ?? 'your lesson' }} with {{ $next['lesson']->tutorProfile->displayName() }}</h2>
-                    <div class="st-inline"><x-td.button variant="primary" :href="route('learn.lessons.show', $next['lesson'])" icon-end="arrow-right">Open the lesson</x-td.button></div>
-                    @break
-                @case('lesson')
-                    <p class="st-next__when">Next lesson · {{ Times::relative($next['lesson']->starts_at) }}</p>
-                    <h2 class="st-next__what" id="next-title">{{ $next['lesson']->subject?->name ?? 'Lesson' }} with {{ $next['lesson']->tutorProfile->displayName() }}</h2>
-                    <p class="st-muted" style="margin:0">{{ app(\App\Domain\Marketplace\Services\BookingPresenter::class)->nextStep($next['lesson']) }}</p>
-                    <div class="st-inline"><x-td.button variant="primary" :href="route('learn.lessons.show', $next['lesson'])" icon-end="arrow-right">Open the lesson</x-td.button></div>
-                    @break
-                @case('work')
-                    <p class="st-next__when">Set by your tutor @if ($next['work']['due_at']) · due {{ Times::relative($next['work']['due_at']) }} @endif</p>
-                    <h2 class="st-next__what" id="next-title">{{ $next['work']['title'] }}</h2>
-                    <div class="st-inline"><x-td.button variant="primary" :href="route('learning.assessments.take', $next['work']['assignment']->assessment_id)" icon-end="arrow-right">Start</x-td.button></div>
-                    @break
-                @case('course')
-                    <p class="st-next__when">Carry on where you stopped · {{ $next['course']['summary']['completed'] }} of {{ $next['course']['summary']['total'] }} lessons done</p>
-                    <h2 class="st-next__what" id="next-title">{{ $next['course']['title'] }}</h2>
-                    <div class="st-inline"><x-td.button variant="primary" :href="route('learning.learn', [$next['course']['enrolment']->course_id, $next['course']['summary']['resume_lesson_id']])" icon-end="arrow-right">Resume</x-td.button></div>
-                    @break
-            @endswitch
-        </section>
-    @endif
 
     {{-- Tell us what you need. --}}
     <form method="POST" action="{{ route('learn.need') }}" class="st-slip" role="search" aria-labelledby="need-label">
@@ -71,7 +87,7 @@
         <div class="st-slip__row">
             <x-td.input name="need" :hint="true" maxlength="500" autocomplete="off"
                 placeholder="{{ $young ? 'Maths, '.($level?->name ?? 'my grade') : 'Grade 11 Maths in isiZulu, after school, under R250' }}" />
-            <x-td.button type="submit" variant="primary" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
+            <x-td.button type="submit" icon="search">{{ $young ? 'Get help' : 'Find help' }}</x-td.button>
         </div>
         <p class="td-hint" id="need-hint">
             @if ($young)
@@ -139,7 +155,7 @@
                         @endif
                         <div class="st-inline" style="margin-top:var(--td-space-2)">
                             @if ($l->tutor_offering_id && $l->offering?->is_active)
-                                <x-td.button size="sm" variant="primary" :href="route('learn.book', $l->tutor_offering_id)" icon="calendar">Book again</x-td.button>
+                                <x-td.button size="sm" :href="route('learn.book', $l->tutor_offering_id)" icon="calendar">Book again</x-td.button>
                             @else
                                 <x-td.button size="sm" :href="route('marketplace.tutors.show', $l->tutor_profile_id)">See {{ $l->tutorProfile->displayName() }}'s profile</x-td.button>
                             @endif

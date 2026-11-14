@@ -13,7 +13,7 @@
                 @csrf
                 <x-td.field label="Their email address" for="g-email"><x-td.input name="email" id="g-email" type="email" required autocomplete="off" /></x-td.field>
                 <x-td.field label="They are your" for="g-rel"><x-td.select name="relationship" id="g-rel" :options="['parent' => 'Parent', 'legal_guardian' => 'Legal guardian', 'caregiver' => 'Caregiver']" /></x-td.field>
-                <div><x-td.button type="submit" variant="primary" size="lg">Send the invitation</x-td.button></div>
+                <div><x-td.button type="submit" :variant="($quietInvite ?? false) ? 'secondary' : 'primary'" size="lg">Send the invitation</x-td.button></div>
             </form>
         </x-td.panel>
     @endif

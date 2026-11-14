@@ -780,6 +780,28 @@
     height: 92%;
 }
 
+.err__more {
+    display: grid;
+    gap: var(--td-space-4);
+    margin-top: var(--td-space-5);
+    justify-items: start;
+}
+
+.err__companies {
+    display: grid;
+    gap: var(--td-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.err__companies li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--td-space-3);
+}
+
 .err__eco {
     margin-top: var(--td-space-9);
     padding-top: var(--td-space-5);

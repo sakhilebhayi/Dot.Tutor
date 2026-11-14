@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // R-47 safety domain. Rate limiters, gates and policies live in TutorSafetyServiceProvider (route:cache safe).
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'entitled'])
     ->prefix('safety')->name('safety.')->group(function () {
         Route::get('/me', [AccountController::class, 'show'])->name('account');
 
