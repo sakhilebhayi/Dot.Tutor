@@ -122,7 +122,7 @@ class EcosystemAuthController extends Controller
 
         // R-50: what InfoDot said about the person's personal workspace for this platform, kept with the sign-in so
         // the local personal team is not a way round the company's entitlement. No key: nothing is remembered.
-        $personal = collect($identity['teams'] ?? [])->first(fn ($t) => is_array($t) && ($t['personal'] ?? false) === true);
+        $personal = collect($identity['teams'] ?? [])->first(fn ($t) => ($t['personal'] ?? false) === true);
 
         if (is_array($personal) && array_key_exists('entitled', $personal)) {
             $request->session()->put(EnsureCompanyEntitled::PERSONAL, $personal['entitled'] === true);
