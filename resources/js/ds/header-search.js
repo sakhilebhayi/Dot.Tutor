@@ -6,6 +6,12 @@ const MIN = 2;
 export function initHeaderSearch(root = document) {
     const search = window.DotSearchResults;
     if (!search) {
+        // This module (deferred, in <head>) runs BEFORE the classic deferred scripts at the end of <body>, so js/dot-search-results.js may not have
+        // run yet. DOMContentLoaded fires after every deferred script: try again then, once.
+        if (document.readyState === 'loading' || !root.__tdSearchRetry) {
+            root.__tdSearchRetry = true;
+            document.addEventListener('DOMContentLoaded', () => initHeaderSearch(root), { once: true });
+        }
         return;
     }
 

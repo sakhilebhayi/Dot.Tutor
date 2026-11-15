@@ -207,4 +207,20 @@ class HeaderSearchTest extends TestCase
         $this->assertSame('learn', $search->resolveScope($plain, 'ops'));
         $this->assertSame('teach', $search->resolveScope($tutorUser, 'teach'));
     }
+
+    public function test_each_shell_posts_its_own_scope_and_names_the_suggest_endpoint(): void
+    {
+        $subject = $this->makeSubject('Header scope');
+        $tutorUser = $this->makeUser('Scope Tutor');
+        $this->makeTutor([], $subject, $tutorUser);
+        $operator = $this->makeOperator();
+
+        foreach ([[$this->makeUser('Scope Learner'), '/learn', 'learn'], [$tutorUser, '/teach', 'teach'], [$operator, '/ops', 'ops']] as [$user, $path, $scope]) {
+            $html = $this->actingAs($user)->get($path)->assertOk()->getContent();
+
+            $this->assertStringContainsString('<input type="hidden" name="scope" value="'.$scope.'">', $html, "{$path}: scope {$scope}");
+            $this->assertStringContainsString('data-suggest-url="'.route('search.suggest').'"', $html);
+            $this->assertStringContainsString('data-search-pages', $html, 'the empty-box "Go to" block is server rendered');
+        }
+    }
 }

@@ -165,11 +165,12 @@
         padding-block-end: var(--td-space-2);
     }
 
-    .td-public-top[data-menu-ready] .td-public-nav {
+    /* R-52: keyed on .js (set before first paint) instead of data-menu-ready (set after load), so the nav row does not fold up and shift the page. */
+    .js .td-public-top .td-public-nav {
         display: none;
     }
 
-    .td-public-top[data-menu-ready] .td-public-menu:not([hidden]) {
+    .js .td-public-top .td-public-menu:not([hidden]) {
         display: inline-flex;
     }
 

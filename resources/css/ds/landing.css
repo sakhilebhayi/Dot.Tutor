@@ -237,10 +237,13 @@
     white-space: nowrap;
 }
 
+/* Roboto is wider than the condensed face the spines were drawn for: the span of years may wrap instead of leaving the 320px screen. */
 .lp-spine__span {
+    min-width: 0;
     font-size: var(--td-text-sm);
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .lp-book__page {

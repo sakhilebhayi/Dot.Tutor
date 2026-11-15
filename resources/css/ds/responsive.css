@@ -220,5 +220,134 @@
             align-items: center;
             min-height: 2.75rem;
         }
+
+        /* A link that stands alone on its line (a name in a row, "Report a problem"), a disclosure's summary, a stage pill that is a link and the
+           skip link are touch targets too; links inside a sentence are not (they keep the line height). */
+        :is(div, li, dd, td, p, span) > a.td-link:only-child,
+        :is(li, dd, td, th) > a.td-link,
+        .st-inline > a.td-link,
+        details > summary,
+        details.st-disclosure > summary,
+        details.hm-table > summary,
+        .st-outline a,
+        a.td-pill,
+        .td-skip {
+            min-height: 2.75rem;
+        }
+
+        :is(div, li, dd, td, p, span) > a.td-link:only-child,
+        :is(li, dd, td, th) > a.td-link,
+        .st-inline > a.td-link,
+        a.td-pill,
+        .td-skip {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .st-outline a {
+            align-items: center;
+        }
+
+        details:not(.st-disclosure) > summary {
+            display: list-item;
+            align-content: center;
+        }
+
+        details.st-disclosure > summary {
+            align-items: center;
+        }
+    }
+}
+
+/*
+ * R-52 overflow and layout-shift fixes found by the responsive harness.
+ *
+ * 1. A tag inside a row's end cell ("Learner did not come, respond by ...") is nowrap by design; at 861 to 1024px next to the rail it pushed the
+ *    row 14px past the window. The row's second column may now shrink (minmax(0, auto)) and a long tag wraps inside itself.
+ * 2. A date or time input has an intrinsic width wider than a narrow grid column (the offerings form pushed 25px past the window at 1024px).
+ *    Every field and every date, time and number input may shrink to its column.
+ * 3. The stacked phone table is built by script after the first paint; the table shifted 0.38 of the viewport when it did. While the script has
+ *    not run (and only when script is on), the table is not drawn: nothing visible moves, and without script the table scrolls in its region as before.
+ */
+@layer components {
+    .hm-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    }
+
+    .hm-row__end {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .hm-tag {
+        max-width: 100%;
+        white-space: normal;
+        text-align: start;
+    }
+
+    .td-field input,
+    .td-field select,
+    .td-field textarea {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    @media (max-width: 40rem) {
+        .js table.td-table--stack[data-td-stack]:not([data-td-ready]) {
+            visibility: hidden;
+        }
+    }
+}
+
+/*
+ * R-52, operator shell: the harness found the operations rail rows (36px), the plain links inside data tables (18px) and the bars of the weekly
+ * chart (23px wide each at 320px) under the 44px floor. Up to 1024px and on touch screens the rail rows are 44px, a table link is a 44px
+ * box, and the chart keeps 44px per bar inside its own horizontal scroll (the figure scrolls, the page does not).
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    .td-app.td-app--operations .td-nav-link {
+        min-height: 2.75rem;
+    }
+
+    table.td-table :is(td, th) > a:not(.td-btn) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+}
+
+@media (max-width: 64rem) {
+    .hm-chart {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
+    .hm-chart svg {
+        min-width: 36rem;
+    }
+}
+
+/*
+ * R-52, public pages (landing, sign-in, find a tutor): the wordmark link, the footer links and the "Remember me" row are touch targets up to
+ * 1024px and on touch screens.
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    .td-wordmark {
+        min-height: 2.75rem;
+    }
+
+    .td-public-foot .td-public-foot__links a {
+        min-height: 2.75rem;
+    }
+
+    .td-auth__card form a:not(.td-btn) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    label:has(> input[type='checkbox']) {
+        min-height: 2.75rem;
+        align-items: center;
     }
 }
