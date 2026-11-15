@@ -42,7 +42,6 @@
     .td-auth__title {
         margin: 0 0 var(--td-space-5);
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
         font-size: var(--td-text-xl);
         line-height: var(--td-leading-tight);
         color: var(--td-ink);
@@ -52,10 +51,10 @@
 /* WCAG 2.4.11 focus not obscured: a control reached by Tab scrolls clear of the sticky top bar and of the learner's
    bottom bar on phones (the sweep found buttons focused behind the bottom bar). */
 html {
-    scroll-padding-top: calc(4rem + var(--td-space-2));
+    scroll-padding-top: calc(var(--dot-header-offset, 3.5rem) + var(--td-space-2));
 }
 
-@media (max-width: 47.98rem) {
+@media (max-width: 53.75rem) {
     html:has(.td-app--learner) {
         scroll-padding-bottom: calc(4.25rem + env(safe-area-inset-bottom) + var(--td-space-2));
     }

@@ -7,6 +7,7 @@
 | whose routes do not exist yet is not shown. Wave-2 screens light up their place in a shell by registering a
 | route with one of these names. "match" is a routeIs() pattern (or a list) that marks the item current.
 | "steps" limits an item to the young, standard or dense step; "bottom" puts it in the learner's phone bar.
+| R-52: Notifications is not a rail item: the bell sits in the shared header at every width and the account menu lists it too.
 */
 
 return [
@@ -30,7 +31,6 @@ return [
             'label' => 'You',
             'items' => [
                 ['label' => 'Learning profile', 'route' => ['learn.profile', 'academic.profile.edit'], 'icon' => 'graduation-cap', 'match' => ['learn.profile*', 'academic.profile.*', 'learn.onboarding*']],
-                ['label' => 'Notifications', 'route' => 'comms.inbox', 'icon' => 'bell', 'match' => ['comms.inbox*', 'comms.preferences*']],
                 ['label' => 'Guardian', 'route' => 'guardian.home', 'icon' => 'hand-heart', 'match' => 'guardian.*'],
                 ['label' => 'Payments', 'route' => 'money.orders', 'icon' => 'receipt', 'match' => ['money.orders*', 'money.checkout.*', 'money.receipts.*'], 'steps' => ['standard', 'dense']],
                 ['label' => 'Account', 'route' => ['learn.account', 'profile.show'], 'icon' => 'settings', 'match' => ['learn.account*', 'profile.show', 'academic.locale.*']],
@@ -53,7 +53,6 @@ return [
         [
             'label' => 'You',
             'items' => [
-                ['label' => 'Notifications', 'route' => 'comms.inbox', 'icon' => 'bell', 'match' => ['comms.inbox*', 'comms.preferences*']],
                 ['label' => 'Your learning', 'route' => 'learn.home', 'icon' => 'graduation-cap', 'match' => 'learn.home'],
                 ['label' => 'Account', 'route' => 'profile.show', 'icon' => 'settings', 'match' => 'profile.show'],
             ],

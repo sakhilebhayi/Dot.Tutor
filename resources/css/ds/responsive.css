@@ -184,3 +184,197 @@
         }
     }
 }
+
+/*
+ * R-52 phone and tablet rules.
+ *
+ * 1. Buttons wrap. A long label ("Invite a parent or guardian", "Learning profile: Grade 3, CAPS") on a 56px young-step button used to run past
+ *    a 320px screen because buttons never wrapped; now the label wraps inside the button and the button grows in height, never in width.
+ * 2. The small button and the toast close keep a 44px target up to 1024px and on any touch screen (they are 36px on a desktop).
+ * 3. A row's link is the row's whole click area (its ::after covers the row); its own box is at least 44px high where a finger uses it.
+ */
+@layer components {
+    @media (max-width: 47.99rem) {
+        .td-btn:not(.td-btn--icon) {
+            max-width: 100%;
+            padding-block: var(--td-space-2);
+            white-space: normal;
+            text-align: center;
+            text-wrap: balance;
+        }
+    }
+
+    @media (max-width: 64rem), (pointer: coarse) {
+        .td-btn--sm {
+            min-height: 2.75rem;
+        }
+
+        .td-toast .td-btn {
+            min-height: 2.75rem;
+            width: 2.75rem;
+        }
+
+        .hm-row a.hm-row__link,
+        .st-row__title a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 2.75rem;
+        }
+
+        /* A link that stands alone on its line (a name in a row, "Report a problem"), a disclosure's summary, a stage pill that is a link and the
+           skip link are touch targets too; links inside a sentence are not (they keep the line height). */
+        :is(div, li, dd, td, p, span) > a.td-link:only-child,
+        :is(li, dd, td, th) > a.td-link,
+        .st-inline > a.td-link,
+        details > summary,
+        details.st-disclosure > summary,
+        details.hm-table > summary,
+        .st-outline a,
+        a.td-pill,
+        .td-skip {
+            min-height: 2.75rem;
+        }
+
+        :is(div, li, dd, td, p, span) > a.td-link:only-child,
+        :is(li, dd, td, th) > a.td-link,
+        .st-inline > a.td-link,
+        a.td-pill,
+        .td-skip {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .st-outline a {
+            align-items: center;
+        }
+
+        details:not(.st-disclosure) > summary {
+            display: list-item;
+            align-content: center;
+        }
+
+        details.st-disclosure > summary {
+            align-items: center;
+        }
+    }
+}
+
+/*
+ * R-52 overflow and layout-shift fixes found by the responsive harness.
+ *
+ * 1. A tag inside a row's end cell ("Learner did not come, respond by ...") is nowrap by design; at 861 to 1024px next to the rail it pushed the
+ *    row 14px past the window. The row's second column may now shrink (minmax(0, auto)) and a long tag wraps inside itself.
+ * 2. A date or time input has an intrinsic width wider than a narrow grid column (the offerings form pushed 25px past the window at 1024px).
+ *    Every field and every date, time and number input may shrink to its column.
+ * 3. The stacked phone table is built by script after the first paint; the table shifted 0.38 of the viewport when it did. While the script has
+ *    not run (and only when script is on), the table is not drawn: nothing visible moves, and without script the table scrolls in its region as before.
+ */
+@layer components {
+    .hm-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    }
+
+    .hm-row__end {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .hm-tag {
+        max-width: 100%;
+        white-space: normal;
+        text-align: start;
+    }
+
+    .td-field input,
+    .td-field select,
+    .td-field textarea {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    @media (max-width: 40rem) {
+        .js table.td-table--stack[data-td-stack]:not([data-td-ready]) {
+            visibility: hidden;
+        }
+    }
+}
+
+/*
+ * R-52, operator shell: the harness found the operations rail rows (36px), the plain links inside data tables (18px) and the bars of the weekly
+ * chart (23px wide each at 320px) under the 44px floor. Up to 1024px and on touch screens the rail rows are 44px, a table link is a 44px
+ * box, and the chart keeps 44px per bar inside its own horizontal scroll (the figure scrolls, the page does not).
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    .td-app.td-app--operations .td-nav-link {
+        min-height: 2.75rem;
+    }
+
+    table.td-table :is(td, th) a:not(.td-btn) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+}
+
+@media (max-width: 64rem) {
+    .hm-chart {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
+    .hm-chart svg {
+        min-width: 36rem;
+    }
+}
+
+/*
+ * R-52, public pages (landing, sign-in, find a tutor): the wordmark link, the footer links and the "Remember me" row are touch targets up to
+ * 1024px and on touch screens.
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    .td-wordmark {
+        min-height: 2.75rem;
+    }
+
+    .td-public-foot .td-public-foot__links a {
+        min-height: 2.75rem;
+    }
+
+    .td-auth__card form a:not(.td-btn) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    label:has(> input[type='checkbox']) {
+        min-height: 2.75rem;
+        align-items: center;
+    }
+}
+
+/*
+ * R-52 re-sync: routes the first pass did not reach (earnings range links, the message inbox rows, the safeguarding incident references and facts
+ * list, the support queue titles) were found under the 44px floor at 320 to 1024px. Same rule as the rest: a link or button that stands alone on its
+ * line is a 44px box up to 1024px and on touch screens.
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    main form > a.td-link,
+    .comms-item__open,
+    .ops-work__title > a,
+    .hm-row__end > a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    /* inline-block, not inline-flex: the facts column breaks long values anywhere, and a shrink-to-fit flex box collapsed to 15px wide at 1024px. */
+    .ops-facts dd > a {
+        display: inline-block;
+        padding-block: 0.8125rem;
+    }
+
+    /* A single-letter tick box ("A" to "E") is narrower than 44px: the label gets the width as well as the height. */
+    label.td-check {
+        min-width: 2.75rem;
+    }
+}

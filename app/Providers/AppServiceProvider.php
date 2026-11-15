@@ -38,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('bookings', fn (Request $request) => Limit::perMinute(config('tutor.throttle.bookings'))
             ->by($request->user()?->id ?: $request->ip()));
 
+        // The header search: the dropdown asks once per pause in typing, so 90 a minute is generous and still a ceiling.
+        RateLimiter::for('tutor-search', fn (Request $request) => Limit::perMinute((int) config('tutor.throttle.search', 90))
+            ->by('search:'.($request->user()?->id ?: $request->ip())));
+
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(config('tutor.throttle.uploads'))
             ->by($request->user()?->id ?: $request->ip()));
     }

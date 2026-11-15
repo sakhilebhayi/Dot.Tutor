@@ -483,8 +483,7 @@
         display: grid;
         place-items: center;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 750;
+        font-weight: 700;
         font-size: var(--td-text-2xl);
         letter-spacing: 0.02em;
     }

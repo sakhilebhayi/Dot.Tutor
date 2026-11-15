@@ -48,6 +48,7 @@ return [
     'throttle' => [
         'bookings' => (int) env('TUTOR_THROTTLE_BOOKINGS', 10),
         'uploads' => (int) env('TUTOR_THROTTLE_UPLOADS', 10),
+        'search' => (int) env('TUTOR_THROTTLE_SEARCH', 90),
     ],
 
     /*

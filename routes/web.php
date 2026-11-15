@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LessonResourceController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionRatingController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TutorAvailabilityController;
@@ -61,6 +62,10 @@ Route::middleware([
     'entitled',
 ])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    // The header search (R-52): the full results page and the JSON the dropdown reads. Scope-checked in TutorSearch.
+    Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:tutor-search')->name('search');
+    Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:tutor-search')->name('search.suggest');
     Route::post('/notifications/read', [DashboardController::class, 'markNoticesRead'])->name('notifications.read');
 
     // Becoming a tutor: one application per user, editable afterwards.

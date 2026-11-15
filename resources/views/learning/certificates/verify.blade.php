@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dot-roboto">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>Certificate check · Dot.Tutor</title>
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.min.css') }}">
     <style>
         :root { color-scheme: light; }
-        body { margin: 0; background: #f6f4ee; color: #1c1917; font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #f6f4ee; color: #1c1917; font: 16px/1.6 var(--dot-font-sans); }
         main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem; }
         h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 1rem; text-wrap: balance; }
         dl { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.25rem; margin: 1.5rem 0; }

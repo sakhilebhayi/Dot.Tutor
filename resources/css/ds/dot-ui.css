@@ -28,12 +28,35 @@ body {
     --dsr-filter-border-focus: var(--td-focus);
     --dsr-focus-ring: var(--td-focus);
     /* touch height follows the step: 44px learner, 36px dense (the package default is 44px) */
-    --dsr-filter-h-touch: var(--td-control-h);
+    --dsr-filter-h-touch: max(var(--td-control-h), 2.75rem);
 }
 
-/* The switcher lives in the top bar, beside the bell, the theme switch and the account button. */
-.td-top .dsw {
-    --dsw-btn-h: var(--td-control-h);
+/*
+ * The shared header (dot-ui 0.6, docs/HEADER.md) takes Dot.Tutor's own tokens, in light and night (they follow data-theme and the system):
+ * the bar is the surface colour with a hairline, the current place and the avatar use the reading-room green, the corner is the 4px spine-label
+ * corner. This file is plain and UNLAYERED on purpose (dot-ui's rules are unlayered, and a layered rule would lose to them whatever its specificity).
+ */
+:root {
+    --dh-bg: var(--td-surface);
+    --dh-ink: var(--td-ink);
+    --dh-ink-2: var(--td-ink-2);
+    --dh-rule: var(--td-line);
+    --dh-hover: var(--td-sunken);
+    --dh-accent: var(--td-primary);
+    --dh-focus: var(--td-focus);
+    --dh-radius: var(--td-radius);
+    --dh-badge-bg: var(--td-primary);
+    --dh-badge-ink: var(--td-primary-ink);
+    --dh-avatar-bg: var(--td-primary-soft);
+    --dh-avatar-ink: var(--td-primary-soft-ink);
+    --dh-logo-h: 32px;
+    /* The rail takes 264px on the left, the header's two outer columns stay equal, so the search is centred in the window: 28vw leaves room. */
+    --dh-search-w: clamp(280px, 28vw, 560px);
+}
+
+/* The switcher sits in the header's tools, beside the bell and the account menu. Its panel follows night and day; the logo plates stay white
+   (the logos are drawn for white), so their text stays dark in night too. */
+.dh .dsw {
     --dsw-btn-ink: var(--td-ink);
     --dsw-btn-border: var(--td-edge);
     --dsw-btn-bg-hover: var(--td-sunken);
@@ -43,7 +66,6 @@ body {
     --dsw-ink: var(--td-ink);
     --dsw-ink-2: var(--td-ink-2);
     --dsw-rule: var(--td-line);
-    /* the logo plate stays white (the logos are drawn for white), so its text stays dark in night too */
     --dsw-tile-ink: #1b2124;
 }
 

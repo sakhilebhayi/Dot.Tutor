@@ -92,8 +92,7 @@
     .td-legal__title {
         margin: 0;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 780;
+        font-weight: 700;
         font-size: var(--td-text-2xl);
         line-height: var(--td-leading-display);
         letter-spacing: -0.015em;
@@ -164,8 +163,7 @@
     .td-legal__body h2 {
         margin: var(--td-space-7) 0 var(--td-space-3);
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 750;
+        font-weight: 700;
         font-size: var(--td-text-lg);
         line-height: var(--td-leading-tight);
     }
@@ -315,7 +313,7 @@
     @media (min-width: 64rem) {
         .st-sticky {
             position: sticky;
-            top: calc(4rem + var(--td-space-4));
+            top: calc(var(--dot-header-offset, 3.5rem) + var(--td-space-4));
         }
     }
 }
@@ -620,10 +618,11 @@
 
 @media print {
     .td-rail,
-    .td-top,
+    .dh,
+    .dh-drawer,
+    .dh-scrim,
     .td-bottom,
     .td-skip,
-    .shell-backdrop,
     .td-page-head__actions,
     .td-no-print,
     .td-toasts {

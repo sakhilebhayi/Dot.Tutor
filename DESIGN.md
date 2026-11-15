@@ -50,58 +50,58 @@ colors:
   on-night-primary: "#051810"
 typography:
   display:
-    fontFamily: Archivo
+    fontFamily: Roboto
     fontSize: 6rem
     fontWeight: 780
     lineHeight: 1.02
     letterSpacing: -0.02em
     fontVariation: "'wdth' 75"
   section:
-    fontFamily: Archivo
+    fontFamily: Roboto
     fontSize: 3rem
     fontWeight: 760
     lineHeight: 1.04
     letterSpacing: -0.015em
     fontVariation: "'wdth' 75"
   page-title:
-    fontFamily: Archivo
+    fontFamily: Roboto
     fontSize: 1.75rem
     fontWeight: 750
     lineHeight: 1.15
     fontVariation: "'wdth' 75"
   title:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 1.375rem
     fontWeight: 700
     lineHeight: 1.15
   lead:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 1.125rem
     fontWeight: 400
     lineHeight: 1.5
   body:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 1rem
     fontWeight: 400
     lineHeight: 1.55
     fontFeature: "'tnum' 1"
   label:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 0.875rem
     fontWeight: 650
     lineHeight: 1.3
   meta:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 0.8125rem
     fontWeight: 400
     lineHeight: 1.4
   body-young:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 1.1875rem
     fontWeight: 400
     lineHeight: 1.7
   body-dense:
-    fontFamily: Atkinson Hyperlegible Next
+    fontFamily: Roboto
     fontSize: 0.9375rem
     fontWeight: 400
     lineHeight: 1.45
@@ -280,13 +280,13 @@ Restrained on screens people work in, committed on the landing. The ground is sh
 
 ## Typography
 
-Two self-hosted families under the SIL Open Font License, no third-party hosts.
+One self-hosted family under the SIL Open Font License, no third-party hosts.
 
-- **Archivo** (Omnibus-Type), instanced to width 62-100 and weight 500-800, set condensed at width 75 for headings: the spine-label voice. Sentence case, never tracked capitals.
-- **Atkinson Hyperlegible Next** (Braille Institute) for everything people read and operate. Its letterforms keep I, l and 1 and O and 0 apart, which matters for early readers, maths and codes. Figures are tabular everywhere so prices, times and marks line up. Its zero is slashed by design (no plain alternate), which made prices read as "R25Ø.ØØ" (both jury critics, polish wave), so the digits 0 to 9 come from Archivo at its normal width through a digits-only face, `TD Figures`, first in the text stack and matched to Atkinson's cap height and line metrics (D-2103). Money is written one way: the symbol against the figure, "R1 250.00" (D-2104).
-- **Scale:** meta 13, label 14, body 16, lead 18, title 22, page title 28, section 32 to 48, display 44 to 96 (fluid). Headings are one weight and one colour; no accented word inside a heading.
+- **Roboto** (R-52, the one face of every Dot platform, served from `public/dot-ui/fonts/roboto`, scale in `dot-type.css`) for headings, text, controls and figures. Headings are Roboto 700, sentence case, never tracked capitals. Roboto replaced Archivo (condensed headings) and Atkinson Hyperlegible Next (text) so the ecosystem reads as one product; the digits-only face `TD Figures` is gone too, because Roboto draws a plain zero (prices read "R250.00" with no slash). Money is written one way: the symbol against the figure, "R1 250.00" (D-2104).
+- **Accessibility consideration.** Atkinson Hyperlegible was chosen for early readers, dyslexic readers and codes (I, l and 1, O and 0 kept apart). Roboto's I and l are close, so what the face no longer does by letterform the layout does: the young step keeps its larger sizes (19px text, 3.5rem controls), 1.7 leading and generous spacing, running text keeps a 52 to 66 character measure and `text-wrap: pretty`, figures are tabular, and the step is a person's own choice (Account) rather than a guess.
+- **Scale:** meta 13, label 14, body 16, lead 18, title 22, page title 28, section 32 to 48, display 40 to 64 (fluid, the dot-ui display step). Headings are one weight and one colour; no accented word inside a heading.
 - **Young step:** body 19, lead 21, title 26, leading 1.7, measure 52ch. **Dense step:** body 15, leading 1.45.
-- Tshivenda's dotted and circumflex-below letters fall back to the system face; legible, not a perfect match.
+- Tshivenda's dotted and circumflex-below letters: Roboto's latin-ext file covers most of them; any it lacks fall back to the system face.
 
 ## Layout
 

@@ -4,7 +4,7 @@
     $money = fn (int $minor, ?string $c = null) => \App\Domain\Teach\Support\TutorContext::money($minor, $c);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-td-step="standard">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto" data-dh-theme-key="td-theme" data-td-step="standard">
 <head>
     @include('layouts.partials.head', ['title' => $store['name'].', tutor'])
 </head>

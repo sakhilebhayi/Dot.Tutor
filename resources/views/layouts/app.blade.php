@@ -40,10 +40,7 @@
     'bottom' => [],
     'step' => 'standard',
     'title' => null,
-    'topTitle' => $header ?? null,
-    'content' => $slot,
+    // The old top bar printed the page's header slot as the title; the shared header has no room for a title, so it leads the page.
+    'content' => new \Illuminate\Support\HtmlString((isset($header) && trim((string) $header) !== '' ? '<div class="td-legacy-head">'.$header.'</div>' : '').$slot),
     'livewire' => true,
-    'legacyNav' => new \Illuminate\Support\HtmlString(
-        '<div class="shell-legacy-nav" hidden>'.\Livewire\Livewire::mount('navigation-menu').'</div>'
-    ),
 ])

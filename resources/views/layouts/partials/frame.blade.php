@@ -1,7 +1,8 @@
 {{-- The signed-in frame shared by the learner, tutor workspace, operations and legacy app shells.
      Expects: $shell (learner|workspace|operations|app), $scope (rail subtitle), $nav (ShellNavigation sections),
-     $bottom (bottom-bar items, learner only), $step (young|standard|dense), $title, $topTitle (HTML or null),
-     $content (the page), $livewire (bool). --}}
+     $bottom (bottom-bar items, learner only), $step (young|standard|dense), $title, $content (the page), $livewire (bool).
+     R-52: the top bar is the shared dot-ui header (one row: brand, centred search, switcher, bell, account menu). The rail below it is the
+     platform's own navigation; on a phone the header's menu button opens it (dot-ui adopt mode, drawer-target). --}}
 <!DOCTYPE html>
 @php
     // The tutor workspace has one shell size: a dense page tightens its own content, never the rail and top bar
@@ -10,12 +11,59 @@
     $contentStep = $shell === 'workspace' && $step === 'dense' ? 'dense' : null;
     $rootStep = $step !== 'standard' && $contentStep === null ? $step : null;
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($rootStep) data-td-step="{{ $rootStep }}" @endif>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto" data-dh-theme-key="td-theme" @if ($rootStep) data-td-step="{{ $rootStep }}" @endif>
 <head>
     @include('layouts.partials.head', ['title' => $title, 'livewire' => $livewire, 'dotUi' => true])
 </head>
 <body class="td-app td-app--{{ $shell }}">
     <a class="td-skip" href="#main-content">Skip to content</a>
+
+    @auth
+        @php
+            $shellHeader = app(\App\Support\ShellHeader::class);
+            $headerAccount = $shellHeader->account(Auth::user(), $shell);
+            $headerUnread = $shellHeader->unread(Auth::user());
+            $headerSearchScope = $shellHeader->searchScope($shell);
+            $headerSwitcher = $shellHeader->switcher(Auth::user());
+            $headerSearch = app(\App\Support\Search\TutorSearch::class);
+            $headerPages = $headerSearch->pages(Auth::user(), $headerSearchScope, null, 6);
+        @endphp
+    @endauth
+
+    <x-dot.header id="dh" brand-href="{{ url('/') }}" brand-label="Dot.Tutor, {{ $scope }}" :account="$headerAccount ?? null"
+        drawer-target="app-sidebar" menu-label="Open menu" search-label="Search Dot.Tutor" context="{{ $scope }}">
+        <x-slot:brand>
+            <img class="td-brand-mark" src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
+            <span class="dh-brand__name">Dot.Tutor</span>
+        </x-slot:brand>
+        @auth
+            <x-slot:search>
+                {{-- Real search (R-52), scoped to this shell: what a learner, guardian, tutor or operator may already open (App\Support\Search\TutorSearch).
+                     A plain GET form to /search works with no script; js/ds/header-search.js fills the dropdown from /search/suggest. --}}
+                <x-dot.search name="q" id="dh-search-q" :action="route('search')" :value="request()->routeIs('search') ? request('q') : ''" label="Search Dot.Tutor"
+                    placeholder="Search Dot.Tutor" hint="Ctrl K" results-nav loading-text="Searching…"
+                    :hidden-fields="['scope' => $headerSearchScope]" :root-attributes="['data-tutor-search' => '', 'data-suggest-url' => route('search.suggest')]">
+                    <x-slot:results>
+                        <div data-search-pages>
+                            <div class="dsr-head">Go to</div>
+                            <div class="dsr-chips">
+                                @foreach ($headerPages as $page)
+                                    <a class="dsr-chip" role="option" href="{{ $page->url }}">{{ $page->title }}</a>
+                                @endforeach
+                            </div>
+                            <p class="dsr-foot">Search your {{ $headerSearchScope === 'teach' ? 'students, lessons and courses' : ($headerSearchScope === 'ops' ? 'people, tutors, orders and incidents' : ($headerSearchScope === 'guardian' ? 'children and approvals' : 'tutors, lessons, courses and library')) }}. Type at least {{ \App\Support\Search\TutorSearch::MIN_LENGTH }} characters.</p>
+                        </div>
+                    </x-slot:results>
+                </x-dot.search>
+            </x-slot:search>
+            <x-slot:tools>
+                <x-dot.switcher platform="tutor" :model="$headerSwitcher['model']" :company="$headerSwitcher['company']" :company-name="$headerSwitcher['name']" logos="/dot-ui/img/platforms" />
+                @if (Route::has('comms.inbox'))
+                    <x-dot.bell :href="route('comms.inbox')" :count="$headerUnread" always />
+                @endif
+            </x-slot:tools>
+        @endauth
+    </x-dot.header>
 
     <aside class="td-rail sidebar" id="app-sidebar" aria-label="Main navigation" tabindex="-1">
         <div class="td-rail__brand">
@@ -23,10 +71,11 @@
                 <img src="{{ asset('images/mark-64.png') }}" alt="" width="32" height="32">
                 <span>Dot.Tutor<span class="td-wordmark__scope">{{ $scope }}</span></span>
             </a>
-            <x-td.button variant="quiet" icon="x" icon-only class="td-rail__close" data-shell-close aria-label="Close menu">Close menu</x-td.button>
+            <x-td.button variant="quiet" icon="x" icon-only class="td-rail__close" data-dh-close aria-label="Close menu">Close menu</x-td.button>
         </div>
 
         <nav class="td-rail__nav" aria-label="{{ $scope }}">
+            <p class="td-rail__scope">{{ $scope }}</p>
             @foreach ($nav as $section)
                 @if ($section['label'])
                     <p class="td-rail__section">{{ $section['label'] }}</p>
@@ -38,89 +87,16 @@
                 @endforeach
             @endforeach
         </nav>
-
-        @auth
-            @php
-                // Jetstream teams mean nothing to a learner, a child or a guardian ("Sipho's Team"). The switcher is shown
-                // only to a tutor or operator who really uses teams (more than one); R-47 polish D-2023, critic A 13.
-                $frameUser = Auth::user();
-                $showTeams = Laravel\Jetstream\Jetstream::hasTeamFeatures() && $frameUser->currentTeam
-                    && ($frameUser->is_platform_operator || $frameUser->tutorProfile()->exists())
-                    && $frameUser->allTeams()->count() > 1;
-            @endphp
-            <div class="td-rail__foot sidebar-footer">
-                <div class="td-rail__user">
-                    <x-td.avatar :name="Auth::user()->name" :src="Auth::user()->profile_photo_path ? Auth::user()->profile_photo_url : null" size="sm" decorative />
-                    <div style="min-width:0;flex:1">
-                        <div class="td-rail__user-name">{{ Auth::user()->name }}</div>
-                        @if ($showTeams)<div class="td-rail__user-meta">{{ $frameUser->currentTeam->name }}</div>@endif
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <x-td.button type="submit" variant="quiet" icon="log-out" icon-only aria-label="Sign out" title="Sign out">Sign out</x-td.button>
-                    </form>
-                </div>
-                @if ($showTeams)
-                    <details class="td-rail__teams team-switch">
-                        <summary class="td-nav-link"><x-td.icon name="users" /><span style="flex:1">Teams</span><x-td.icon name="chevron-down" /></summary>
-                        <div class="td-rail__teams-list">
-                            <a href="{{ route('teams.show', Auth::user()->currentTeam->id) }}" class="td-nav-link" @if (request()->routeIs('teams.show')) aria-current="page" @endif>Team settings</a>
-                            @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
-                                <a href="{{ route('teams.create') }}" class="td-nav-link" @if (request()->routeIs('teams.create')) aria-current="page" @endif>Create new team</a>
-                            @endcan
-                            @if (Auth::user()->allTeams()->count() > 1)
-                                <p class="td-rail__section">Switch teams</p>
-                                @foreach (Auth::user()->allTeams() as $switchTeam)
-                                    <form method="POST" action="{{ route('current-team.update') }}">
-                                        @method('PUT')
-                                        @csrf
-                                        <input type="hidden" name="team_id" value="{{ $switchTeam->id }}">
-                                        <button type="submit" class="td-nav-link" @if (Auth::user()->isCurrentTeam($switchTeam)) aria-current="true" @endif>{{ $switchTeam->name }}</button>
-                                    </form>
-                                @endforeach
-                            @endif
-                        </div>
-                    </details>
-                @endif
-            </div>
-        @endauth
     </aside>
 
-    <div class="shell-backdrop" data-shell-close aria-hidden="true"></div>
-
-    <header class="td-top topbar" data-shell-behind>
-        <x-td.button variant="quiet" icon="menu" class="td-top__menu shell-menu-btn" data-shell-open aria-controls="app-sidebar" aria-expanded="false">Menu</x-td.button>
-        <div class="td-top__title">{{ $topTitle ?? $title ?? 'Dot.Tutor' }}</div>
-        <div class="td-top__actions">
-            @auth
-                @php
-                    // The company the switcher is about: the person's current team, the same one the entitlement check reads
-                    // (App\Http\Middleware\EnsureCompanyEntitled). A personal or unlinked team has no InfoDot company, so the
-                    // switcher shows its personal state and asks InfoDot nothing.
-                    $switcherTeam = Auth::user()->currentTeam;
-                    $switcherCompany = $switcherTeam && ! $switcherTeam->personal_team && filled($switcherTeam->infodot_team_uuid)
-                        ? (string) $switcherTeam->infodot_team_uuid : null;
-                @endphp
-                <x-dot.switcher platform="tutor" :company="$switcherCompany" :company-name="$switcherCompany ? $switcherTeam->name : null" logos="/dot-ui/img/platforms" />
-            @endauth
-            @if (Route::has('comms.inbox'))<x-comms::bell />@endif
-            <x-td.theme-switch />
-            @auth
-                <x-td.button variant="quiet" icon="user" icon-only :href="route('profile.show')" aria-label="Your account">Your account</x-td.button>
-            @endauth
-        </div>
-    </header>
-
-    {{ $legacyNav ?? '' }}
-
-    <div class="td-main content-wrap" data-shell-behind @if ($contentStep) data-td-step="{{ $contentStep }}" @endif>
+    <div class="td-main content-wrap" @if ($contentStep) data-td-step="{{ $contentStep }}" @endif>
         <main id="main-content" class="td-page" tabindex="-1">
             {{ $content }}
         </main>
     </div>
 
     @if (! empty($bottom))
-        <nav class="td-bottom" aria-label="Quick links" data-shell-behind>
+        <nav class="td-bottom" aria-label="Quick links">
             @foreach ($bottom as $item)
                 <a href="{{ $item['href'] }}" @if ($item['current']) aria-current="page" @endif><x-td.icon :name="$item['icon']" />{{ $item['label'] }}</a>
             @endforeach
@@ -129,8 +105,8 @@
 
     <x-td.toasts />
     @stack('modals')
-    <script src="{{ asset('dot-ui/js/dot-switcher.js') }}" defer></script>
-    @include('layouts.partials.drawer-script')
+    {{-- One deferred script (dot-ui 0.6.1): search, switcher and header. dot-ui.min.js, not dot-ui-core.min.js, because resources/js/ds/header-search.js calls DotSearchResults.attach(). --}}
+    <script src="{{ asset('dot-ui/js/dot-ui.min.js') }}" defer></script>
     @if ($livewire)
         @livewireScripts
     @endif

@@ -97,7 +97,7 @@ class FixOpsTest extends TestCase
 
         $html = $this->actingAs($tutor)->get(route('teach.bookings'))->assertOk()->getContent();
         $this->assertDoesNotMatchRegularExpression('/<html[^>]*data-td-step/', $html);
-        $this->assertStringContainsString('class="td-main content-wrap" data-shell-behind  data-td-step="dense"', $html);
+        $this->assertStringContainsString('class="td-main content-wrap"  data-td-step="dense"', $html);
 
         $standard = $this->actingAs($tutor)->get(route('teach.home'))->assertOk()->getContent();
         $this->assertDoesNotMatchRegularExpression('/data-td-step/', $standard);

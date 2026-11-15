@@ -67,12 +67,12 @@
     --td-stage-professional: oklch(46% 0.03 240);
     --td-stage-professional-ink: oklch(98.5% 0.006 240);
 
-    /* Type. */
-    --td-font-display: 'TD Display', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
-    /* TD Figures comes first and covers the digits only (fonts.css): every figure in running text, money, times and
-       tables is Archivo's plain-zero lining figure, so R250.00 never reads as "R25Ø.ØØ" (D-2103). */
-    --td-font-text: 'TD Figures', 'TD Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --td-display-stretch: 75%;
+    /* Type (R-52): Roboto is the one face, from the shared dot-ui files (public/dot-ui/css/dot-roboto.css, dot-type.css).
+       Headings, body, controls and figures all use it. Roboto draws a plain zero, so the old digit-only face the
+       platform needed for its previous text face is gone. Monospace stays for code and readouts. */
+    --td-font-display: var(--dot-font-sans);
+    --td-font-text: var(--dot-font-sans);
+    --td-font-mono: var(--dot-font-mono);
     --td-text-xs: 0.8125rem;   /* 13px: meta lines, never running text */
     --td-text-sm: 0.875rem;    /* 14px: labels, table cells in the dense step */
     --td-text-base: 1rem;      /* 16px: running text */
@@ -80,7 +80,7 @@
     --td-text-lg: 1.375rem;    /* 22px: item titles */
     --td-text-xl: 1.75rem;     /* 28px: page titles in app shells */
     --td-text-2xl: clamp(2rem, 1.4rem + 2.2vw, 3rem);         /* section heads */
-    --td-text-display: clamp(2.75rem, 1.2rem + 5.6vw, 6rem); /* the landing headline */
+    --td-text-display: var(--dot-text-display-size, clamp(2.5rem, 1.9rem + 2.6vw, 4rem)); /* the landing headline: Roboto is wider than the condensed face it replaced, so the dot-ui display step */
     --td-leading: 1.55;
     --td-leading-tight: 1.15;
     --td-leading-display: 1.02;
@@ -169,6 +169,14 @@
     --td-control-text: var(--td-text-sm);
     --td-row-pad-y: 0.5rem;
     --td-row-pad-x: 0.75rem;
+}
+
+/* R-52: the dense step is for a desk with a mouse. On a tablet, a phone or any touch screen the controls stay 44px (the touch target
+   floor); the tighter rows and 15px text of the step stay. */
+@media (max-width: 64rem), (pointer: coarse) {
+    [data-td-step='dense'] {
+        --td-control-h: 2.75rem;
+    }
 }
 
 /* Night: the same reading room after dark. Follows the system unless the person picked a theme. */

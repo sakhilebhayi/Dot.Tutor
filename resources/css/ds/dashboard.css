@@ -38,8 +38,7 @@
         margin: 0;
         max-width: 28ch;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 760;
+        font-weight: 700;
         font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
         line-height: var(--td-leading-tight);
         letter-spacing: -0.015em;
@@ -364,8 +363,7 @@
 
     .hm-facts dd.hm-big {
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 760;
+        font-weight: 700;
         font-size: var(--td-text-xl);
     }
 
@@ -678,9 +676,10 @@
 
         .hm-chart__bar--now { animation-delay: 160ms; }
 
+        /* from .01, not 0: Chrome ignores an opacity:0 paint for largest-contentful-paint and a compositor-only animation never repaints, so the heading counted at page load, not first paint. Same look. */
         @keyframes hm-rise {
             from {
-                opacity: 0;
+                opacity: 0.01;
                 transform: translateY(6px);
             }
         }

@@ -36,11 +36,11 @@ class ResponsiveShellTest extends TestCase
         }
     }
 
-    public function test_the_legacy_jetstream_bar_is_wrapped_so_phones_can_hide_it(): void
+    public function test_the_hidden_legacy_jetstream_bar_is_gone(): void
     {
         $xpath = $this->assertResponsiveShell($this->actingAs($this->makeUser())->get(route('profile.show')));
 
-        $this->assertSame(1, $xpath->query('//div[contains(@class, "shell-legacy-nav")]/nav')->length);
+        $this->assertSame(0, $xpath->query('//div[contains(@class, "shell-legacy-nav")]')->length, 'the dead hidden Livewire navigation is no longer mounted on every legacy page');
     }
 
     public function test_the_tables_sit_in_labelled_horizontal_scroll_regions(): void
@@ -67,15 +67,15 @@ class ResponsiveShellTest extends TestCase
         }
     }
 
-    public function test_the_drawer_footer_has_sign_out_and_a_team_switcher(): void
+    public function test_the_account_menu_has_sign_out_and_a_team_switch(): void
     {
-        // R-47 polish D-2023: the switcher is for a tutor (or operator) who uses more than one team; a learner with the
-        // same two teams sees only sign-out.
+        // R-47 polish D-2023 (moved into the shared header's account menu by R-52): the switch is for a tutor (or operator) who uses more
+        // than one team; a learner with the same two teams sees only sign-out.
         $learner = $this->makeUser('Plain Learner');
         Team::factory()->create(['user_id' => $learner->id, 'personal_team' => false, 'name' => 'Learner Second Team']);
         $xpath = $this->assertResponsiveShell($this->actingAs($learner)->get(route('profile.show')));
-        $this->assertSame(0, $xpath->query('//details[contains(@class, "team-switch")]')->length);
-        $this->assertSame(1, $xpath->query('//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);
+        $this->assertSame(0, $xpath->query('//header//form[@action="'.route('current-team.update').'"]')->length);
+        $this->assertSame(1, $xpath->query('//header//form[contains(@class, "dh-signout")][@action="'.route('logout').'"]//button')->length);
 
         $user = $this->makeUser('Switcher Tutor');
         $this->makeTutor([], null, $user);
@@ -83,11 +83,10 @@ class ResponsiveShellTest extends TestCase
 
         $xpath = $this->assertResponsiveShell($this->actingAs($user)->get(route('profile.show')));
 
-        $footer = '//aside[@id="app-sidebar"]//div[contains(@class, "sidebar-footer")]';
-        $this->assertSame(1, $xpath->query($footer.'//form[@action="'.route('logout').'"]//button[@aria-label="Sign out"]')->length);
-        $this->assertSame(1, $xpath->query($footer.'//details[contains(@class, "team-switch")]/summary')->length);
-        $this->assertSame(1, $xpath->query($footer.'//a[@href="'.route('teams.show', $user->currentTeam).'"]')->length);
-        $this->assertSame(2, $xpath->query($footer.'//form[@action="'.route('current-team.update').'"]//input[@name="team_id"]')->length);
-        $this->assertSame(1, $xpath->query($footer.'//input[@name="team_id"][@value="'.$second->id.'"]')->length);
+        $menu = '//header//div[contains(@class, "dh-account")]';
+        $this->assertSame(1, $xpath->query($menu.'//form[contains(@class, "dh-signout")][@action="'.route('logout').'"]//button')->length);
+        $this->assertSame(1, $xpath->query($menu.'//a[@href="'.route('teams.show', $user->currentTeam).'"]')->length);
+        $this->assertSame(2, $xpath->query($menu.'//form[@action="'.route('current-team.update').'"]//input[@name="team_id"]')->length);
+        $this->assertSame(1, $xpath->query($menu.'//input[@name="team_id"][@value="'.$second->id.'"]')->length);
     }
 }

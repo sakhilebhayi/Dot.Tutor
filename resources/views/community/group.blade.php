@@ -43,7 +43,7 @@
             <div class="td-panel__head"><h2 class="td-panel__title">Next session</h2></div>
             <div class="td-panel__body">
                 @if ($next)
-                    <p class="m-0 font-td-display text-2xl font-bold" style="font-stretch: var(--td-display-stretch)"><time datetime="{{ $next->starts_at->toIso8601String() }}">{{ $next->localStart()->format('l j F, H:i') }}</time></p>
+                    <p class="m-0 font-td-display text-2xl font-bold"><time datetime="{{ $next->starts_at->toIso8601String() }}">{{ $next->localStart()->format('l j F, H:i') }}</time></p>
                     <p class="mt-1 mb-3 text-td-ink-2">{{ $next->title }} · {{ $next->duration_minutes }} minutes · {{ $next->timezone }} @if ($next->where_note) · {{ $next->where_note }} @endif</p>
                     <div class="flex flex-wrap gap-2">
                         <x-td.button :href="route('rooms.sessions.calendar', $next)" variant="secondary" size="sm" icon="calendar">Add to my calendar</x-td.button>

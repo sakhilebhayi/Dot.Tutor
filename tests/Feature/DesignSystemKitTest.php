@@ -49,7 +49,7 @@ class DesignSystemKitTest extends TestCase
         $this->assertStringContainsString('Verified qualified tutor', $html);
         $this->assertStringContainsString('Independent tutor, self-declared, not verified', $html);
         $this->assertSame(1, $xpath->query('//span[contains(@class, "td-badge--peer")]')->length, 'a verified peer tutor never wears the professional colour');
-        $this->assertStringContainsString("R250.00<span class=\"td-money__unit\"> per hour</span>", $html);
+        $this->assertStringContainsString('R250.00<span class="td-money__unit"> per hour</span>', $html);
         $this->assertStringContainsString("R1\u{202F}234\u{202F}567.89", $html);
         $this->assertStringContainsString('−R50.00', $html);
     }
@@ -71,7 +71,7 @@ class DesignSystemKitTest extends TestCase
 
         // R-47 student UI (D-1116) built the learner screens; the ops agent built the guardian home (D-1310).
         $this->assertSame(['Home', 'Find a tutor', 'My rooms', 'Lessons', 'Courses', 'Study library', 'Practice', 'Progress', 'Study assistant', 'Messages',
-            'Learning profile', 'Notifications', 'Guardian', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
+            'Learning profile', 'Guardian', 'Payments', 'Account'], $items->pluck('label')->all(), 'only items whose routes exist today');
         $this->assertTrue($items->firstWhere('label', 'Find a tutor')['current']);
         $this->assertFalse($items->firstWhere('label', 'Home')['current']);
         $this->assertSame(route('learn.home'), $items->firstWhere('label', 'Home')['href'], 'the first candidate route that exists');

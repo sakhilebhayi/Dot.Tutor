@@ -212,7 +212,7 @@ class TutorPreflightTest extends TestCase
         unset($manifest[array_key_first($manifest)]);
         File::put($this->publicCopy.'/build/manifest.json', (string) json_encode($manifest));
         File::delete($this->publicCopy.'/comms-sw.js');
-        File::delete(File::glob($this->publicCopy.'/fonts/*.woff2')[0]);
+        File::delete(File::glob($this->publicCopy.'/dot-ui/fonts/roboto/*.woff2')[0]);
 
         $rows = collect(TutorPreflight::frontendRows($this->publicCopy, resource_path()))->keyBy('check');
         $this->assertSame('FAIL', $rows['Built assets']['status']);

@@ -32,21 +32,21 @@
 <meta name="theme-color" content="#121a17" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-{{-- No font preloads (R-47 D-1613): on 3G the two preloaded fonts (87 KB) competed with the render-blocking stylesheet
-     and held first paint back by 0.3 s (Fast 3G) to 1.1 s (Slow 3G). The faces load after the stylesheet with
-     font-display: swap, so text shows at once in the fallback face. --}}
-{{-- Applies a theme the person chose on this device before first paint (the design-system theme script keeps it).
-     The page cross-fade (shells.css, D-2311) is skipped when a navigation interrupts it or the tab is hidden; its
-     promises are caught here so a skipped fade is not reported as an error. --}}
-<script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');try{var t=localStorage.getItem('td-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});</script>
+{{-- Roboto (R-52, dot-ui 0.6.1): the one text face, from the shared dot-ui files on this origin (no CDN, font-src 'self'), on every page type. Signed-in shells link ONE minified stylesheet
+     (dot-ui.min.css: Roboto, type scale, tokens, search, switcher, header; first in the head, before the app CSS); public pages link only the two small files (no header CSS). The latin file IS preloaded on every page: without it
+     the lesson page's header row (CLS 0.42 at 768px) and the public top bar (CLS 0.105 at 320px) re-wrap when Roboto replaces the fallback (measured); it does not delay the largest paint here. --}}
+<link rel="preload" href="{{ asset('dot-ui/fonts/roboto/roboto-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
 @if ($dotUi ?? false)
-    {{-- Shared Dot UI (platform switcher, compact filters), served from this site's own public/dot-ui ('self' only, no inline style or script). Signed-in shells only. Loaded before the app CSS; the host token mapping in the app stylesheet has the last word. --}}
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-fonts.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-tokens.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-search.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-switcher-fonts.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-switcher.css') }}">
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-ui.min.css') }}">
+@else
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.min.css') }}">
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.min.css') }}">
 @endif
+{{-- A theme the person chose on this device, applied before first paint by the shared script (an external file, so it needs no nonce). The
+     page cross-fade (shells.css, D-2311) is skipped when a navigation interrupts it or the tab is hidden; its promises are caught here
+     so a skipped fade is not reported as an error. --}}
+<script src="{{ asset('dot-ui/js/dot-theme-boot.min.js') }}"></script>
+<script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});</script>
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @if ($livewire ?? false)
     @livewireStyles

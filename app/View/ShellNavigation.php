@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 class ShellNavigation
 {
     /**
-     * @return list<array{label: ?string, items: list<array{label: string, href: string, icon: string, current: bool, bottom: bool}>}>
+     * @return list<array{label: ?string, items: list<array{label: string, href: string, route: string, icon: string, current: bool, bottom: bool}>}>
      */
     public function for(string $shell, string $step = 'standard'): array
     {
@@ -36,6 +36,7 @@ class ShellNavigation
                 $items[] = [
                     'label' => $step === 'young' && isset($item['young_label']) ? $item['young_label'] : $item['label'],
                     'href' => route($route),
+                    'route' => $route,
                     'icon' => $item['icon'] ?? 'circle-dashed',
                     'current' => $this->isCurrent($item['match'] ?? $route),
                     'bottom' => (bool) ($item['bottom'] ?? false),

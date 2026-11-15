@@ -687,11 +687,16 @@ jobs:
             CODE=$(fetch "$SITE_URL/build/$ASSET" 200)
             if [ "$CODE" = "200" ]; then echo "200 /build/$ASSET"; else bad "$SITE_URL/build/$ASSET answered ${CODE:-no response} (expected 200): the docroot is not serving the new build"; fi
           done
-          for F in $(cd public && ls fonts/*.woff2); do
+          for F in $(cd public && ls dot-ui/fonts/roboto/*.woff2); do
             CODE=$(fetch "$SITE_URL/$F" 200)
             CT=$(grep -i '^content-type:' "$WORK/h" | tail -1 | tr -d '\r' | tr '[:upper:]' '[:lower:]')
             if [ "$CODE" = "200" ] && [ "$(head -c4 "$WORK/b")" = "wOF2" ] && ! echo "$CT" | grep -q 'text/html'; then echo "200 /$F (${CT#content-type: })"
             else bad "$SITE_URL/$F answered ${CODE:-no response} / $CT / not a woff2 file: the docroot is not serving the fonts"; fi
+          done
+          # R-52: the shared header's stylesheet and scripts, from the docroot (the header, the menu and the search are blank without them)
+          for F in dot-ui/css/dot-roboto.min.css dot-ui/css/dot-ui.min.css dot-ui/js/dot-ui.min.js dot-ui/js/dot-theme-boot.min.js; do
+            CODE=$(fetch "$SITE_URL/$F" 200)
+            if [ "$CODE" = "200" ] && cmp -s "$WORK/b" "public/$F"; then echo "200 /$F (this release's copy)"; else bad "$SITE_URL/$F answered ${CODE:-no response} or is not this release's copy: the shared header would not load"; fi
           done
           for F in icons/td-sprite.svg icons/classroom.svg; do
             CODE=$(fetch "$SITE_URL/$F" 200)

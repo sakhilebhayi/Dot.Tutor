@@ -18,8 +18,8 @@ use Tests\TestCase;
  * R-51: the shared Dot UI (dot-ui) in every signed-in shell of Dot.Tutor. The switcher sits in the one signed-in frame
  * (layouts/partials/frame.blade.php), so the learner, tutor workspace, operations, guardian and legacy shells all carry it.
  * It only ever shows what InfoDot says the CURRENT company holds, linking through InfoDot's /go (never straight to a host,
- * never with a token). The app has no header search, so none is added; the four in-page search filters use the shared
- * compact filter and keep their forms, routes, parameters and queries.
+ * never with a token). R-52: the top bar is the shared header with a real, scoped search (tests/Feature/HeaderSearchTest); the in-page search
+ * filters use the shared compact filter and keep their forms, routes, parameters and queries.
  */
 class DotUiHeaderTest extends TestCase
 {
@@ -114,10 +114,10 @@ class DotUiHeaderTest extends TestCase
 
             $this->assertSame(1, substr_count($html, 'data-dsw data-state'), "{$label}: exactly one switcher");
             $this->assertStringContainsString('data-state="ok"', $html, "{$label}: a company member gets the company state");
-            $this->assertSame(1, preg_match('/<header class="td-top topbar".*?<\/header>/s', $html, $bar), "{$label}: has the top bar");
+            $this->assertSame(1, preg_match('/<header class="dh[^"]*".*?<\/header>/s', $html, $bar), "{$label}: has the shared header");
             $this->assertStringContainsString('data-dsw data-state="ok" data-platform="tutor"', $bar[0], "{$label}: the switcher is inside the top bar");
-            $this->assertStringContainsString('/dot-ui/css/dot-switcher.css', $html, "{$label}: shared CSS loaded");
-            $this->assertStringContainsString('/dot-ui/js/dot-switcher.js', $html, "{$label}: shared script loaded");
+            $this->assertStringContainsString('/dot-ui/css/dot-ui.min.css', $html, "{$label}: shared CSS loaded");
+            $this->assertStringContainsString('/dot-ui/js/dot-ui.min.js', $html, "{$label}: shared script loaded");
         }
     }
 
@@ -136,27 +136,28 @@ class DotUiHeaderTest extends TestCase
         $this->assertStringContainsString('data-dsw data-state="ok" data-platform="tutor"', $this->switcherHtml($html));
     }
 
-    public function test_the_app_has_no_header_search_so_no_pill_is_added_anywhere(): void
+    public function test_every_signed_in_page_type_has_the_header_search_pill(): void
     {
         $this->fakeInfoDot([self::url(self::ACME) => Http::response(self::body(self::ACME))]);
         $member = $this->memberOf(self::ACME, 'Acme Ltd');
 
-        foreach (['/learn', route('teach.profile'), route('profile.show'), route('marketplace.find')] as $path) {
+        foreach (['/learn', route('teach.profile'), route('profile.show'), route('marketplace.find'), route('search')] as $path) {
             $html = $this->actingAs($member)->get($path)->assertOk()->getContent();
-            $this->assertStringNotContainsString('dsr-input', $html, "{$path}: no search pill: Dot.Tutor has no header search");
-            $this->assertSame(1, preg_match('/<header class="td-top topbar".*?<\/header>/s', $html, $bar), "{$path}: has the top bar");
-            $withoutSwitcher = str_replace($this->switcherHtml($html), '', $bar[0]); // the switcher has its own "Filter platforms" box
-            $this->assertDoesNotMatchRegularExpression('/type="search"|role="search"/', $withoutSwitcher, "{$path}: no search input in the top bar");
+            $this->assertSame(1, preg_match('/<header class="dh[^"]*".*?<\/header>/s', $html, $bar), "{$path}: has the shared header");
+            $this->assertStringContainsString('dsr-input', $bar[0], "{$path}: the search pill is in the header");
+            $this->assertStringContainsString('action="'.route('search').'"', $bar[0], "{$path}: it is a plain GET form to the results page");
         }
     }
 
-    public function test_guests_and_public_pages_get_no_switcher_and_no_shared_css(): void
+    public function test_guests_and_public_pages_get_no_switcher_and_no_header_css(): void
     {
         foreach ([route('login'), '/', route('marketplace.find')] as $path) {
             $this->get($path)->assertOk()
                 ->assertDontSee('data-dsw', false)
                 ->assertDontSee('dsr-filter', false)
-                ->assertDontSee('/dot-ui/', false);
+                ->assertDontSee('dot-ui/css/dot-ui.min.css', false)
+                ->assertDontSee('dot-ui/js/dot-ui.min.js', false)
+                ->assertSee('dot-ui/css/dot-roboto.min.css', false); // Roboto is on every page type, signed in or not
         }
     }
 
@@ -335,7 +336,7 @@ class DotUiHeaderTest extends TestCase
         $html = $response->getContent();
 
         preg_match_all('/<(?:link|script)[^>]+(?:href|src)="([^"]*dot-ui[^"]*)"/', $html, $assets);
-        $this->assertCount(6, $assets[1], 'five stylesheets and one script');
+        $this->assertCount(4, $assets[1], 'the Roboto preload, the one minified stylesheet (type, tokens, search, switcher, header), the theme boot and the one shared script');
         foreach ($assets[1] as $asset) {
             $this->assertStringStartsWith(url('/dot-ui/'), $asset, 'served from this site, not another host');
             $this->assertFileExists(public_path(parse_url($asset, PHP_URL_PATH)), 'the file exists in public/dot-ui');
