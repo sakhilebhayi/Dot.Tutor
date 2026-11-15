@@ -1,6 +1,6 @@
 {{-- Guest layout (<x-guest-layout>) for sign-in, password, two-factor and the policy pages. --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto" data-dh-theme-key="td-theme">
 <head>
     @include('layouts.partials.head', ['title' => $pageTitle ?? null, 'description' => $pageDescription ?? null, 'livewire' => $livewire])
 </head>

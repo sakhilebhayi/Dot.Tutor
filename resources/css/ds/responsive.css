@@ -184,3 +184,41 @@
         }
     }
 }
+
+/*
+ * R-52 phone and tablet rules.
+ *
+ * 1. Buttons wrap. A long label ("Invite a parent or guardian", "Learning profile: Grade 3, CAPS") on a 56px young-step button used to run past
+ *    a 320px screen because buttons never wrapped; now the label wraps inside the button and the button grows in height, never in width.
+ * 2. The small button and the toast close keep a 44px target up to 1024px and on any touch screen (they are 36px on a desktop).
+ * 3. A row's link is the row's whole click area (its ::after covers the row); its own box is at least 44px high where a finger uses it.
+ */
+@layer components {
+    @media (max-width: 47.99rem) {
+        .td-btn:not(.td-btn--icon) {
+            max-width: 100%;
+            padding-block: var(--td-space-2);
+            white-space: normal;
+            text-align: center;
+            text-wrap: balance;
+        }
+    }
+
+    @media (max-width: 64rem), (pointer: coarse) {
+        .td-btn--sm {
+            min-height: 2.75rem;
+        }
+
+        .td-toast .td-btn {
+            min-height: 2.75rem;
+            width: 2.75rem;
+        }
+
+        .hm-row a.hm-row__link,
+        .st-row__title a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 2.75rem;
+        }
+    }
+}

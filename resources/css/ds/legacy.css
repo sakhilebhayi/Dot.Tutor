@@ -29,7 +29,6 @@
 
 .td-guest-body .font-display {
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
 }
 
 /* The old design's shared classes (formerly in the app layout's <style>). */
@@ -41,8 +40,7 @@
 .td-app--app .t-h1 {
     margin: 0 0 var(--td-space-2);
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 750;
+    font-weight: 700;
     font-size: var(--td-text-xl);
     line-height: var(--td-leading-tight);
     color: var(--td-ink);
@@ -268,7 +266,6 @@
 
 .td-app--app .readout dd {
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
     font-weight: 700;
     color: var(--td-ink);
 }
@@ -451,7 +448,6 @@
 .td-app--app [style*="font-family:'Syne'"],
 .td-app--app [style*="font-family: 'Syne'"] {
     font-family: var(--td-font-display) !important;
-    font-stretch: var(--td-display-stretch);
 }
 
 .td-app--app [style*="font-family:'JetBrains Mono'"],

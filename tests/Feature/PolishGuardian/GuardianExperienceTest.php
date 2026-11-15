@@ -9,6 +9,7 @@ use App\Domain\Safety\Contracts\ReportSink;
 use App\Domain\Safety\Enums\ReportCategory;
 use App\Domain\Safety\Models\Incident;
 use App\Domain\Safety\Models\Report;
+use App\Domain\Safety\Services\Incidents;
 use App\Domain\Safety\Services\Messenger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -39,9 +40,12 @@ class GuardianExperienceTest extends TestCase
         $rail = Str::betweenFirst($html, 'class="td-rail__nav"', '</nav>');
         $bar = Str::betweenFirst($html, 'class="td-bottom"', '</nav>');
 
-        foreach (['Children', 'Approvals', 'Safety', 'Messages', 'Payments', 'Notifications', 'Account'] as $label) {
+        foreach (['Children', 'Approvals', 'Safety', 'Messages', 'Payments', 'Account'] as $label) {
             $this->assertStringContainsString($label, $rail, "rail has {$label}");
         }
+        // R-52: notifications are the bell in the shared header at every width, not a rail item.
+        $this->assertStringNotContainsString('Notifications', $rail);
+        $this->assertStringContainsString('dh-bell', $html);
         foreach (['Find a tutor', 'My rooms', 'Practice', 'Study assistant', 'Your learning'] as $label) {
             $this->assertStringNotContainsString($label, $rail, "rail has no {$label}");
         }
@@ -135,7 +139,7 @@ class GuardianExperienceTest extends TestCase
             ->assertSee('Overdue: a safeguarding officer should have taken this on by')->assertDontSee('must take this on by');
 
         // After the automatic escalation the line says what happened and the new deadline.
-        app(\App\Domain\Safety\Services\Incidents::class)->escalateOverdue();
+        app(Incidents::class)->escalateOverdue();
         $this->actingAs($guardian)->get(route('safety.guardian.dashboard'))->assertOk()
             ->assertSee('Nobody took it on in time, so it was raised to more senior staff at')
             ->assertSee('A senior safeguarding officer must take it on by');

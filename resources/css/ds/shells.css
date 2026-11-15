@@ -1,8 +1,8 @@
 /*
  * The four shells (resources/views/layouts): public, learner, tutor workspace, operations.
- * The signed-in shells share one frame: a rail of destinations (a drawer below 60rem), a top bar and the page.
- * The learner shell adds a bottom bar on phones. Hooks used by the drawer script and its tests:
- * #app-sidebar, [data-shell-open], [data-shell-close], .shell-backdrop, [data-shell-behind], main#main-content.
+ * The signed-in shells share one frame: the shared dot-ui header on top, a rail of destinations under it (off-canvas below 861px), and the page.
+ * The learner shell adds a bottom bar on phones. Hooks used by the header script and its tests: header#dh[data-dh], #app-sidebar (the rail,
+ * [data-dh-open] while open), [data-dh-close] (its close button), main#main-content.
  */
 
 /* Wordmark */
@@ -13,8 +13,7 @@
     color: var(--td-ink);
     text-decoration: none;
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 750;
+    font-weight: 700;
     font-size: 1.375rem;
     line-height: 1;
     letter-spacing: -0.01em;
@@ -44,7 +43,6 @@
     display: block;
     margin-top: 0.2rem;
     font-family: var(--td-font-text);
-    font-stretch: 100%;
     font-weight: 500;
     font-size: var(--td-text-xs);
     letter-spacing: 0;
@@ -286,16 +284,23 @@
 }
 
 /* ---------- Signed-in shells ---------- */
+/*
+ * R-52: the top bar is the shared dot-ui header (resources/views/layouts/partials/frame.blade.php, docs/HEADER.md "Sidebar shells"). It is
+ * sticky across the whole width at --dot-header-offset (56px, 52px on a phone). The rail below it is the platform's own navigation:
+ *   861px and up  a permanent column under the header (position: fixed, top: the header's height), the page beside it;
+ *   860px and down  off-canvas, opened by the header's menu button (adopt mode: dot-nav.js sets data-dh-open, draws the scrim on <body>,
+ *                   locks the scroll, traps focus, makes the page behind inert, closes on Escape, a scrim tap, [data-dh-close] and a link).
+ */
 .td-app {
     --td-rail-w: 16.5rem;
-    --td-top-h: 4rem;
 }
 
 .td-rail {
     position: fixed;
-    inset-block: 0;
+    top: var(--dot-header-offset, 3.5rem);
+    bottom: 0;
     inset-inline-start: 0;
-    z-index: var(--td-z-drawer);
+    z-index: 30;
     display: flex;
     flex-direction: column;
     width: var(--td-rail-w);
@@ -303,17 +308,16 @@
     border-inline-end: 1px solid var(--td-line);
 }
 
+/* On a desktop the header carries the brand and the person; the rail starts with the shell's name. */
 .td-rail__brand {
-    display: flex;
-    align-items: center;
-    gap: var(--td-space-3);
-    min-height: var(--td-top-h);
-    padding: 0 var(--td-space-4);
-    border-bottom: 1px solid var(--td-line);
+    display: none;
 }
 
-.td-rail__close {
-    margin-inline-start: auto;
+.td-rail__scope {
+    margin: var(--td-space-2) var(--td-space-3) 0;
+    font-size: var(--td-text-sm);
+    font-weight: 700;
+    color: var(--td-ink-2);
 }
 
 .td-rail__nav {
@@ -370,92 +374,25 @@
     color: currentColor;
 }
 
-.td-rail__foot {
-    padding: var(--td-space-3);
-    border-top: 1px solid var(--td-line);
-    display: grid;
-    gap: var(--td-space-2);
+/* The header's brand: the original mark file at a fixed height (never redrawn), the name beside it. */
+.dh .td-brand-mark {
+    width: auto;
+    height: var(--dh-logo-h);
+    object-fit: contain;
 }
 
-.td-rail__user {
-    display: flex;
-    align-items: center;
-    gap: var(--td-space-3);
-    padding: var(--td-space-2) var(--td-space-1) var(--td-space-2) var(--td-space-2);
-}
-
-.td-rail__user-name {
-    font-weight: 650;
-    line-height: 1.25;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.td-rail__user-meta {
-    font-size: var(--td-text-sm);
-    color: var(--td-ink-2);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.td-rail__teams summary {
-    list-style: none;
-}
-
-.td-rail__teams summary::-webkit-details-marker {
-    display: none;
-}
-
-.td-rail__teams[open] summary .td-icon:last-child {
-    transform: rotate(180deg);
-}
-
-.td-rail__teams-list {
-    display: grid;
-    gap: 2px;
-    padding: var(--td-space-1) 0 var(--td-space-1) var(--td-space-5);
-}
-
-.td-top {
-    position: sticky;
-    top: 0;
-    z-index: var(--td-z-sticky);
-    display: flex;
-    align-items: center;
-    gap: var(--td-space-3);
-    min-height: var(--td-top-h);
-    padding: 0 var(--td-gutter);
-    background: var(--td-ground);
-    border-bottom: 1px solid var(--td-line);
-}
-
-.td-top__title {
-    min-width: 0;
-    flex: 1;
+.dh .dh-brand__name {
     font-weight: 700;
     font-size: var(--td-text-md);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    letter-spacing: -0.01em;
+    color: var(--dh-ink);
 }
 
-.td-top__title h2,
-.td-top__title h2 * {
-    margin: 0;
-    font: inherit;
-    color: var(--td-ink);
-}
-
-.td-top__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--td-space-1);
-}
-
-.td-top__menu {
-    display: none;
+/* The name gives way to the mark where the bar is tight (a phone holds six 44px controls; a narrow tablet has the search centred). */
+@media (max-width: 29.99rem), (min-width: 53.8125rem) and (max-width: 63.99rem) {
+    .dh .dh-brand__name {
+        display: none;
+    }
 }
 
 .td-main {
@@ -475,51 +412,22 @@
     padding: var(--td-space-6) var(--td-gutter) var(--td-space-9);
 }
 
-.shell-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: calc(var(--td-z-drawer) - 1);
-    background: var(--td-scrim);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--td-dur-short) var(--td-ease-out);
-}
-
-.shell-legacy-nav {
-    display: none;
-}
-
-@media (min-width: 60rem) {
-    .td-app .td-top,
+@media (min-width: 53.8125rem) {
     .td-app .td-main {
         margin-inline-start: var(--td-rail-w);
     }
-
-    .td-rail__close {
-        display: none;
-    }
 }
 
-@media (max-width: 59.98rem) {
-    .td-top__menu {
-        display: inline-flex;
-    }
-
-    /* Without script the rail stays in the page flow above the content, so navigation never depends on JS. */
-    :root:not(.js) .td-rail {
-        position: static;
-        width: auto;
-        border-inline-end: 0;
-        border-bottom: 1px solid var(--td-line);
-    }
-
-    :root:not(.js) .td-top__menu,
-    :root:not(.js) .td-rail__close {
-        display: none;
-    }
-
-    .js .td-rail {
+@media (max-width: 53.75rem) {
+    /* Off-canvas, opened by the header's menu button. Above dot-ui's scrim (z-index >= --dh-z-drawer), with a close button of its own (data-dh-close),
+       hidden with a DELAYED visibility so the slide-out is not cut and the closed rail's links are not in the tab order. */
+    .td-rail {
+        top: 0;
+        z-index: var(--dh-z-drawer, 120);
         width: min(20rem, 86vw);
+        height: 100vh;
+        height: 100dvh;
+        padding-top: env(safe-area-inset-top);
         transform: translateX(-100%);
         visibility: hidden;
         transition:
@@ -528,28 +436,51 @@
         box-shadow: var(--td-shadow-float);
     }
 
-    .shell-open .td-rail {
+    .td-rail[data-dh-open] {
         transform: none;
         visibility: visible;
         transition: transform var(--td-dur-short) var(--td-ease-out);
     }
 
-    .shell-open .shell-backdrop {
-        opacity: 1;
-        pointer-events: auto;
+    .td-rail__brand {
+        display: flex;
+        align-items: center;
+        gap: var(--td-space-3);
+        min-height: var(--dot-header-h, 3.25rem);
+        padding: 0 var(--td-space-2) 0 var(--td-space-4);
+        border-bottom: 1px solid var(--td-line);
     }
 
-    .shell-open body {
-        overflow: hidden;
+    .td-rail__close {
+        margin-inline-start: auto;
+    }
+
+    .td-rail__scope {
+        display: none;
+    }
+
+    /* Without script the rail stays in the page flow above the content, so navigation never depends on JS. */
+    :root:not(.js) .td-rail {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none;
+        visibility: visible;
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--td-line);
+    }
+
+    :root:not(.js) .td-rail__close {
+        display: none;
     }
 }
 
-/* Bottom bar: learners' four most-used places, on phones only. */
+/* Bottom bar: learners' four most-used places, on phones only. Four items, each a full-height cell at least 44px wide at 320. */
 .td-bottom {
     display: none;
 }
 
-@media (max-width: 47.98rem) {
+@media (max-width: 53.75rem) {
     .td-app--learner {
         --td-bottom-bar: 4.25rem;
     }
@@ -578,13 +509,18 @@
         align-content: center;
         gap: 0.2rem;
         min-height: var(--td-bottom-bar);
+        min-width: 0;
+        padding-inline: 2px;
         border: 0;
         background: transparent;
         color: var(--td-ink-2);
         font-size: var(--td-text-xs);
         font-weight: 600;
+        line-height: 1.2;
+        text-align: center;
         text-decoration: none;
         cursor: pointer;
+        overflow-wrap: anywhere;
     }
 
     .td-bottom .td-icon {
@@ -733,8 +669,7 @@
 .err__title {
     margin: 0;
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 780;
+    font-weight: 700;
     font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4.25rem);
     line-height: 1.02;
     letter-spacing: -0.015em;

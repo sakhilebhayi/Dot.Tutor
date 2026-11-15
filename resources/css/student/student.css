@@ -66,9 +66,8 @@
     .st-h2 {
         margin: 0;
         font-family: var(--td-font-display);
-        font-variation-settings: 'wdth' var(--td-display-stretch);
         font-size: var(--td-text-xl);
-        font-weight: 750;
+        font-weight: 700;
         line-height: var(--td-leading-tight);
     }
 
@@ -135,9 +134,8 @@
 
     .st-slip__label {
         font-family: var(--td-font-display);
-        font-variation-settings: 'wdth' var(--td-display-stretch);
         font-size: var(--td-text-xl);
-        font-weight: 750;
+        font-weight: 700;
         line-height: var(--td-leading-tight);
     }
 
@@ -179,9 +177,8 @@
     .st-next__what {
         margin: 0;
         font-family: var(--td-font-display);
-        font-variation-settings: 'wdth' var(--td-display-stretch);
         font-size: var(--td-text-2xl);
-        font-weight: 750;
+        font-weight: 700;
         line-height: var(--td-leading-tight);
         overflow-wrap: anywhere;
     }
@@ -749,21 +746,6 @@
     @media (max-width: 47.99rem) {
         .st-record__head > :nth-child(3) {
             grid-column: 1 / -1;
-        }
-    }
-}
-
-@layer components {
-    /* Narrow phones: with the notifications bell in the top bar, the menu button shows its icon only (its name
-       stays for screen readers) so the page title is not cut to a few letters. */
-    @media (max-width: 29.99rem) {
-        .td-top__menu > span:not(.td-sr) {
-            position: absolute;
-            width: 1px;
-            height: 1px; /* taste-skill-ignore: visually hidden text, not a rule */
-            overflow: hidden;
-            clip-path: inset(50%);
-            white-space: nowrap;
         }
     }
 }

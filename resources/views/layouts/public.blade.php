@@ -2,7 +2,7 @@
      For the landing, policies and any page a signed-out visitor reads. credits: picture credits for the footer. --}}
 @props(['title' => null, 'description' => null, 'credits' => []])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto" data-dh-theme-key="td-theme">
 <head>
     @include('layouts.partials.head', ['title' => $title, 'description' => $description, 'livewire' => false])
 </head>

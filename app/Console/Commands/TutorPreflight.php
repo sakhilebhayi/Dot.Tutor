@@ -555,7 +555,15 @@ class TutorPreflight extends Command
             }
         }
 
+        // Roboto (R-52) is the one text face: the shared dot-ui stylesheet names its files relative to itself (../fonts/roboto/x.woff2),
+        // and the app's own stylesheets name none. Every file either of them names must be in public/.
         $fonts = [];
+        $roboto = $public.'/dot-ui/css/dot-roboto.css';
+        if (is_file($roboto) && preg_match_all('#url\(\s*[\'"]?\.\./(fonts/[A-Za-z0-9._/-]+\.woff2)#', (string) file_get_contents($roboto), $m)) {
+            foreach ($m[1] as $ref) {
+                $fonts['/dot-ui/'.$ref] = true;
+            }
+        }
         foreach (is_dir($resources.'/css') ? File::allFiles($resources.'/css') : [] as $css) {
             if (preg_match_all('#/fonts/[A-Za-z0-9._/-]+\.woff2#', (string) file_get_contents($css->getPathname()), $m)) {
                 foreach ($m[0] as $ref) {
@@ -567,7 +575,7 @@ class TutorPreflight extends Command
         $row(
             $fonts !== [] && $fontsMissing === [] ? self::PASS : self::FAIL,
             'Self-hosted fonts',
-            $fonts === [] ? 'The stylesheets reference no font under /fonts.' : ($fontsMissing === [] ? count($fonts).' font files referenced by the stylesheets are present' : 'Missing: '.implode(', ', $fontsMissing)),
+            $fonts === [] ? 'public/dot-ui/css/dot-roboto.css names no font file.' : ($fontsMissing === [] ? count($fonts).' font files referenced by the stylesheets are present' : 'Missing: '.implode(', ', $fontsMissing)),
         );
 
         $staticMissing = array_values(array_filter(self::STATIC_FILES, fn (string $f) => ! is_file($public.'/'.$f)));

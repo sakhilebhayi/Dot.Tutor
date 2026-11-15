@@ -3,8 +3,7 @@
 .lp-display {
     margin: 0;
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 780;
+    font-weight: 700;
     font-size: var(--td-text-display);
     line-height: var(--td-leading-display);
     letter-spacing: -0.02em;
@@ -36,8 +35,7 @@
 .lp-h2 {
     margin: 0;
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 760;
+    font-weight: 700;
     font-size: var(--td-text-2xl);
     line-height: 1.04;
     letter-spacing: -0.015em;
@@ -233,8 +231,7 @@
 
 .lp-spine__name {
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 760;
+    font-weight: 700;
     font-size: 1.375rem;
     line-height: 1.05;
     white-space: nowrap;
@@ -376,8 +373,7 @@
     display: grid;
     overflow: clip;
     font-family: var(--td-font-display);
-    font-stretch: 62%;
-    font-weight: 780;
+    font-weight: 700;
     font-size: clamp(3rem, 1rem + 5.6vw, 6rem);
     line-height: 0.95;
     letter-spacing: -0.02em;
@@ -495,8 +491,7 @@
     margin: 0 0 var(--td-space-4);
     word-spacing: 0.12em;
     font-family: var(--td-font-display);
-    font-stretch: var(--td-display-stretch);
-    font-weight: 760;
+    font-weight: 700;
     font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
     line-height: 1.05;
     color: inherit;
@@ -629,7 +624,6 @@
     border-bottom: 1px solid var(--td-line); /* taste-skill-ignore: rows of a real list of languages and codes */
     break-inside: avoid;
     font-family: var(--td-font-display);
-    font-stretch: 85%;
     font-weight: 650;
     font-size: 1.375rem;
     line-height: 1.2;
@@ -637,7 +631,6 @@
 
 .lp-langsheet__code {
     font-family: var(--td-font-text);
-    font-stretch: 100%;
     font-weight: 500;
     font-size: var(--td-text-sm);
     color: var(--td-ink-2);

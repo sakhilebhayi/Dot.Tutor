@@ -215,7 +215,7 @@ export class Board {
             ctx.stroke();
         } else if (kind === 'text') {
             const [x, y] = P(d.at);
-            ctx.font = `600 ${Math.round((d.size || 24) * s)}px "Atkinson Hyperlegible Next", system-ui, sans-serif`;
+            ctx.font = `600 ${Math.round((d.size || 24) * s)}px Roboto, system-ui, sans-serif`;
             ctx.textBaseline = 'top';
             ctx.fillText(d.text, x, y);
         }

@@ -14,6 +14,8 @@ import { initCountdowns } from './countdown.js';
 import { initPublicMenu } from './public-menu.js';
 import { initPrint } from './print.js';
 import { initHome } from './home.js';
+import { initShell } from './shell.js';
+import { initHeaderSearch } from './header-search.js';
 
 function boot(root = document) {
     initTheme(root);
@@ -30,6 +32,8 @@ function boot(root = document) {
     initPublicMenu(root);
     initPrint(root);
     initHome(root);
+    initShell(root);
+    initHeaderSearch(root);
 }
 
 if (document.readyState === 'loading') {

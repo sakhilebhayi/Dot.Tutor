@@ -23,13 +23,14 @@ class MoneyTypographyTest extends TestCase
         $this->assertSame("XOF 1\u{202F}250", Money::of(1250, 'XOF')->format(), 'A currency without a symbol keeps its code and a space.');
     }
 
-    public function test_the_text_stack_puts_plain_zero_figures_first(): void
+    public function test_figures_are_roboto_which_draws_a_plain_zero(): void
     {
+        // R-52: the digit-only face (TD Figures) existed because Atkinson Hyperlegible's zero is slashed; Roboto's is plain, so the one shared face serves figures too.
         $tokens = file_get_contents(resource_path('css/ds/tokens.css'));
-        $fonts = file_get_contents(resource_path('css/ds/fonts.css'));
 
-        $this->assertMatchesRegularExpression("/--td-font-text: 'TD Figures', 'TD Text'/", $tokens);
-        $this->assertMatchesRegularExpression("/font-family: 'TD Figures';[^}]*unicode-range: U\\+0030-0039;/s", $fonts);
-        $this->assertFileExists(public_path('fonts/archivo-display-latin.woff2'));
+        $this->assertStringContainsString('--td-font-text: var(--dot-font-sans);', $tokens);
+        $this->assertStringNotContainsString('TD Figures', $tokens);
+        $this->assertFileDoesNotExist(resource_path('css/ds/fonts.css'));
+        $this->assertFileDoesNotExist(public_path('fonts/archivo-display-latin.woff2'));
     }
 }

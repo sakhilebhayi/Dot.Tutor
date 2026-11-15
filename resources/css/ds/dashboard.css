@@ -38,8 +38,7 @@
         margin: 0;
         max-width: 28ch;
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 760;
+        font-weight: 700;
         font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
         line-height: var(--td-leading-tight);
         letter-spacing: -0.015em;
@@ -364,8 +363,7 @@
 
     .hm-facts dd.hm-big {
         font-family: var(--td-font-display);
-        font-stretch: var(--td-display-stretch);
-        font-weight: 760;
+        font-weight: 700;
         font-size: var(--td-text-xl);
     }
 

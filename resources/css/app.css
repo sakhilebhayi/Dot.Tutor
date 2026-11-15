@@ -1,4 +1,4 @@
-/* Hallmark · v2.0.0 · theme: custom · idea: "Dot.Tutor is a lending library of people: every level and subject has its shelf, every tutor a catalogue record that says what they teach, at which levels, in which languages, and what was verified" · vibe: "reading room, binding cloth, calm, exact, multilingual" · paper: shelf-label white oklch(97.4% 0.006 165) · accent: reading-room green oklch(42% 0.085 162), stage binding colours as data · faces: Archivo (display, condensed), Atkinson Hyperlegible Next (text) · posture: light/grotesk-condensed/cool · hero: headline and request slip on the left, a library photograph rising on the right, the stage shelf under both · job: find a tutor */
+/* Hallmark · v2.0.0 · theme: custom · idea: "Dot.Tutor is a lending library of people: every level and subject has its shelf, every tutor a catalogue record that says what they teach, at which levels, in which languages, and what was verified" · vibe: "reading room, binding cloth, calm, exact, multilingual" · paper: shelf-label white oklch(97.4% 0.006 165) · accent: reading-room green oklch(42% 0.085 162), stage binding colours as data · faces: Roboto (R-52, shared dot-ui) · posture: light/grotesk-condensed/cool · hero: headline and request slip on the left, a library photograph rising on the right, the stage shelf under both · job: find a tutor */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: P, a library could read as nostalgic; kept it current with the live stage shelf built from the seeded academic structure and a real South African university library photograph */
 /* Hallmark · answered: 64 no mono anywhere, figures use tabular numerals of the text face · answered: 55a display set in sentence case at 1.02 leading so eleven languages and young readers read it */
 
@@ -7,8 +7,9 @@
  * views and the vendor templates the old tailwind.config.js scanned.
  */
 @import 'tailwindcss' source(none);
+/* Roboto and the shared type scale (dot-ui), outside any @layer as the package asks. The font files are linked from the head partial. */
+@import '../../dot-ui/tailwind/tailwind-theme.css';
 
-@import './ds/fonts.css';
 @import './ds/tokens.css';
 @import './ds/base.css';
 @import './ds/components.css';
@@ -54,7 +55,6 @@
     --color-td-info: var(--td-info);
     --font-td-display: var(--td-font-display);
     --font-td-text: var(--td-font-text);
-    --font-sans: var(--td-font-text);
     --radius-td: var(--td-radius);
 }
 

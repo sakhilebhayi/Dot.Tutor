@@ -216,7 +216,7 @@ fi
 # ---- 6. fonts, icons, service worker and built assets (what the docroot must serve) ---------------------------------
 step "fonts, icons, service worker and built assets"
 JAR="$WORK/guest.jar"
-for F in $(cd public && ls fonts/*.woff2); do
+for F in $(cd public && ls dot-ui/fonts/roboto/*.woff2); do
   code=$(curl -s --max-time 30 -o "$BODY" -w '%{http_code}' "$BASE/$F")
   [ "$code" = "200" ] && [ "$(head -c4 "$BODY")" = "wOF2" ] && pass "/$F is a woff2 font" || fail "/$F answered $code or is not a woff2 file"
 done
