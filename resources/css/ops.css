@@ -56,10 +56,10 @@
     .ops-act--stack { display: grid; gap: var(--td-space-3); }
 
     /* Facts about one thing: label and value pairs. */
-    .ops-facts { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--td-space-2) var(--td-space-5); margin: 0; }
+    .ops-facts { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: var(--td-space-2) var(--td-space-5); margin: 0; }
     .ops-facts dt { color: var(--td-ink-2); font-size: var(--td-text-sm); font-weight: 600; }
     .ops-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-    @media (max-width: 30rem) { .ops-facts { grid-template-columns: 1fr; gap: 0 0; } .ops-facts dd { margin-bottom: var(--td-space-3); } }
+    @media (max-width: 80rem) { .ops-facts { grid-template-columns: 1fr; gap: 0 0; } .ops-facts dd { margin-bottom: var(--td-space-3); } }
 
     /* Column chart (one series). The current period carries the full hue; earlier ones a lighter step of it. */
     .ops-columns { display: block; width: 100%; height: auto; overflow: visible; }

@@ -32,24 +32,21 @@
 <meta name="theme-color" content="#121a17" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
-{{-- Roboto (R-52): the one text face, from the shared dot-ui files on this origin (no CDN, font-src 'self'). The latin file is preloaded
-     (the first paint needs it; latin-ext loads only when a page uses one of its characters). Loaded on every page type, signed in or not. --}}
+{{-- Roboto (R-52, dot-ui 0.6.1): the one text face, from the shared dot-ui files on this origin (no CDN, font-src 'self'), on every page type. Signed-in shells link ONE minified stylesheet
+     (dot-ui.min.css: Roboto, type scale, tokens, search, switcher, header; first in the head, before the app CSS); public pages link only the two small files (no header CSS). The latin file IS preloaded on every page: without it
+     the lesson page's header row (CLS 0.42 at 768px) and the public top bar (CLS 0.105 at 320px) re-wrap when Roboto replaces the fallback (measured); it does not delay the largest paint here. --}}
 <link rel="preload" href="{{ asset('dot-ui/fonts/roboto/roboto-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.css') }}">
-<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.css') }}">
+@if ($dotUi ?? false)
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-ui.min.css') }}">
+@else
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.min.css') }}">
+<link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.min.css') }}">
+@endif
 {{-- A theme the person chose on this device, applied before first paint by the shared script (an external file, so it needs no nonce). The
      page cross-fade (shells.css, D-2311) is skipped when a navigation interrupts it or the tab is hidden; its promises are caught here
      so a skipped fade is not reported as an error. --}}
-<script src="{{ asset('dot-ui/js/dot-theme-boot.js') }}"></script>
+<script src="{{ asset('dot-ui/js/dot-theme-boot.min.js') }}"></script>
 <script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>document.documentElement.classList.add('js');function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});</script>
-@if ($dotUi ?? false)
-    {{-- Shared Dot UI header system (signed-in shells): search pill, platform switcher, header. Same origin, no inline style or script. Loaded before the
-         app CSS; the host token mapping in the app stylesheet (ds/dot-ui.css) has the last word. --}}
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-tokens.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-search.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-switcher.css') }}">
-    <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-header.css') }}">
-@endif
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @if ($livewire ?? false)
     @livewireStyles

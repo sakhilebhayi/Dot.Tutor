@@ -254,6 +254,12 @@
     display: none;
 }
 
+/* R-52 re-sync: with script the shelf keeps only the book the server marked open (data-open), after load. Folding the other pages from the first paint (.js is set before it) keeps
+   the shelf from collapsing under the reader (CLS 0.135 at 1920x1080, where the shelf is on screen). */
+.js .lp-shelf:not(.is-ready) .lp-book:not([data-open]) .lp-book__page {
+    display: none;
+}
+
 .lp-book__line {
     margin: 0 0 var(--td-space-5);
     max-width: 40ch;

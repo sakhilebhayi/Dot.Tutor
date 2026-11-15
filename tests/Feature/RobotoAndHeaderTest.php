@@ -44,8 +44,10 @@ class RobotoAndHeaderTest extends TestCase
             $html = ($user ? $this->actingAs($user) : $this)->get($path)->assertOk()->getContent();
 
             $this->assertMatchesRegularExpression('/<html[^>]*class="dot-roboto"/', $html, "{$label}: <html> carries dot-roboto");
-            $this->assertStringContainsString('dot-ui/css/dot-roboto.css', $html, "{$label}: Roboto face file linked");
-            $this->assertStringContainsString('dot-ui/css/dot-type.css', $html, "{$label}: type scale linked");
+            $this->assertTrue(
+                str_contains($html, 'dot-ui/css/dot-ui.min.css') || (str_contains($html, 'dot-ui/css/dot-roboto.min.css') && str_contains($html, 'dot-ui/css/dot-type.min.css')),
+                "{$label}: Roboto and the type scale linked from dot-ui (one bundle when signed in, two small files on public pages)"
+            );
             $this->assertStringNotContainsString('fonts.googleapis', $html, "{$label}: no Google Fonts");
             $this->assertStringNotContainsString('fonts.gstatic', $html, "{$label}: no Google Fonts");
             $this->assertStringNotContainsString('/fonts/archivo', $html);
@@ -114,11 +116,11 @@ class RobotoAndHeaderTest extends TestCase
         $this->assertGreaterThanOrEqual(1, substr_count($bar[0], '<a '));
     }
 
-    public function test_the_shared_assets_match_dot_ui_060_and_the_drift_manifest_lists_them(): void
+    public function test_the_shared_assets_match_dot_ui_061_and_the_drift_manifest_lists_them(): void
     {
-        $this->assertStringContainsString('0.6.0', (string) file_get_contents(base_path('dot-ui/VERSION')));
+        $this->assertStringContainsString('0.6.1', (string) file_get_contents(base_path('dot-ui/VERSION')));
         $manifest = (string) file_get_contents(base_path('dot-ui/MANIFEST.sha256'));
-        foreach (['public/dot-ui/css/dot-header.css', 'public/dot-ui/js/dot-nav.js', 'public/dot-ui/js/dot-search-results.js', 'public/dot-ui/css/dot-roboto.css'] as $file) {
+        foreach (['public/dot-ui/css/dot-header.css', 'public/dot-ui/css/dot-ui.min.css', 'public/dot-ui/js/dot-nav.js', 'public/dot-ui/js/dot-ui.min.js', 'public/dot-ui/js/dot-search-results.js', 'public/dot-ui/css/dot-roboto.css'] as $file) {
             $this->assertStringContainsString($file, $manifest);
         }
     }
@@ -133,5 +135,14 @@ class RobotoAndHeaderTest extends TestCase
         $this->assertIsArray($switcher['model']);
         $this->assertSame('tutor', $switcher['model']['current']);
         $this->assertNotSame('ok', $switcher['model']['state'], 'a switcher that could not check never claims to be active');
+    }
+
+    public function test_the_dashboard_entrance_animation_never_starts_from_opacity_zero(): void
+    {
+        // Chrome skips an opacity:0 paint for largest-contentful-paint and a compositor-only animation never repaints: a from-0 rise
+        // moved the learner home's LCP from first paint (0.85 s) to page load (1.25 s) under the harness profile.
+        $css = (string) file_get_contents(resource_path('css/ds/dashboard.css'));
+        $this->assertDoesNotMatchRegularExpression('/@keyframes hm-rise\s*\{\s*from\s*\{\s*opacity:\s*0\s*;/', $css);
+        $this->assertMatchesRegularExpression('/@keyframes hm-rise\s*\{\s*from\s*\{\s*opacity:\s*0\.01/', $css);
     }
 }

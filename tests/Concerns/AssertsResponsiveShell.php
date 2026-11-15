@@ -44,7 +44,7 @@ trait AssertsResponsiveShell
         $this->assertGreaterThan(0, $xpath->query('//aside[@id="app-sidebar"]//nav//a[@href]')->length, 'navigation links live inside the drawer');
         $this->assertSame(1, $xpath->query('//aside[@id="app-sidebar"]//button[@data-dh-close][@aria-label="Close menu"]')->length, 'close button inside the drawer');
         $this->assertSame(1, $xpath->query('//main[@id="main-content"]')->length, 'one main landmark');
-        $this->assertSame(1, $xpath->query('//script[contains(@src, "dot-ui/js/dot-nav.js")]')->length, 'the shared header script is included once');
+        $this->assertSame(1, $xpath->query('//script[contains(@src, "dot-ui/js/dot-ui.min.js")]')->length, 'the shared header script (one minified bundle) is included once');
         $this->assertSame(0, $xpath->query('//*[@data-shell-open or @data-shell-close or @data-shell-behind]')->length, 'the old drawer hooks are gone');
 
         return $xpath;

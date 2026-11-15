@@ -34,9 +34,9 @@
     <title>{{ $code }}: @yield('title') | Dot.Tutor</title>
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     @if ($hasVite)
-        <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.css') }}">
-        <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.css') }}">
-        <script src="{{ asset('dot-ui/js/dot-theme-boot.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-roboto.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('dot-ui/css/dot-type.min.css') }}">
+        <script src="{{ asset('dot-ui/js/dot-theme-boot.min.js') }}"></script>
         {{-- A skipped page cross-fade (D-2311) is not an error; same guard as the shared head. --}}
         <script @if (\Illuminate\Support\Facades\Vite::cspNonce()) nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}" @endif>(function(){function q(e){var v=e.viewTransition;if(v){[v.ready,v.finished,v.updateCallbackDone].forEach(function(p){p&&p.catch(function(){})})}}addEventListener('pageswap',q);addEventListener('pagereveal',q);addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/^(AbortError|InvalidStateError)$/.test(r.name)&&/[Tt]ransition/.test(r.message||'')){e.preventDefault()}});})();</script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])

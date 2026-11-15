@@ -105,10 +105,8 @@
 
     <x-td.toasts />
     @stack('modals')
-    <script src="{{ asset('dot-ui/js/dot-search.js') }}" defer></script>
-    <script src="{{ asset('dot-ui/js/dot-search-results.js') }}" defer></script>
-    <script src="{{ asset('dot-ui/js/dot-switcher.js') }}" defer></script>
-    <script src="{{ asset('dot-ui/js/dot-nav.js') }}" defer></script>
+    {{-- One deferred script (dot-ui 0.6.1): search, switcher and header. dot-ui.min.js, not dot-ui-core.min.js, because resources/js/ds/header-search.js calls DotSearchResults.attach(). --}}
+    <script src="{{ asset('dot-ui/js/dot-ui.min.js') }}" defer></script>
     @if ($livewire)
         @livewireScripts
     @endif

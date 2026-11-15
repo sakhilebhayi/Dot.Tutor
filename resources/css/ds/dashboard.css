@@ -676,9 +676,10 @@
 
         .hm-chart__bar--now { animation-delay: 160ms; }
 
+        /* from .01, not 0: Chrome ignores an opacity:0 paint for largest-contentful-paint and a compositor-only animation never repaints, so the heading counted at page load, not first paint. Same look. */
         @keyframes hm-rise {
             from {
-                opacity: 0;
+                opacity: 0.01;
                 transform: translateY(6px);
             }
         }

@@ -140,6 +140,20 @@
     margin-inline-start: auto;
 }
 
+/* R-52 re-sync: at 320px the wordmark and the actions only just fit on one line in the fallback face and wrap onto two in Roboto, so the bar re-wrapped
+   when the font arrived (CLS 0.105). Below 21rem they are on two lines from the first paint. */
+@media (max-width: 21rem) {
+    .td-public-top__bar {
+        flex-wrap: wrap;
+    }
+
+    .td-public-top__actions {
+        flex-basis: 100%;
+        margin-inline-start: 0;
+        padding-block: var(--td-space-1);
+    }
+}
+
 /* Phones (fix round D-2300): without script the sections run as a scrolling row under the wordmark; with script
    they fold behind the Menu button and open as a panel under the bar. */
 .td-public-menu {

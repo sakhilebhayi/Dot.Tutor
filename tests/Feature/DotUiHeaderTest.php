@@ -116,8 +116,8 @@ class DotUiHeaderTest extends TestCase
             $this->assertStringContainsString('data-state="ok"', $html, "{$label}: a company member gets the company state");
             $this->assertSame(1, preg_match('/<header class="dh[^"]*".*?<\/header>/s', $html, $bar), "{$label}: has the shared header");
             $this->assertStringContainsString('data-dsw data-state="ok" data-platform="tutor"', $bar[0], "{$label}: the switcher is inside the top bar");
-            $this->assertStringContainsString('/dot-ui/css/dot-switcher.css', $html, "{$label}: shared CSS loaded");
-            $this->assertStringContainsString('/dot-ui/js/dot-switcher.js', $html, "{$label}: shared script loaded");
+            $this->assertStringContainsString('/dot-ui/css/dot-ui.min.css', $html, "{$label}: shared CSS loaded");
+            $this->assertStringContainsString('/dot-ui/js/dot-ui.min.js', $html, "{$label}: shared script loaded");
         }
     }
 
@@ -155,9 +155,9 @@ class DotUiHeaderTest extends TestCase
             $this->get($path)->assertOk()
                 ->assertDontSee('data-dsw', false)
                 ->assertDontSee('dsr-filter', false)
-                ->assertDontSee('dot-ui/css/dot-header.css', false)
-                ->assertDontSee('dot-ui/js/dot-nav.js', false)
-                ->assertSee('dot-ui/css/dot-roboto.css', false); // Roboto is on every page type, signed in or not
+                ->assertDontSee('dot-ui/css/dot-ui.min.css', false)
+                ->assertDontSee('dot-ui/js/dot-ui.min.js', false)
+                ->assertSee('dot-ui/css/dot-roboto.min.css', false); // Roboto is on every page type, signed in or not
         }
     }
 
@@ -336,7 +336,7 @@ class DotUiHeaderTest extends TestCase
         $html = $response->getContent();
 
         preg_match_all('/<(?:link|script)[^>]+(?:href|src)="([^"]*dot-ui[^"]*)"/', $html, $assets);
-        $this->assertGreaterThanOrEqual(12, count($assets[1]), 'Roboto, type, tokens, search, switcher, header stylesheets, the theme boot and the four shared scripts');
+        $this->assertCount(4, $assets[1], 'the Roboto preload, the one minified stylesheet (type, tokens, search, switcher, header), the theme boot and the one shared script');
         foreach ($assets[1] as $asset) {
             $this->assertStringStartsWith(url('/dot-ui/'), $asset, 'served from this site, not another host');
             $this->assertFileExists(public_path(parse_url($asset, PHP_URL_PATH)), 'the file exists in public/dot-ui');

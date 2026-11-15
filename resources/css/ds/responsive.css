@@ -309,7 +309,7 @@
         min-height: 2.75rem;
     }
 
-    table.td-table :is(td, th) > a:not(.td-btn) {
+    table.td-table :is(td, th) a:not(.td-btn) {
         display: inline-flex;
         align-items: center;
         min-height: 2.75rem;
@@ -349,5 +349,32 @@
     label:has(> input[type='checkbox']) {
         min-height: 2.75rem;
         align-items: center;
+    }
+}
+
+/*
+ * R-52 re-sync: routes the first pass did not reach (earnings range links, the message inbox rows, the safeguarding incident references and facts
+ * list, the support queue titles) were found under the 44px floor at 320 to 1024px. Same rule as the rest: a link or button that stands alone on its
+ * line is a 44px box up to 1024px and on touch screens.
+ */
+@media (max-width: 64rem), (pointer: coarse) {
+    main form > a.td-link,
+    .comms-item__open,
+    .ops-work__title > a,
+    .hm-row__end > a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.75rem;
+    }
+
+    /* inline-block, not inline-flex: the facts column breaks long values anywhere, and a shrink-to-fit flex box collapsed to 15px wide at 1024px. */
+    .ops-facts dd > a {
+        display: inline-block;
+        padding-block: 0.8125rem;
+    }
+
+    /* A single-letter tick box ("A" to "E") is narrower than 44px: the label gets the width as well as the height. */
+    label.td-check {
+        min-width: 2.75rem;
     }
 }
