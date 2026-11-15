@@ -350,7 +350,7 @@ final class TutorSearch
     }
 
     /**
-     * `lower(column) like ? escape '!'` with the text escaped (! % _), so the text is only ever a bound parameter and a typed % or _ matches itself.
+     * `lower(cast(column as text)) like ? escape '!'` (the cast lets PostgreSQL search a uuid column; SQLite ignores it) with the text escaped (! % _), so the text is only ever a bound parameter and a typed % or _ matches itself.
      * Portable: the same SQL runs on SQLite and PostgreSQL. $column is always a literal from this file, never request input.
      *
      * @param  Builder|QueryBuilder  $query
@@ -359,6 +359,6 @@ final class TutorSearch
     {
         $pattern = '%'.strtr(mb_strtolower($text), ['!' => '!!', '%' => '!%', '_' => '!_']).'%';
 
-        return $query->whereRaw('lower('.$column.") like ? escape '!'", [$pattern]);
+        return $query->whereRaw('lower(cast('.$column.' as text)) like ? escape \'!\'', [$pattern]);
     }
 }
