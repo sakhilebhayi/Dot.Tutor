@@ -631,6 +631,49 @@
     color: var(--td-ink);
 }
 
+/* R-54: the central sign-in's claim and error pages sit in the same card. One column, 44px targets, no new colours. */
+.td-claim {
+    display: grid;
+    gap: var(--td-space-5);
+}
+
+.td-claim__lede {
+    margin: 0;
+    color: var(--td-ink);
+    line-height: 1.55;
+    max-inline-size: 65ch;
+    overflow-wrap: anywhere;
+}
+
+.td-claim__form,
+.td-claim__actions {
+    display: grid;
+    gap: var(--td-space-4);
+}
+
+.td-claim__code {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.3em;
+    font-size: var(--td-text-lg, 1.25rem);
+    min-block-size: 2.75rem;
+}
+
+.td-claim__aside {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--td-space-3);
+}
+
+.td-claim__aside .td-btn {
+    min-block-size: 2.75rem;
+}
+
+.td-claim__ref {
+    margin: 0;
+    color: var(--td-ink-2);
+    font-size: var(--td-text-sm);
+}
+
 .td-guest-band {
     height: 0.5rem;
     display: grid;

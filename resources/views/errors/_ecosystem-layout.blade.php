@@ -60,7 +60,7 @@
                         @elseif ($signedIn && Route::has('dashboard'))
                             <a class="td-btn td-btn--primary" href="{{ route('dashboard') }}"><span>Your desk</span></a>
                         @elseif (Route::has('login'))
-                            <a class="td-btn td-btn--primary" href="{{ route('login') }}"><span>Sign in</span></a>
+                            <a class="td-btn td-btn--primary" href="{{ \App\Support\CentralSignIn::login() }}"><span>Sign in</span></a>
                         @endif
                         @include('layouts.partials.public-menu-button')
                     </div>
