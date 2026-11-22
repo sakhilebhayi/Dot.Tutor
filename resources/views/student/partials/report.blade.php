@@ -3,7 +3,7 @@
      to sign in (reports need an account so the safety team can follow up). --}}
 @php $rid = 'report-'.$type.'-'.$id; @endphp
 @guest
-    <p class="st-small st-inline" style="margin:0"><x-td.icon name="flag" /> To report {{ $label }}, <a class="td-link" href="{{ route('login') }}">sign in</a> first.</p>
+    <p class="st-small st-inline" style="margin:0"><x-td.icon name="flag" /> To report {{ $label }}, <a class="td-link" href="{{ \App\Support\CentralSignIn::login() }}">sign in</a> first.</p>
 @else
 <details class="st-report st-disclosure">
     <summary class="td-link"><x-td.icon name="chevron-right" class="st-disclosure__chev" /><x-td.icon name="flag" /><span>Report {{ $label }}</span></summary>

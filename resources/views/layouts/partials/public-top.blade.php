@@ -12,7 +12,7 @@
                 <x-td.button variant="primary" :href="route('dashboard')">Your desk</x-td.button>
             @else
                 @if (Route::has('login') && ! request()->routeIs('login'))
-                    <x-td.button variant="primary" :href="route('login')">Sign in</x-td.button>
+                    <x-td.button variant="primary" :href="\App\Support\CentralSignIn::login()">Sign in</x-td.button>
                 @endif
             @endauth
             @include('layouts.partials.public-menu-button')

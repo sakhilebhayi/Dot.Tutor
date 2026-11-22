@@ -40,4 +40,5 @@ return [
     TutorSecurityServiceProvider::class,
     TutorPerfServiceProvider::class,
     TutorIntegrationServiceProvider::class,
+    Dot\SsoClient\DotSsoServiceProvider::class,
 ];

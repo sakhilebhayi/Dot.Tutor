@@ -21,7 +21,7 @@
                 <h2>Teach</h2>
                 <ul>
                     <li><a href="{{ url('/#teach') }}">Tutor on Dot.Tutor</a></li>
-                    @if (Route::has('login'))<li><a href="{{ route('login') }}">Sign in</a></li>@endif
+                    @if (Route::has('login'))<li><a href="{{ \App\Support\CentralSignIn::login() }}">Sign in</a></li>@endif
                 </ul>
             </div>
             <div>

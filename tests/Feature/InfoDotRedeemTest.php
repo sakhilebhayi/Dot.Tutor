@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\SsoClaimCodeMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -10,6 +11,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -118,20 +120,26 @@ class InfoDotRedeemTest extends TestCase
         $this->assertSame('Local Name', $existing->fresh()->name);
     }
 
-    public function test_an_unverified_local_account_is_adopted_and_its_password_replaced(): void
+    /** R-54: deliberately changed. The old test pinned the silent adoption (password replaced); that is gone. */
+    public function test_an_unverified_local_account_goes_to_the_claim_flow_and_nothing_is_replaced(): void
     {
-        $squatter = User::factory()->create([
+        Mail::fake();
+        $local = User::factory()->create([
             'email' => 'amara@example.test',
             'email_verified_at' => null,
-            'password' => Hash::make('attacker-knows-this'),
+            'password' => Hash::make('local-password'),
         ]);
-        Http::fake([self::URL => Http::response($this->identity())]);
+        $before = $local->fresh()->password;
+        Http::fake([self::URL => Http::response($this->identity(['uuid' => 'infodot-uuid-1']))]);
 
-        $this->post(route('ecosystem.auth'), ['token' => 't'], $this->fromInfodot());
+        $response = $this->post(route('ecosystem.auth'), ['token' => 't'], $this->fromInfodot());
 
-        $this->assertAuthenticatedAs($squatter);
-        $this->assertFalse(Hash::check('attacker-knows-this', $squatter->fresh()->password));
-        $this->assertNotNull($squatter->fresh()->email_verified_at);
+        $this->assertGuest();
+        $response->assertRedirect(route('dotsso.claim'));
+        $this->assertSame($before, $local->fresh()->password);
+        $this->assertNull($local->fresh()->email_verified_at);
+        $this->assertNull($local->fresh()->infodot_user_uuid);
+        Mail::assertSent(SsoClaimCodeMail::class);
     }
 
     public function test_a_token_infodot_refuses_signs_nobody_in(): void

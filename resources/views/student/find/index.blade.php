@@ -24,7 +24,7 @@
         {{-- Reading plain words uses the learner's saved profile, so it is for signed-in learners; the form below
              works for everyone (D-2003). --}}
         <x-td.notice tone="info" title="Looking without an account">
-            Choose a subject below to see approved tutors and why each one fits. <a class="td-link" href="{{ route('login') }}">Sign in with InfoDot</a> to describe what you need in your own words, book or send a message.
+            Choose a subject below to see approved tutors and why each one fits. <a class="td-link" href="{{ \App\Support\CentralSignIn::login() }}">Sign in with InfoDot</a> to describe what you need in your own words, book or send a message.
         </x-td.notice>
     @else
     <form method="POST" action="{{ route('learn.need') }}" class="st-slip" role="search" aria-labelledby="find-need-label">

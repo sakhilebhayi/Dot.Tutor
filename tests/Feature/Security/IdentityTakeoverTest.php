@@ -4,11 +4,13 @@ namespace Tests\Feature\Security;
 
 use App\Actions\Jetstream\AddTeamMember;
 use App\Domain\Safety\Services\Guardians;
+use App\Mail\SsoClaimCodeMail;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -51,31 +53,44 @@ class IdentityTakeoverTest extends TestCase
         $this->assertNotNull($kept->fresh()->email_verified_at, 'Changing only the case keeps the proof');
     }
 
-    public function test_the_real_owner_signing_in_through_infodot_shuts_the_squatter_out(): void
+    /**
+     * R-54: deliberately changed. The old test pinned the credential wipe (password, 2FA, tokens, sessions) on first
+     * InfoDot sign-in. The wipe is gone: the unproven address now goes through the emailed-code claim flow, and nothing
+     * on the account is touched by the attempt.
+     */
+    public function test_the_real_owner_signing_in_through_infodot_gets_the_claim_flow_and_nothing_is_wiped(): void
     {
+        Mail::fake();
         $attacker = User::factory()->create(['email_verified_at' => now()]);
         $this->changeEmail($attacker, 'victim@example.test');
         $attacker->createToken('squat');
         $attacker->forceFill(['two_factor_secret' => encrypt('x'), 'two_factor_confirmed_at' => now()])->save();
         $oldPassword = $attacker->fresh()->password;
+        $secret = $attacker->fresh()->two_factor_secret;
 
         config(['session.driver' => 'database']);
         DB::table('sessions')->insert(['id' => 'attacker-session', 'user_id' => $attacker->id, 'payload' => '', 'last_activity' => time()]);
 
         Http::fake([self::URL => Http::response([
-            'user' => ['id' => 9, 'name' => 'Victim', 'email' => 'victim@example.test', 'email_verified' => true],
+            'user' => ['id' => 9, 'uuid' => 'victim-uuid', 'name' => 'Victim', 'email' => 'victim@example.test', 'email_verified' => true],
             'teams' => [], 'current_team_id' => null,
         ])]);
 
         $host = parse_url(self::URL, PHP_URL_HOST);
-        $this->post(route('ecosystem.auth'), ['token' => 'one-time'], ['Origin' => 'https://'.$host]);
+        $response = $this->post(route('ecosystem.auth'), ['token' => 'one-time'], ['Origin' => 'https://'.$host]);
 
-        $adopted = $attacker->fresh();
-        $this->assertNotNull($adopted->email_verified_at);
-        $this->assertNotSame($oldPassword, $adopted->password);
-        $this->assertNull($adopted->two_factor_secret);
-        $this->assertSame(0, $adopted->tokens()->count());
-        $this->assertFalse(DB::table('sessions')->where('id', 'attacker-session')->exists(), 'The squatter\'s sessions end');
+        $this->assertGuest();
+        $response->assertRedirect(route('dotsso.claim'));
+
+        $after = $attacker->fresh();
+        $this->assertNull($after->email_verified_at, 'Nothing is proven until the code is entered');
+        $this->assertNull($after->infodot_user_uuid);
+        $this->assertSame($oldPassword, $after->password, 'The password is not replaced');
+        $this->assertSame($secret, $after->two_factor_secret, 'Two-step sign-in is not wiped');
+        $this->assertNotNull($after->two_factor_confirmed_at);
+        $this->assertSame(1, $after->tokens()->count(), 'API tokens are not deleted');
+        $this->assertTrue(DB::table('sessions')->where('id', 'attacker-session')->exists(), 'Sessions are not deleted');
+        Mail::assertSent(SsoClaimCodeMail::class, fn ($m) => $m->hasTo('victim@example.test'));
     }
 
     public function test_a_team_invitation_is_not_accepted_into_an_unproven_address(): void

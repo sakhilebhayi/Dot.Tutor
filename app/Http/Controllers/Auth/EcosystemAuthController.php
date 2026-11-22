@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\Ecosystem\ProvisionUserFromInfoDot;
 use App\Actions\Ecosystem\SyncTeamsFromInfoDot;
+use App\Exceptions\ClaimRequired;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureCompanyEntitled;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Services\InfoDot\IdentityClient;
 use App\Services\InfoDot\InfoDotUnavailable;
 use App\Support\EntitlementRefusal;
 use App\Support\RoleHome;
+use Dot\SsoClient\Support\ClaimService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,7 +110,22 @@ class EcosystemAuthController extends Controller
                 return EntitlementRefusal::response($refusal['reason'], $refusal['company']);
             }
 
-            $user = $identity ? $provision($identity) : null;
+            try {
+                $user = $identity ? $provision($identity) : null;
+            } catch (ClaimRequired $claim) {
+                // R-54: an unverified, unlinked or sensitive local account holds this address. Nothing on it is replaced or
+                // wiped (password, two-step sign-in, tokens, sessions all stay); the person proves the address with a
+                // code first (the shared package's claim flow).
+                $raw = $request->post('redirect');
+
+                return app(ClaimService::class)->begin(
+                    $request,
+                    $claim->user,
+                    $claim->claims,
+                    $this->safeRedirect($raw) !== $this->safeRedirect(null) ? (string) $raw : null,
+                    '',
+                );
+            }
 
             if ($user) {
                 $syncTeams($user, $identity);
