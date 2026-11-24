@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\InfoDot\EntitlementClient;
 use App\Support\EntitlementRefusal;
 use Closure;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
  * current company still holds the platform. A clear "no" answers with the plain refusal page (HTTP 403, JSON for
  * JSON callers): nothing is read, written, booked or paid. Anything else, including every kind of failure, lets the
  * request through exactly as before.
+ *
+ * R-61: when InfoDot has switched Dot.Tutor off (maintenance, unavailable), signed-in requests get a 503 with InfoDot's
+ * message, ahead of the company check and whatever the company holds. Nothing is deleted or changed and nobody is signed
+ * out. Livewire discards a non-redirect response from a persistent middleware, so a Livewire update gets a JSON 503 by
+ * abort. The existing exemptions stay exactly as they were; none is added.
  *
  * Nothing already made is touched: bookings, lessons in progress and payments stay as they are. This is attached only
  * to the signed-in route groups (alias `entitled`) and to Jetstream's own pages; it is not on sign-in, sign-out, the
@@ -73,6 +79,11 @@ class EnsureCompanyEntitled
 
         $answer = $this->entitlements->forCompany((string) $team->infodot_team_uuid);
 
+        // R-61: a platform InfoDot has switched off is off for everyone, whatever they hold. Checked before what the company holds.
+        if ($answer !== null && $answer['available'] === false) {
+            return $this->unavailable($request, $answer['message']);
+        }
+
         if ($answer === null || $answer['entitled'] === true) {
             return $next($request);
         }
@@ -82,6 +93,27 @@ class EnsureCompanyEntitled
             $team->name,
             $user->allTeams()->reject(fn ($other) => $other->id === $team->id),
         ), $answer['status']);
+    }
+
+    /**
+     * 503 with the message and nothing else: no record is read or changed and the person is not signed out. A Livewire
+     * update or upload and a JSON caller get a real JSON 503 (aborted, as Livewire ignores a returned response).
+     */
+    private function unavailable(Request $request, ?string $message): Response
+    {
+        $message ??= 'Dot.Tutor is temporarily unavailable.';
+        $headers = ['Retry-After' => '60', 'Cache-Control' => 'no-store, private'];
+
+        if ($this->isLivewire($request) || $request->expectsJson() || $request->is('api/*')) {
+            throw new HttpResponseException(response()->json(['message' => $message, 'reason' => 'platform_unavailable'], 503, $headers));
+        }
+
+        return response()->view('errors.platform-unavailable', ['message' => $message, 'signedIn' => true], 503, $headers);
+    }
+
+    private function isLivewire(Request $request): bool
+    {
+        return $request->headers->has('X-Livewire') || $request->is('livewire/*', 'livewire-*/*');
     }
 
     /**
