@@ -77,8 +77,8 @@ return [
         // shows "Continue with InfoDot" only when this and the service secret are set (fix round D-2301).
         'launch_url' => env('INFODOT_LAUNCH_URL'),
 
-        // R-50: during a session, ask InfoDot whether the current company still holds this platform (cached ten
-        // minutes per company; an outage or a misconfiguration never locks anyone out). See EnsureCompanyEntitled.
+        // R-50: during a session, ask InfoDot whether the current company still holds this platform (cached sixty
+        // seconds per company, R-61; an outage or a misconfiguration never locks anyone out). See EnsureCompanyEntitled.
         'entitlement_check' => (bool) env('TUTOR_ENTITLEMENT_CHECK', true),
     ],
 

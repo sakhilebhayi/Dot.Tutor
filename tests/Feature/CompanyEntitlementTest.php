@@ -323,7 +323,7 @@ class CompanyEntitlementTest extends TestCase
         Log::shouldHaveReceived('warning')->once()->withArgs(fn ($message) => str_contains($message, 'InfoDot entitlement check gave no answer'));
     }
 
-    public function test_a_failure_is_remembered_for_a_minute_and_an_answer_for_ten(): void
+    public function test_a_failure_is_remembered_for_a_minute_and_an_answer_for_a_minute_too(): void
     {
         [$owner] = $this->company();
         $this->infodotSays([self::readUrl(self::ACME) => Http::sequence()
@@ -590,5 +590,135 @@ class CompanyEntitlementTest extends TestCase
         $this->actingAs($owner)->get(route('teams.show', $other))->assertForbidden()->assertDontSee('Globex Corporation');
 
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), self::GLOBEX));
+    }
+
+    // ------------------------------------------------------------------ R-61 availability contract
+
+    private static function availability(bool $entitled, ?bool $available, ?string $message = null): array
+    {
+        $body = self::platforms(self::ACME, $entitled, $entitled ? 'active' : 'suspended');
+
+        foreach ($body['platforms'] as &$row) {
+            if ($row['key'] === 'tutor') {
+                if ($available !== null) {
+                    $row['available'] = $available;
+                }
+                if ($message !== null) {
+                    $row['message'] = $message;
+                }
+            }
+        }
+
+        return $body;
+    }
+
+    public function test_a_platform_switched_off_gives_503_even_when_the_company_holds_it(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::response(self::availability(true, false, 'Back at 18:00.'))]);
+
+        $response = $this->actingAs($owner)->get('/learn')->assertStatus(503);
+        $this->assertStringContainsString('Back at 18:00.', $response->getContent());
+        $this->assertSame('60', $response->headers->get('Retry-After'));
+        $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
+
+        $json = $this->actingAs($owner)->getJson('/learn')->assertStatus(503);
+        $this->assertSame('platform_unavailable', $json->json('reason'));
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('teams', ['id' => $owner->currentTeam->id]);
+    }
+
+    public function test_it_is_checked_before_what_the_company_holds(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::response(self::availability(false, false))]);
+
+        $this->actingAs($owner)->get('/learn')->assertStatus(503);
+    }
+
+    public function test_a_livewire_update_gets_a_json_503_while_switched_off(): void
+    {
+        [$owner, $team] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::sequence()
+            ->push(self::availability(true, true))
+            ->push(self::availability(true, false, 'Maintenance.'))]);
+        $this->actingAs($owner);
+
+        $page = $this->get(route('teams.show', $team))->assertOk()->getContent();
+        preg_match_all('/wire:snapshot="([^"]+)"/', $page, $all);
+        $snapshot = collect($all[1])->map(fn ($s) => html_entity_decode($s, ENT_QUOTES))->first(fn ($s) => str_contains($s, 'update-team-name-form'));
+
+        $this->travel(EntitlementClient::ANSWER_TTL + 1)->seconds();
+        $response = $this->postJson(Livewire::getUpdateUri(), ['components' => [[
+            'snapshot' => $snapshot,
+            'updates' => ['state.name' => 'Renamed While Off'],
+            'calls' => [['path' => '', 'method' => 'updateTeamName', 'params' => []]],
+        ]]], ['X-Livewire' => 'true']);
+
+        $response->assertStatus(503)->assertJsonPath('reason', 'platform_unavailable');
+        $this->assertArrayNotHasKey('components', (array) $response->json());
+        $this->assertSame('Acme Ltd', $team->fresh()->name);
+    }
+
+    public function test_it_is_back_within_a_minute_of_switching_on(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::sequence()
+            ->push(self::availability(true, false))
+            ->push(self::availability(true, true))]);
+        $this->actingAs($owner)->get('/learn')->assertStatus(503);
+
+        $this->travel(70)->seconds();
+        $this->actingAs($owner)->get('/learn')->assertOk();
+    }
+
+    public function test_an_older_infodot_without_the_fields_is_not_a_switch_off(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::response(self::availability(true, null))]);
+
+        $this->actingAs($owner)->get('/learn')->assertOk();
+    }
+
+    public function test_an_outage_keeps_the_last_unavailable_answer_for_six_hours_then_carries_on(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::sequence()
+            ->push(self::availability(true, false))
+            ->whenEmpty(Http::response('', 500))]);
+        $this->actingAs($owner)->get('/learn')->assertStatus(503);
+
+        $this->travel(2)->minutes();
+        $this->actingAs($owner)->get('/learn')->assertStatus(503);
+        $this->travel(5)->hours();
+        $this->actingAs($owner)->get('/learn')->assertStatus(503);
+
+        $this->travel(2)->hours();
+        $this->actingAs($owner)->get('/learn')->assertOk();
+    }
+
+    public function test_available_stays_available_through_an_outage(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::sequence()
+            ->push(self::availability(true, true))
+            ->whenEmpty(Http::response('', 500))]);
+        $this->actingAs($owner)->get('/learn')->assertOk();
+
+        $this->travel(2)->minutes();
+        $this->actingAs($owner)->get('/learn')->assertOk();
+    }
+
+    public function test_the_payment_webhook_and_the_persons_own_data_routes_still_work_while_switched_off(): void
+    {
+        [$owner] = $this->company();
+        $this->infodotSays([self::readUrl(self::ACME) => Http::response(self::availability(true, false))]);
+
+        // The webhook is outside the guarded group: its own signature check answers (401), never the 503.
+        $this->postJson('/api/tutor/money/webhooks/paystack', ['event' => 'charge.success'])->assertStatus(401);
+        // The person's own account page is on the existing exempt list and makes no call.
+        $this->actingAs($owner)->get(route('profile.show'))->assertOk();
+
+        Http::assertNothingSent();
     }
 }
